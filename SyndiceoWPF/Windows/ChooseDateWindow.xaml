@@ -1,0 +1,37 @@
+﻿<Window x:Class="Syndiceo.Windows.ChooseDateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Syndiceo"
+        mc:Ignorable="d"
+        Title="Избиране на дата"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        WindowStyle="ToolWindow"
+        Height="172"
+        Width="400"
+        Topmost="True"
+        ShowInTaskbar="False"
+        Background="#FFFAFAFA" Loaded="Window_Loaded">
+
+    <StackPanel Margin="10" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <!-- Label за избор на дата -->
+        <Label Content="Изберете дата:" 
+               FontSize="16" 
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center" FontFamily="Calibri" FontWeight="Bold"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <!-- Месец -->
+            <ComboBox x:Name="MonthComboBox" Width="130" Margin="0,0,10,0" Style="{StaticResource RoundComboBox}">
+
+            </ComboBox>
+
+            <!-- Година -->
+            <ComboBox x:Name="YearComboBox" Width="80" Style="{StaticResource RoundComboBox}" Height="30"/>
+        </StackPanel>
+
+        <Button Content="Избиране" Style="{StaticResource MainButtonStyle}" Name="ChooseDateButton" Click="ChooseDateButton_Click" Margin="0,5,0,0"/>
+    </StackPanel>
+</Window>

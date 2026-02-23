@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UserSecretsId>88647ec8-5823-4406-b2ae-3e63db101c3b</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Ico\logo128.ico" />
+    <None Remove="Resources\Ico\logo256.ico" />
+    <None Remove="Resources\logo.png" />
+    <None Remove="Resources\profile-icon-design-free-vector.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.4.1" />
+    <PackageReference Include="EPPlus" Version="8.4.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.22" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.24">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Office.Interop.Excel" Version="16.0.18925.20022" />
+    <PackageReference Include="Microsoft.Office.Interop.Word" Version="15.0.4797.1004" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
+    <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Ico\logo128.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Ico\logo256.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\logo.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\profile-icon-design-free-vector.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+</Project>

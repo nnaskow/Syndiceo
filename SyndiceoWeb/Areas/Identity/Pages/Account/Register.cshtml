@@ -1,0 +1,53 @@
+﻿@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Регистрация";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h1 class="card-title text-center mb-3">@ViewData["Title"]</h1>
+                    <p class="text-center text-muted mb-4">Създайте нов акаунт, за да започнете.</p>
+
+                    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger visually-hidden" role="alert"></div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="ivan@abv.bg" />
+                            <label asp-for="Input.Email">Имейл</label>
+                            <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Password" type="password" class="form-control" autocomplete="new-password" placeholder="парола" />
+                            <label asp-for="Input.Password">Парола</label>
+                            <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <input asp-for="Input.ConfirmPassword" type="password" class="form-control" autocomplete="new-password" placeholder="парола" />
+                            <label asp-for="Input.ConfirmPassword">Потвърдете паролата си</label>
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
+                        </div>
+
+                        <button id="registerSubmit" type="submit" class="btn btn-primary w-100 btn-lg fw-semibold shadow-sm"
+                            style="transition: transform 0.2s, box-shadow 0.2s;">
+                            Регистрация
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">Вече имате акаунт? <a asp-page="/Account/Login">Вход</a></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

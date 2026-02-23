@@ -1,0 +1,102 @@
+﻿<Window x:Class="Syndiceo.Windows.SummaryPriceWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Syndiceo"
+        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
+        mc:Ignorable="d"
+        Title="Дължима сума"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        WindowStyle="ToolWindow"
+        Height="325"
+        Width="442"
+        Topmost="True"
+        ShowInTaskbar="False"
+        Background="#FFFAFAFA"
+        Closing="Window_Closing"
+        Loaded="Window_Loaded">
+
+    <StackPanel Margin="10" VerticalAlignment="Center" HorizontalAlignment="Center">
+
+        <!-- Заглавие -->
+        <Label Content="Обща дължима сума" 
+               FontSize="18" 
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               FontFamily="Calibri" 
+               FontWeight="Bold"/>
+
+        <!-- Обща сума -->
+        <!-- Обща сума -->
+        <TextBlock x:Name="TotalAmountTextBlock"
+           Text="0.00"
+           FontSize="22"
+           FontFamily="Consolas"
+           FontWeight="Bold"
+           Foreground="#333"
+           HorizontalAlignment="Center"
+           Margin="0,5,0,5"/>
+
+        <!-- Текущо платено -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,5">
+            <Label Content="Текущо платена сума:" 
+           FontSize="16"
+           FontFamily="Calibri"
+           VerticalAlignment="Center"
+           Margin="0,0,5,0"/>
+            <TextBlock x:Name="CurrentPaidTextBlock"
+               Text="0.00"
+               FontSize="16"
+               FontFamily="Consolas"
+               FontWeight="Bold"
+               VerticalAlignment="Center"/>
+
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,10">
+            <Label Content="Оставаща сума за плащане:" 
+    FontSize="16"
+    FontFamily="Calibri"
+    VerticalAlignment="Center"
+    Margin="0,0,5,0"/>
+            <TextBlock x:Name="RemainingSum"
+        Text="0.00"
+        FontSize="16"
+        FontFamily="Consolas"
+        FontWeight="Bold"
+        VerticalAlignment="Center"/>
+
+        </StackPanel>
+
+        <!-- Поле за въвеждане на ново плащане -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,10">
+            <Label Content="Ново плащане:" 
+           FontSize="16"
+           FontFamily="Calibri"
+           VerticalAlignment="Center"
+           Margin="0,0,5,0"/>
+            <TextBox x:Name="PaidAmountTextBox" KeyDown="PaidAmountTextBox_KeyDown"
+             Width="120" 
+             Height="32" Style="{StaticResource RoundedTextBox}"
+             FontSize="14" 
+             FontFamily="Consolas" 
+             TextAlignment="Center"
+             VerticalContentAlignment="Center"
+             HorizontalContentAlignment="Right"
+             ToolTip="Въведете платената сума"/>
+            <Button Style="{StaticResource SmallButtonStyle}" Content="📖" ToolTip="Последни плащания" Width="27" Margin="5,0,0,0" Name="LastTransactionsButton" Click="LastTransactionsButton_Click"/>
+        </StackPanel>
+
+        <!-- Бутон -->
+        <Button Content="Запази промените" 
+                Width="200" 
+                Height="42"
+                FontSize="15"
+                FontFamily="Calibri"
+                Style="{StaticResource MainButtonStyle}"
+                Name="SavePayment"
+                Click="SavePayment_Click"/>
+
+    </StackPanel>
+</Window>

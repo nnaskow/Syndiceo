@@ -1,0 +1,67 @@
+﻿using Syndiceo.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Windows;
+using static Syndiceo.Windows.ManagementWindow;
+
+namespace Syndiceo.Windows
+{
+    public partial class ShowApartmentWindow : Window
+    {
+        private ApartmentViewModel _apartmentViewModel;
+
+        public ShowApartmentWindow(ApartmentViewModel apartmentViewModel)
+        {
+            InitializeComponent();
+            _apartmentViewModel = apartmentViewModel;
+
+            LoadApartmentData();
+        }
+
+        private void LoadApartmentData()
+        {
+            if (_apartmentViewModel == null)
+            {
+                MessageBox.Show("Апартаментът не е зададен!", "Грешка", MessageBoxButton.OK, MessageBoxImage.Error);
+                Close();
+                return;
+            }
+
+            using var context = new SyndiceoDBContext();
+
+            // Зареждаме апартамента с навигацията към адрес/блок/вход
+            var apartmentEntity = context.Apartments
+                .Include(a => a.Entrance)
+                    .ThenInclude(e => e.Block)
+                        .ThenInclude(b => b.Address)
+                .FirstOrDefault(a => a.ApartmentId == _apartmentViewModel.ApartmentId);
+
+            if (apartmentEntity == null)
+            {
+                MessageBox.Show("Апартаментът не е намерен!", "Грешка", MessageBoxButton.OK, MessageBoxImage.Error);
+                Close();
+                return;
+            }
+
+            // Зареждаме собственика отделно
+            var owner = context.Owners.FirstOrDefault(o => o.ApartmentId == apartmentEntity.ApartmentId);
+
+            // Map към полетата
+            var entrance = apartmentEntity.Entrance;
+            var block = entrance?.Block;
+            var address = block?.Address;
+
+            FullAddressLabel.Text = $"{address?.Street ?? "Няма улица"}, Блок {block?.BlockName ?? "Няма блок"}, Вход {entrance?.EntranceName ?? "Няма вход"}, Апартамент № {apartmentEntity.ApartmentNumber}";
+
+            ownerNameTxtBox.Text = owner?.OwnerName ?? "Няма данни";
+            ownerPhoneTxtBox.Text = owner?.PhoneNumber ?? "Няма данни";
+            residentCountTxtBox.Text = (apartmentEntity?.ResidentCount ?? 0).ToString();
+            NotesTxtBox.Text = apartmentEntity.Note ?? "";
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+        }
+      
+    }
+}

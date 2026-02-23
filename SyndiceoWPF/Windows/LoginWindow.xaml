@@ -1,0 +1,256 @@
+﻿<Window x:Class="Syndiceo.Windows.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Syndiceo"
+        mc:Ignorable="d"
+        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
+        Title="Syndiceo" Height="660" Width="420"
+        Background="{StaticResource AppBackground}"
+        ResizeMode="CanMinimize"
+        WindowStartupLocation="CenterScreen"   
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        Loaded="Window_Loaded">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="58*"/>
+            <RowDefinition Height="239*"/>
+        </Grid.RowDefinitions>
+        <!-- Login Grid -->
+        <Grid Name="LoginGrid" Margin="10,20,10,20" Visibility="Visible" Grid.RowSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Label HorizontalAlignment="Center" FontWeight="Bold" FontSize="26" Grid.Row="0">
+                <Image HorizontalAlignment="Center" Height="150" VerticalAlignment="Top" Width="178" Source="/Resources/logo.png"/>
+            </Label>
+
+            <Label Content="Добре дошли!" HorizontalAlignment="Center" FontSize="22"
+             Grid.Row="1" Margin="0,10,0,0" FontFamily="Calibri" FontWeight="Bold"/>
+            <Separator HorizontalAlignment="Center" VerticalAlignment="Top" Width="222" Padding="3"
+                 Grid.Row="2" Visibility="Visible"/>
+
+            <Label Content="Потребител:" FontWeight="Bold" FontSize="18"
+             HorizontalAlignment="Center" Grid.Row="3" FontFamily="Calibri"/>
+            <Grid Grid.Row="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="👨🏻‍💼" Grid.Column="0" VerticalAlignment="Center" FontSize="18"/>
+                <TextBox Name="usernameTxtBox" Grid.Column="1" Style="{StaticResource RoundedTextBox}" KeyDown="usernameTxtBox_KeyDown" FontFamily="Calibri" />
+            </Grid>
+
+            <Label Content="Парола:" FontWeight="Bold" FontSize="18" Grid.Row="5"
+             HorizontalAlignment="Center" Margin="0,10,0,0" FontFamily="Calibri"/>
+            <Grid Grid.Row="6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="31.5"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Иконка -->
+                <Label Content="🔑"
+     VerticalAlignment="Center"
+     HorizontalAlignment="Center"
+     FontSize="18"/>
+
+                <!-- Полета за парола -->
+                <Grid Grid.Column="1">
+                    <PasswordBox x:Name="passwordBox" Style="{StaticResource RoundedPasswordBox}" KeyDown="passwordBox_KeyDown" Margin="-2,0,0,0"/>
+                    <TextBox x:Name="passwordTextVisible"
+           Visibility="Collapsed"
+           Style="{StaticResource RoundedTextBox}" TextChanged="passwordTextVisible_TextChanged" KeyDown="passwordTextVisible_KeyDown"/>
+                </Grid>
+            </Grid>
+
+            <!-- Show Password Checkbox -->
+            <CheckBox Name="ShowPassword" Content="Покажи парола" Grid.Row="7" Margin="0,5,0,0"
+                HorizontalAlignment="Right"
+                Checked="ShowPassword_Checked"  Unchecked="ShowPassword_Unchecked" FontFamily="Calibri" FontWeight="Bold"/>
+
+            <StackPanel Grid.Row="8" Orientation="Vertical" HorizontalAlignment="Center" Margin="0,10,0,0">
+
+                <!-- Ред с бутон и чекбокс -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5">
+                    <Button Name="LoginButton" Style="{StaticResource MainButtonStyle}"
+                Content="Вход" Width="105" FontSize="16" Click="LoginButton_Click"/>
+                    <CheckBox Name="remembermeCheckbox" VerticalAlignment="Center"
+                  Content="Запомни ме" FontWeight="Bold" FontFamily="Calibri" Margin="10,0,0,0"/>
+                </StackPanel>
+
+                <!-- Забравена парола под реда -->
+                <Label x:Name="ForgotPasswordLabel"
+           Content="Забравена парола?" HorizontalAlignment="Center"
+           Cursor="Hand"
+           Foreground="DarkBlue"
+           FontWeight="Bold" Padding="5,2,5,5">
+                    <Label.Style>
+                        <Style TargetType="Label">
+                            <Setter Property="Foreground" Value="{StaticResource PrimaryColor}"/>
+                            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetProperty="(Foreground).(SolidColorBrush.Color)"
+                                                    To="RoyalBlue" Duration="0:0:0.2"/>
+                                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                     To="1.1" Duration="0:0:0.2"/>
+                                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                     To="1.1" Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.EnterActions>
+                                    <Trigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetProperty="(Foreground).(SolidColorBrush.Color)"
+                                                    To="DarkBlue" Duration="0:0:0.2"/>
+                                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                                     To="1" Duration="0:0:0.2"/>
+                                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                                     To="1" Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.ExitActions>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Label.Style>
+                </Label>
+            </StackPanel>
+        </Grid>
+
+        <!-- Register Grid -->
+        <Grid Name="RegisterGrid" Margin="10,20,10,20" Visibility="Collapsed" Grid.RowSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Label Content="Нямате профил? Регистрирайте се" 
+             FontSize="22" FontWeight="Bold"
+             FontFamily="Calibri"
+             HorizontalAlignment="Center" Margin="0,10,0,0"
+             Grid.Row="1"/>
+
+            <Separator Grid.Row="2" Width="222" HorizontalAlignment="Center"/>
+
+            <StackPanel Grid.Row="3" Margin="0,10,0,0">
+                <Label Content="Вашето име:" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <DockPanel>
+                    <Label Content="👨🏻‍💼" FontSize="18" Margin="0,0,-10,0"/>
+                    <TextBox x:Name="nameTxtBox" Style="{StaticResource RoundedTextBox}" Margin="3,0,0,0" KeyDown="nameTxtBox_KeyDown" Width="349"/>
+                </DockPanel>
+                <Label Content="Имейл:" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <DockPanel>
+                    <Label Content="📩" FontSize="18" Margin="0,0,-10,0"/>
+                    <TextBox x:Name="emailTxtBox" Style="{StaticResource RoundedTextBox}" Margin="3,0,0,0" KeyDown="nameTxtBox_KeyDown" Width="349"/>
+                </DockPanel>
+                <Label Content="*Използва се само за възстановяване на паролата ви*" FontSize="10" FontWeight="Bold" HorizontalAlignment="Right" FontStyle="Italic" Opacity="0.2" Foreground="Black" Padding="5,-3,5,5" Margin="0,0,7,0"/>
+
+                <Label Content="Потребителско име:" HorizontalAlignment="Center" FontSize="18" FontWeight="Bold"/>
+                <DockPanel>
+                    <Label Content="🆔" FontSize="18" Margin="0,0,-10,0"/>
+                    <TextBox x:Name="usernameTxtBoxReg" Style="{StaticResource RoundedTextBox}" Margin="3,0,0,0" KeyDown="usernameTxtBoxReg_KeyDown" Width="349"/>
+                </DockPanel>
+
+                <Label Content="Парола:" HorizontalAlignment="Center" FontSize="18" FontWeight="Bold" Margin="0,10,0,0"/>
+                <DockPanel>
+                    <Label Content="🔑" FontSize="18" Margin="0,0,-10,0"/>
+
+                    <!-- PasswordBox + TextBox -->
+                    <Grid>
+                        <PasswordBox x:Name="passwordTextBoxReg" Margin="3,0,0,0" Style="{StaticResource RoundedPasswordBox}" Width="349" KeyDown="passwordTextBoxReg_KeyDown"/>
+                        <TextBox x:Name="passwordTextVisibleReg" Visibility="Collapsed"
+                           Margin="5,0,0,0" Style="{StaticResource RoundedTextBox}" TextChanged="passwordTextVisibleReg_TextChanged"/>
+                    </Grid>
+                </DockPanel>
+            </StackPanel>
+
+            <!-- Show Password Checkbox -->
+            <CheckBox Name="ShowPasswordReg" Content="Покажи парола" Grid.Row="4" Margin="0,5,0,0"
+                HorizontalAlignment="Right"
+                Checked="ShowPasswordReg_Checked" Unchecked="ShowPasswordReg_Unchecked" FontFamily="Calibri" FontWeight="Bold"/>
+
+            <StackPanel Grid.Row="5" Orientation="Vertical" HorizontalAlignment="Center" Margin="0,10,0,0">
+                <Button x:Name="RegisterButton" Content="Регистрация"
+                  Style="{StaticResource MainButtonStyle}" Width="150" FontSize="16" Click="RegisterButton_Click"/>
+            </StackPanel>
+            <Image HorizontalAlignment="Left" Height="112" Margin="152,0,0,0" VerticalAlignment="Top" Width="90" Source="/Resources/logo.png"/>
+        </Grid>
+
+        <!--EmailGrid-->
+
+        <!--<Grid Name="EmailGrid" Margin="10,20,10,20" Visibility="Hidden" Grid.RowSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Label 
+             FontSize="26" FontWeight="Bold" 
+             HorizontalAlignment="Center" Grid.Row="0">
+                <Image Height="84" Width="111" Source="/Resources/logo.png" HorizontalAlignment="Center"/>
+            </Label>
+            <Label HorizontalAlignment="Center" Grid.Row="1" Margin="0,10,0,0">
+                <TextBlock Text="Желаете ли да Ви изпратим имейл&#x0a;с вашите данни?" 
+         FontSize="22" FontWeight="Bold" FontFamily="Calibri"
+         TextAlignment="Center"/>
+            </Label>
+
+            <Separator Grid.Row="2" Width="222" HorizontalAlignment="Center"/>
+
+            <StackPanel Grid.Row="3" Margin="0,10,0,0">
+                <DockPanel/>
+                <DockPanel/>
+                <DockPanel>
+                    --><!-- PasswordBox + TextBox --><!--
+                </DockPanel>
+            </StackPanel>
+
+            --><!-- Show Password Checkbox --><!--
+            <StackPanel Grid.Row="5" Orientation="Vertical" HorizontalAlignment="Center" Margin="0,10,0,0">
+
+            </StackPanel>
+            <TextBox Name ="EmailTextBox" Style ="{StaticResource RoundedTextBox}" HorizontalAlignment="Center" Grid.Row="6" TextWrapping="Wrap" VerticalAlignment="Center" Width="296" Height="38" IsEnabled="False" Opacity="0.375"/>
+            <Button Name ="emailRegButton" Content="Вход" HorizontalAlignment="Center" Grid.Row="7" Style="{StaticResource MainButtonStyle}" VerticalAlignment="Top" Width="114" Margin="0,14,0,0" Click="emailRegButton_Click"/>
+            <CheckBox Name ="IwishCheckBox" Content="Желая" HorizontalAlignment="Left" Margin="42,12,0,0" Grid.Row="5" VerticalAlignment="Top" Width="78" FontFamily="Calibri" FontWeight="Bold" Checked="CheckBox_Checked"/>
+            <Separator Grid.Row="5" Width="222"  Height ="30" HorizontalAlignment="Center"  Visibility ="Hidden" Margin="0,2,0,2"/>
+            <CheckBox Name ="IdontwishCheckBox" Content="Не желая" HorizontalAlignment="Left" Margin="42,12,0,0" Grid.Row="3" VerticalAlignment="Top" Width="78" FontFamily="Calibri" FontWeight="Bold" IsChecked="True" Checked="IdontwishCheckBox_Checked"/>
+            <Separator Grid.Row="7" Width="222" Height="40" Visibility="Hidden" HorizontalAlignment="Left" Margin="81,0,0,22"/>
+        </Grid>-->
+    </Grid>
+</Window>

@@ -1,0 +1,54 @@
+﻿<Window x:Class="Syndiceo.Windows.AddNoteWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Syndiceo"
+        mc:Ignorable="d"
+        Title="Добави бележка"
+        MinWidth="400" MinHeight="300"
+        Width="800" Height="477"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
+        Loaded="Window_Loaded" Background="{StaticResource AppBackground}">
+    <Grid Margin="20" Background="{StaticResource AppBackground}">
+        <!-- Watermark -->
+        <Image Source="/Resources/logo.png"
+               Opacity="0.05"
+               Stretch="Uniform"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               Panel.ZIndex="0"/>
+
+        <!-- Основно съдържание -->
+        <Border CornerRadius="10" Padding="20" BorderBrush="#DDD" BorderThickness="1" Background="Transparent" VerticalAlignment="Center" Height="421">
+            <StackPanel>
+                <TextBlock Text="Добавяне на бележка" 
+                           FontFamily="Calibri" FontWeight="Bold" FontSize="20" 
+                           HorizontalAlignment="Center" Foreground="#333"/>
+                <Separator Margin="0,10,0,10"/>
+
+                <!-- Бележка -->
+                <StackPanel Margin="0,5,0,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,5">
+                        <TextBlock Text="📝" FontSize="16" Margin="0,0,5,0"/>
+                        <Label Content="Бележка:" FontWeight="Bold" FontSize="14"/>
+                    </StackPanel>
+                    <TextBox Style="{StaticResource RoundedTextBox}" KeyDown="NoteTextBox_KeyDown"
+                             x:Name="NoteTextBox" 
+                             FontFamily="Calibri"
+                             Height="203" 
+                             TextWrapping="Wrap" 
+                             AcceptsReturn="True"/>
+                </StackPanel>
+
+                <Button Style="{StaticResource MainButtonStyle}" 
+                        Content="💾 Запази бележката" 
+                        Width="180" Height="45" 
+                        HorizontalAlignment="Center" Margin="0,20,0,0"
+                        Click="SaveNoteButton_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

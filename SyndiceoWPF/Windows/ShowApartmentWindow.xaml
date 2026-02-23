@@ -1,0 +1,68 @@
+﻿<Window x:Class="Syndiceo.Windows.ShowApartmentWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Syndiceo"
+        mc:Ignorable="d"
+        Title="Данни за апартамента"
+        MinWidth="400" MinHeight="300"
+        Width="444" Height="831"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
+        Loaded="Window_Loaded" Background="{StaticResource AppBackground}">
+
+    <Grid Margin="20" Background="{StaticResource AppBackground}">
+        <!-- Воден знак -->
+        <Image Source="/Resources/logo.png"
+               Opacity="0.05"
+               Stretch="Uniform"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               Panel.ZIndex="0"/>
+
+        <Border CornerRadius="10" Padding="20" BorderBrush="#DDD" BorderThickness="1">
+            <StackPanel>
+
+                <!-- Пълния адрес най-отгоре -->
+                <TextBlock x:Name="FullAddressLabel"
+                           Text="ул. Примерна 123, Блок 5, Вход А, Апартамент 12"
+                           FontFamily="Calibri" FontWeight="Bold" FontSize="16" 
+                           HorizontalAlignment="Center" Foreground="#333" Margin="0,0,0,15"/>
+
+                <Separator Margin="0,0,0,10"/>
+
+                <!-- Данни за собственик -->
+                <TextBlock Text="Собственик на апартамента" FontFamily="Calibri" FontWeight="Bold" FontSize="18" 
+                           HorizontalAlignment="Center" Foreground="#333"/>
+                <Separator Margin="0,5,0,10"/>
+
+                <StackPanel Margin="0,5,0,0">
+                    <TextBlock Text="👤 Име:" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                    <TextBox x:Name="ownerNameTxtBox" Text="" Background="White" IsReadOnly="True" Style="{StaticResource RoundedTextBox}" Height="41" FontFamily="Calibri" TextAlignment="Center" FontSize="16"/>
+                </StackPanel>
+
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="📞 Телефон:" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                    <TextBox x:Name="ownerPhoneTxtBox" Text="" Background="White" IsReadOnly="True" Style="{StaticResource RoundedTextBox}" Height="41" FontFamily="Calibri" TextAlignment="Center" FontSize="16"/>
+                </StackPanel>
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="👥 Брой живущи:" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                    <TextBox x:Name="residentCountTxtBox" Text="" Background="White" IsReadOnly="True" Style="{StaticResource RoundedTextBox}" Height="41" FontFamily="Calibri" TextAlignment="Center" FontSize="16"/>
+                </StackPanel>
+                <!-- Бележки -->
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="📝 Бележка:" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                    <TextBox x:Name="NotesTxtBox" Text="" FontFamily="Calibri" FontWeight="Normal" TextAlignment="Center"
+                             Style="{StaticResource RoundedTextBox}" 
+                             Height="362" 
+                             TextWrapping="Wrap" 
+                             AcceptsReturn="True"  Background="White" Opacity="0.75"
+                             IsReadOnly="True" FontSize="16"/>
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

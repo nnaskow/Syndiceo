@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Начална страница";
+}
+
+<div class="container mt-5">
+    <div class="jumbotron bg-light p-5 rounded shadow-sm text-center">
+        <h1 class="display-4 mb-3">Добре дошли в Syndiceo!</h1>
+        <p class="lead mb-4">Вашият помощник в следенето на входните ви такси!</p>
+
+        @if (!User.Identity.IsAuthenticated)
+        {
+            <p class="mb-4">Влезте в профила си или се регистрирайте, за да можем да ви помогнем.</p>
+            <a class="btn btn-primary btn-lg me-2" asp-area="Identity" asp-page="/Account/Register">Регистрация</a>
+            <a class="btn btn-outline-secondary btn-lg" asp-area="Identity" asp-page="/Account/Login">Вход</a>
+        }
+        else
+        {
+            <p class="fs-5 text-success">Вече имате профил. Продължете към своята информация.</p>
+            <a class="btn btn-success btn-lg" asp-area="" asp-controller="Dashboard" asp-action="Index">Моят профил</a>
+        }
+    </div>
+</div>

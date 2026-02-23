@@ -1,0 +1,72 @@
+﻿<Window x:Class="Syndiceo.Windows.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Syndiceo"
+        mc:Ignorable="d"
+        Title="Относно Syndiceo" 
+        Height="450" Width="800"
+        ResizeMode="CanMinimize" 
+        WindowStartupLocation="CenterScreen" 
+        Loaded="Window_Loaded" 
+        Background="{StaticResource AppBackground}" 
+        Icon="pack://application:,,,/Resources/Ico/logo128.ico">
+    <Grid>
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                Width="744" Height="375"
+                BorderBrush="Black" BorderThickness="2"
+                CornerRadius="12"
+                Background="{StaticResource AppBackground}">
+            <Grid>
+                <!-- Watermark на заден план -->
+
+                <!-- Всичко останало отгоре -->
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Версия -->
+                    <TextBlock Grid.Row="0" x:Name="syndiceoVersion"
+                               Text="Syndiceo v1.0.0"
+                               FontSize="24" FontWeight="Bold"
+                               Foreground="#FF001A2C"
+                               TextAlignment="Center" Margin="0,0,0,20"/>
+
+                    <!-- Разработчик -->
+                    <TextBlock Grid.Row="3"
+                               Text="Разработено от NYXON"
+                               FontSize="16" Foreground="#FF001A2C"
+                               TextAlignment="Center" FontWeight="Bold" Margin="0,10"/>
+
+                    <!-- Имейл -->
+                    <TextBlock Grid.Row="4"
+                               Text="nyxonstudios@gmail.com"
+                               FontSize="16" Foreground="#FF001A2C"
+                               TextAlignment="Center" FontWeight="Bold"
+                               FontStyle="Italic" Margin="0,5"/>
+
+                    <!-- Separator -->
+                    <Separator Grid.Row="5" Width="200" HorizontalAlignment="Center" Margin="0,2,0,18"/>
+
+                    <!-- Авторски права -->
+                    <TextBlock Grid.Row="5"
+                               Text="©2026 Syndiceo. Всички права запазени."
+                               FontSize="14" Foreground="#FF001A2C"
+                               TextAlignment="Center" FontWeight="Bold" Margin="0,21,0,20" Grid.RowSpan="2"/>
+                </Grid>
+                <Image Source="pack://application:,,,/Resources/nxcutout.png"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Top" Margin="0,-28,0,0" Height="360" Width="344"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

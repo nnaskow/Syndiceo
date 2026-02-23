@@ -1,0 +1,117 @@
+﻿<Window x:Class="Syndiceo.Windows.ChangeUserDataWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Промяна на данни"
+        MinWidth="400" MinHeight="300"
+        Width="485" Height="501"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing" Background="{StaticResource AppBackground}">
+
+    <Grid Margin="20" Background="{StaticResource AppBackground}">
+        <!-- Watermark -->
+        <Image Source="/Resources/logo.png"
+               Opacity="0.05"
+               Stretch="Uniform"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               Panel.ZIndex="0"/>
+
+        <!-- Основен контейнер -->
+        <Border CornerRadius="10" Padding="20" BorderBrush="#DDD" BorderThickness="1" 
+                Background="Transparent" VerticalAlignment="Center">
+            <StackPanel>
+                <TextBlock Text="Промяна на потребителски данни" 
+                           FontFamily="Calibri" FontWeight="Bold" FontSize="20" 
+                           HorizontalAlignment="Center" Foreground="#333"/>
+                <Separator Margin="0,10,0,20"/>
+
+                <!-- GRID 1: Промяна на име -->
+                <Grid x:Name="ChangeNameGrid" Visibility="Collapsed">
+                    <StackPanel>
+                        <Label Content="Промяна на име:" FontWeight="Bold" FontSize="14"/>
+                        <Label Content="Парола за потвърждение:"/>
+                        <PasswordBox x:Name="ConfirmPasswordForName" 
+                                     Style="{StaticResource RoundedPasswordBox}" 
+                                     Height="34" Margin="0,5" />
+                        <Label Content="Ново име:"/>
+                        <TextBox x:Name="NewNameTextBox" 
+                                 Style="{StaticResource RoundedTextBox}" 
+                                 Height="36" Margin="0,5"/>
+                        <Button x:Name="changeNameButton" Style="{StaticResource MainButtonStyle}" 
+                                Content="Смяна на име" Click="changeNameButton_Click"
+                                Width="180" Height="40" 
+                                HorizontalAlignment="Center" Margin="0,15,0,0"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- GRID 2: Промяна на потребителско име -->
+                <Grid x:Name="ChangeUsernameGrid" Visibility="Collapsed">
+                    <StackPanel>
+                        <Label Content="Промяна на потребителско име:" FontWeight="Bold" FontSize="14"/>
+                        <Label Content="Парола за потвърждение:"/>
+                        <PasswordBox x:Name="ConfirmPasswordForUsername" 
+                                     Style="{StaticResource RoundedPasswordBox}" 
+                                     Height="34" Margin="0,5" />
+                        <Label Content="Ново потребителско име:"/>
+                        <TextBox x:Name="NewUsernameTextBox" 
+                                 Style="{StaticResource RoundedTextBox}" 
+                                 Height="34" Margin="0,5"/>
+                        <Button Style="{StaticResource MainButtonStyle}" 
+                                Content="Смяна на потребителско име" 
+                                Width="242" Height="40" x:Name="changeUsernameButton" Click="changeUsernameButton_Click"
+                                HorizontalAlignment="Center" Margin="0,15,0,0"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- GRID 3: Промяна на имейл -->
+                <Grid x:Name="ChangeEmailGrid" Visibility="Collapsed">
+                    <StackPanel>
+                        <Label Content="Промяна на имейл:" FontWeight="Bold" FontSize="14"/>
+                        <Label Content="Парола за потвърждение:"/>
+                        <PasswordBox x:Name="ConfirmPasswordForEmail" 
+                                     Style="{StaticResource RoundedPasswordBox}" 
+                                     Height="34" Margin="0,5" />
+                        <Label Content="Нов имейл:"/>
+                        <TextBox x:Name="NewEmailTextBox" 
+                                 Style="{StaticResource RoundedTextBox}" 
+                                 Height="34" Margin="0,5"/>
+                        <Button Style="{StaticResource MainButtonStyle}" 
+                                Content="Смяна на имейл" 
+                                Width="180" Height="40" 
+                                HorizontalAlignment="Center" Margin="0,15,0,0" Name="changeEmailButton" Click="changeEmailButton_Click"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- GRID 4: Промяна на парола -->
+                <Grid x:Name="ChangePasswordGrid" Visibility="Collapsed">
+                    <StackPanel>
+                        <Label Content="Промяна на парола:" FontWeight="Bold" FontSize="14"/>
+                        <Label Content="Стара парола:"/>
+                        <PasswordBox x:Name="OldPasswordBox" 
+                                     Style="{StaticResource RoundedPasswordBox}" 
+                                     Height="34" Margin="0,5"/>
+                        <Label Content="Нова парола:"/>
+                        <PasswordBox x:Name="NewPasswordBox" 
+                                     Style="{StaticResource RoundedPasswordBox}" 
+                                     Height="34" Margin="0,5"/>
+                        <Label Content="Потвърди новата парола:"/>
+                        <PasswordBox x:Name="ConfirmNewPasswordBox" 
+                                     Style="{StaticResource RoundedPasswordBox}" 
+                                     Height="34" Margin="0,5"/>
+                        <Button Style="{StaticResource MainButtonStyle}" 
+                                Content="Смяна на парола" 
+                                Width="180" Height="40" 
+                                HorizontalAlignment="Center" Margin="0,15,0,0" Name="changePasswordButton" Click="changePasswordButton_Click"/>
+                    </StackPanel>
+                </Grid>
+
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

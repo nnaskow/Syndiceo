@@ -1,0 +1,19 @@
+﻿<Window x:Class="Syndiceo.Windows.DeleteConfirmationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Потвърждение за изтриване" Height="150" Width="400"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <StackPanel Margin="10">
+        <TextBlock Text="Сигурни ли сте, че искате да изтриете този елемент?" 
+                   TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,0,0,10" FontFamily="Calibri" FontWeight="Bold"/>
+
+        <CheckBox x:Name="DeleteRelatedCheckBox" HorizontalAlignment="Center"
+                  Content="Позволявам изтриването на всички свързани записи" 
+                  Margin="0,0,0,10" FontFamily="Calibri" FontWeight="Bold"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Content="Да" Width="75" Margin="5" IsDefault="True" Click="Yes_Click" Style="{StaticResource SmallButtonStyle}"/>
+            <Button Content="Не" Width="75" Margin="5" IsCancel="True" Style="{StaticResource SmallButtonStyle}"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

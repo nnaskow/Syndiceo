@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SyndiceoWeb/SyndiceoWeb.csproj" />
+  <Project Path="SyndiceoWPF/Syndiceo.csproj" />
+</Solution>

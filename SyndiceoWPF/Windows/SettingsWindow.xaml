@@ -1,0 +1,225 @@
+﻿<Window x:Class="Syndiceo.Windows.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Syndiceo"
+        mc:Ignorable="d"
+        Title="Настройки"
+        MinWidth="400" MinHeight="300"
+        Width="527" Height="878"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
+        FontFamily="Calibri"
+        Loaded="Window_Loaded"
+        Background="{StaticResource AppBackground}">
+
+    <Grid Margin="20" Background="{StaticResource AppBackground}">
+        <!-- Watermark -->
+        <Image Source="/Resources/logo.png"
+               Opacity="0.05"
+               Stretch="Uniform"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               Panel.ZIndex="0"/>
+
+        <!-- Основно съдържание -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Border CornerRadius="10" Padding="20" BorderBrush="#DDD" BorderThickness="1" Background="Transparent" Width="479">
+                <StackPanel>
+
+                    <TextBlock Text="Настройки на приложението" 
+                           FontFamily="Calibri" FontWeight="Bold" FontSize="20" 
+                           HorizontalAlignment="Center" Foreground="#333"/>
+                    <Separator Margin="0,10,0,20"/>
+                    <GroupBox Header="Потребителски данни" Margin="0,0,0,20" FontWeight="Bold">
+                        <StackPanel Margin="10" Orientation="Vertical" HorizontalAlignment="Stretch" >
+
+                            <!-- Аватар -->
+                            <Ellipse Width="73" Height="67" HorizontalAlignment="Center" Margin="0,0,0,10">
+                                <Ellipse.Fill>
+                                    <ImageBrush ImageSource="/Resources/profile-icon-design-free-vector.jpg"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+
+                            <!-- Ред за Име -->
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Име:" 
+                       VerticalAlignment="Center"
+                       FontWeight="Bold"/>
+
+                                <TextBlock x:Name="nameLabel" Text="Петър Петров" 
+                       Grid.Column="1"
+                       VerticalAlignment="Center"
+                       TextDecorations="Underline"
+                       Foreground="DarkSlateGray"/>
+
+                                <Button Content="Промяна" x:Name="labelButton" 
+                    Grid.Column="1" 
+                    Style="{StaticResource MainButtonStyle}" 
+                    Margin="204,0,0,0" 
+                    Padding="5,0" Grid.ColumnSpan="2" Click="labelButton_Click"/>
+                            </Grid>
+
+                            <!-- Ред за Username -->
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Username:" 
+                       VerticalAlignment="Center"
+                       FontWeight="Bold"/>
+
+                                <TextBlock x:Name="usernameLabel" Text="p.petrov" 
+                       Grid.Column="1"
+                       VerticalAlignment="Center"
+                       TextDecorations="Underline"
+                       Foreground="DarkSlateGray"/>
+
+                                <Button Content="Промяна"  x:Name="usernameButton" 
+                    Grid.Column="1" Click="usernameButton_Click"
+                    Style="{StaticResource MainButtonStyle}" 
+                    Margin="204,0,0,0" 
+                    Padding="5,0" Grid.ColumnSpan="2"/>
+                            </Grid>
+
+                            <!-- Ред за Имейл -->
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Имейл:" 
+                       VerticalAlignment="Center"
+                       FontWeight="Bold"/>
+
+                                <TextBlock Text="petar@example.com" 
+                       Grid.Column="1" x:Name="emailLabel"
+                       VerticalAlignment="Center"
+                       TextDecorations="Underline"
+                       Foreground="DarkSlateGray" Margin="0,0,16,0"/>
+
+                                <Button Content="Промяна"   x:Name="emailButton" 
+                    Grid.Column="1" Click="emailButton_Click"
+                    Style="{StaticResource MainButtonStyle}" 
+                    Margin="204,0,0,0" 
+                    Padding="5,0"/>
+                            </Grid>
+
+                            <!-- Ред за Парола -->
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Парола:" 
+                       VerticalAlignment="Center"
+                       FontWeight="Bold"/>
+
+                                <TextBlock x:Name="passwordLabel" Text="********" 
+                       Grid.Column="1"
+                       VerticalAlignment="Center"
+                       TextDecorations="Underline"
+                       Foreground="DarkSlateGray"/>
+
+                                <Button Content="Промяна"  x:Name="passwordButton" 
+                    Grid.Column="1"  Click="passwordButton_Click"
+                    Style="{StaticResource MainButtonStyle}" 
+                    Margin="204,0,0,0" 
+                    Padding="5,0"/>
+                            </Grid>
+                        </StackPanel>
+                    </GroupBox>
+
+
+
+
+                    <!-- Настройки за база данни -->
+                    <GroupBox Header="Съхранение и база данни" Margin="0,0,0,20" FontWeight="Bold" Width="442">
+                        <StackPanel Margin="10">
+                            <CheckBox x:Name="AutoSaveCheckBox" 
+                  Content="Автоматично запазване на базата данни" 
+                  IsChecked="True" 
+                  FontSize="14" 
+                  Checked="AutoSaveCheckBox_Checked" 
+                  Unchecked="AutoSaveCheckBox_Unchecked" 
+                  Margin="0,0,0,10"/>
+
+                            <TextBlock Text="Място за съхранение:" 
+                   VerticalAlignment="Center" 
+                   Margin="10,0,10,0" 
+                   Opacity="0.375"/>
+
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox x:Name="DatabasePathTextBox" 
+                     Style="{StaticResource RoundedTextBox}" 
+                     Opacity="0.375" 
+                     Height="34" 
+                     IsReadOnly="True" 
+                     Grid.Column="0" 
+                     Margin="0,0,5,0"/>
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Label Content="Зареждане на съществуващ архив на базата данни:" 
+                   VerticalAlignment="Center"/>
+                                <Button x:Name="LoadArchiveButton" Style="{StaticResource SmallButtonStyle}"
+                    Content="..." 
+                    Width="30" 
+                    Height="24" 
+                    Margin="5,0,0,0" 
+                    VerticalAlignment="Center" Click="LoadArchiveButton_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+
+                    <!-- Други настройки -->
+                    <GroupBox x:Name ="otherSettings" Header="Други настройки" Margin="0,0,0,20">
+                        <StackPanel Margin="10" Orientation="Vertical" >
+                            <TextBlock Text="Изберете какво искате приложението да запомня при влизане:" 
+                   FontSize="14" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,10"/>
+
+                            <CheckBox x:Name="RememberUsernameCheckBox" 
+                  Content="Запомни потребителското ми име" 
+                  IsChecked="False" 
+                  FontSize="14" FontWeight="Normal" Margin="0,0,0,5" Checked="RememberUsernameCheckBox_Checked" Unchecked="RememberUsernameCheckBox_Unchecked"/>
+
+                            <CheckBox x:Name="RememberPasswordCheckBox" 
+                  Content="Запомни паролата ми" 
+                  IsChecked="False" 
+                  FontSize="14" FontWeight="Normal" Checked="RememberPasswordCheckBox_Checked" Unchecked="RememberPasswordCheckBox_Unchecked"/>
+                        </StackPanel>
+                    </GroupBox>
+
+
+                    <!-- Бутон за запис на настройки -->
+                    <Button Style="{StaticResource MainButtonStyle}" 
+                        Content="💾 Запази настройките" 
+                        Width="200" Height="45" 
+                        HorizontalAlignment="Center" Margin="0,20,0,0" Click="Button_Click_1"
+                      />
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</Window>

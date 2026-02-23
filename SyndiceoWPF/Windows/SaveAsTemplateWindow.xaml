@@ -1,0 +1,49 @@
+﻿<Window x:Class="Syndiceo.Windows.SaveAsTemplateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Syndiceo"
+        mc:Ignorable="d"
+        Title="Образци" Height="250" Width="564"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
+        FontFamily="Calibri" Loaded="Window_Loaded" Focusable="True" Background="{StaticResource AppBackground}">
+
+    <Grid Margin="20" Background="{StaticResource AppBackground}">
+        <!-- Watermark -->
+        <Image Source="/Resources/logo.png"
+               Opacity="0.05"
+               Stretch="Uniform"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               Panel.ZIndex="0"/>
+
+        <!-- Основно съдържание -->
+        <Border CornerRadius="10" Padding="20" BorderBrush="#DDD" BorderThickness="1" Background="Transparent" VerticalAlignment="Center">
+            <StackPanel>
+                <TextBlock Text="Напишете име на образеца" Name="templateLabel"
+                           FontFamily="Calibri" FontWeight="Bold" FontSize="18" 
+                           HorizontalAlignment="Center" Foreground="#333"/>
+                <Separator Margin="0,10,0,10"/>
+
+                <!-- Път до избраната папка -->
+                <TextBox x:Name="TemplateNameTextBox"
+                         Style="{StaticResource RoundedTextBox}"
+                         FontFamily="Calibri"
+                         Height="35"
+                         IsReadOnly="True"
+                         Margin="0,0,0,10"/>
+
+                <!-- Бутон за избор -->
+                <Button Style="{StaticResource MainButtonStyle}" 
+                        Content="Запиши" 
+                        Width="180" Height="45" 
+                        Name="SaveTemplateButton"
+                        HorizontalAlignment="Center"
+                        Click="SaveTemplateButton_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,62 @@
+/* Body и фон */
+body {
+    background-color: GhostWhite; /* или #F8FAFC */
+    color: #111827;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navbar */
+.navbar {
+    background: linear-gradient(to right, #2C5282, #2B6CB0);
+    color: white;
+}
+
+    .navbar a, .navbar .nav-link {
+        color: white;
+        transition: color 0.2s;
+    }
+
+        .navbar a:hover, .navbar .nav-link:hover {
+            color: #63B3ED;
+        }
+
+/* Primary бутони */
+.btn-primary {
+    background-color: #2C5282;
+    border-color: #2C5282;
+    color: white;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+    .btn-primary:hover {
+        background-color: #2B6CB0;
+        border-color: #2B6CB0;
+    }
+
+/* Input-и */
+.form-control {
+    border: 1px solid #E2E8F0;
+    color: #111827;
+}
+
+    .form-control:focus {
+        border-color: #2C5282;
+        box-shadow: 0 0 0 0.2rem rgba(44, 82, 130, 0.25);
+    }
+
+/* Карти / Card background */
+.card {
+    background-color: white;
+    border: 1px solid #E2E8F0;
+}
+
+/* Линкове */
+a {
+    color: #2C5282;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+    a:hover {
+        color: #63B3ED;
+    }
