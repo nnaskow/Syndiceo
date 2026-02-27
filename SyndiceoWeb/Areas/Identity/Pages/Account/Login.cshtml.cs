@@ -83,6 +83,7 @@ namespace SyndiceoWeb.Areas.Identity.Pages.Account
             /// </summary>
             [Display(Name = "Запомни ме?")]
             public bool RememberMe { get; set; }
+            public string Name { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)

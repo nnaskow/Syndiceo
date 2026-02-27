@@ -5,46 +5,99 @@
     ViewData["Title"] = "Вход";
 }
 
-<h1 style="text-align:center">@ViewData["Title"]</h1>
-<div class="row justify-content-center">
-    <div class="col-md-4">
-        <section>
-            <form id="account" method="post">
-                <h2>Влезте в профила си.</h2>
-                <hr />
-                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-                <div class="form-floating mb-3">
-                    <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="ivan@abv.bg" />
-                    <label asp-for="Input.Email" class="form-label">Имейл</label>
-                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+<div class="container d-flex align-items-center justify-content-center" style="min-height:85vh;">
+    <div class="col-lg-5 col-md-7">
+
+        <div class="card border-0 shadow-lg p-4 p-md-5 text-center">
+
+            <!-- Emoji Icon -->
+            <div class="mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle"
+                     style="width:80px;height:80px;background:linear-gradient(135deg,#2C5282,#2B6CB0);font-size:36px;">
+                    🔐
                 </div>
-                <div class="form-floating mb-3">
-                    <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Паролата123!$%" />
-                    <label asp-for="Input.Password" class="form-label">Парола</label>
-                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <h2 class="fw-bold mb-2">Добре дошли!</h2>
+            <p class="text-muted mb-4">
+                Влезте в профила си, за да продължите.
+            </p>
+
+            <form id="account" method="post" class="text-start">
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger small mb-3"
+                     role="alert">
                 </div>
-                <div class="checkbox mb-3">
-                    <label asp-for="Input.RememberMe" class="form-label">
-                        <input class="form-check-input" asp-for="Input.RememberMe" />
-                        @Html.DisplayNameFor(m => m.Input.RememberMe)
+
+                <div class="mb-3">
+                    <label asp-for="Input.Email" class="form-label fw-semibold">Имейл</label>
+                    <input asp-for="Input.Email"
+                           class="form-control form-control-lg"
+                           autocomplete="username"
+                           placeholder="ivan@abv.bg" />
+                    <span asp-validation-for="Input.Email"
+                          class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Password" class="form-label fw-semibold">Парола</label>
+                    <input asp-for="Input.Password"
+                           type="password"
+                           class="form-control form-control-lg"
+                           autocomplete="current-password"
+                           placeholder="••••••••" />
+                    <span asp-validation-for="Input.Password"
+                          class="text-danger small"></span>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input class="form-check-input"
+                           asp-for="Input.RememberMe" />
+                    <label class="form-check-label"
+                           asp-for="Input.RememberMe">
+                        Запомни ме
                     </label>
                 </div>
-                <div>
-                    <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary">Вход</button>
+
+                <button id="login-submit"
+                        type="submit"
+                        class="btn btn-primary btn-lg w-100 mb-3">
+                    Вход
+                </button>
+
+                <div class="text-center small">
+
+                    <div class="mb-2">
+                        <a id="forgot-password"
+                           asp-page="./ForgotPassword"
+                           class="text-decoration-none">
+                            Забравили сте паролата си?
+                        </a>
+                    </div>
+
+                    <div class="mb-2">
+                        <a asp-page="./Register"
+                           asp-route-returnUrl="@Model.ReturnUrl"
+                           class="text-decoration-none">
+                            Нямате профил? Регистрирайте се
+                        </a>
+                    </div>
+
+                    <div>
+                        <a id="resend-confirmation"
+                           asp-page="./ResendEmailConfirmation"
+                           class="text-decoration-none">
+                            Препрати имейл за потвърждение
+                        </a>
+                    </div>
+
                 </div>
-                <div>
-                    <p>
-                        <a id="forgot-password" asp-page="./ForgotPassword">Забравили сте паролата си?</a>
-                    </p>
-                    <p>
-                        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Нямате профил? Регистрирайте се</a>
-                    </p>
-                    <p>
-                        <a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Препрати имейл за потвърждение</a>
-                    </p>
-                </div>
+
             </form>
-        </section>
+
+        </div>
+
     </div>
 </div>
 

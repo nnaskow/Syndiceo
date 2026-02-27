@@ -54,6 +54,7 @@ public partial class SyndiceoDBContext : IdentityDbContext<SyndiceoWebUser>
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<Address>(entity =>
         {
             entity.HasKey(e => e.AddressId).HasName("PK__Addresse__091C2A1B23DF249D");
@@ -205,6 +206,7 @@ public partial class SyndiceoDBContext : IdentityDbContext<SyndiceoWebUser>
 
         modelBuilder.Entity<Login>(entity =>
         {
+            entity.HasKey(e => e.Id);
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .HasColumnName("email");

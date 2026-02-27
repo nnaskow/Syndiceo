@@ -1,0 +1,59 @@
+﻿@page
+@model PersonalDataModel
+@{
+    ViewData["Title"] = "Лични данни";
+    ViewData["ActivePage"] = ManageNavPages.PersonalData;
+}
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4"
+             style="border-radius:0.75rem; background:local;">
+
+            <h3 class="mb-4 fw-bold text-center">@ViewData["Title"]</h3>
+
+            <p class="text-center">
+                Вашият акаунт съдържа лични данни, които сте ни предоставили.
+                Оттук можете да ги изтеглите или изтриете.
+            </p>
+
+            <div class="alert alert-warning text-center mt-3" role="alert">
+                <strong>
+                    Изтриването на тези данни ще премахне акаунта ви завинаги
+                    и не може да бъде възстановено.
+                </strong>
+            </div>
+
+            <div class="d-grid gap-3 mt-4">
+
+                <form id="download-data" asp-page="DownloadPersonalData" method="post">
+                    <button class="btn-primary w-100 text-white"
+                            style="background: linear-gradient(135deg,#2C5282,#2B6CB0);
+                                   border:none; border-radius:0.5rem;
+                                   padding:0.75rem; font-weight:500;">
+                        Изтегли данните
+                    </button>
+                </form>
+
+                <a id="delete"
+                   asp-page="DeletePersonalData"
+                   class="btn btn-pimary w-100 text-white"
+                   style="background: linear-gradient(135deg,#DC3545,#C82333);
+                          border:none; border-radius:0.5rem;
+                          padding:0.75rem; font-weight:500;">
+                    Изтрий акаунта
+                </a>
+
+            </div>
+
+            <p class="text-muted small mt-4 text-center">
+                Препоръчваме първо да изтеглите данните си.
+            </p>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

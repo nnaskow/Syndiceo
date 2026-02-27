@@ -3,20 +3,158 @@
 }
 
 <div class="container mt-5">
-    <div class="jumbotron bg-light p-5 rounded shadow-sm text-center">
-        <h1 class="display-4 mb-3">Добре дошли в Syndiceo!</h1>
-        <p class="lead mb-4">Вашият помощник в следенето на входните ви такси!</p>
+
+    <!-- HERO -->
+    <div class="bg-white p-5 rounded hero-shadow text-center mb-5">
+        <img src="~/images/logo.png" height="140" class="mb-4" />
+
+        <h1 class="display-5 fw-bold mb-3">Добре дошли в Syndiceo</h1>
+
+        <p class="lead mb-4">
+            Помощникът за управление на входни и апартаментни такси,
+            създаден специално за вас.
+        </p>
 
         @if (!User.Identity.IsAuthenticated)
         {
-            <p class="mb-4">Влезте в профила си или се регистрирайте, за да можем да ви помогнем.</p>
-            <a class="btn btn-primary btn-lg me-2" asp-area="Identity" asp-page="/Account/Register">Регистрация</a>
-            <a class="btn btn-outline-secondary btn-lg" asp-area="Identity" asp-page="/Account/Login">Вход</a>
+            <p class="mb-4">
+                Влезте в профила си или се регистрирайте, за да получите достъп
+                до вашата информация.
+            </p>
+
+            <div class="d-flex justify-content-center gap-3">
+                <a class="btn btn-outline-primary btn-lg"
+                   asp-area="Identity"
+                   asp-page="/Account/Login">
+                    Вход
+                </a>
+
+                <a class="btn btn-primary btn-lg"
+                   asp-area="Identity"
+                   asp-page="/Account/Register">
+                    Регистрация
+                </a>
+            </div>
         }
         else
         {
-            <p class="fs-5 text-success">Вече имате профил. Продължете към своята информация.</p>
-            <a class="btn btn-success btn-lg" asp-area="" asp-controller="Dashboard" asp-action="Index">Моят профил</a>
+            <p class="fs-5 text-success">
+                Вече имате профил. Продължете към вашата информация.
+            </p>
+
+            <a class="btn btn-success btn-lg"
+               asp-area="Identity"
+               asp-page="/Account/Manage/Index">
+                Моят профил
+            </a>
         }
     </div>
+
+    @if (!User.Identity.IsAuthenticated)
+    {
+        <!-- СЕКЦИИ ЗА НЕЛОГНАТИ ПОТРЕБИТЕЛИ -->
+
+        <div class="row text-center mb-5">
+            <div class="col-md-8 mx-auto">
+                <h2 class="fw-bold mb-3">Какво представлява системата?</h2>
+                <p class="text-muted">
+                    Syndiceo е вашият помощник, който ви позволява лесно и прозрачно
+                    да следите входните и апартаментните си такси,
+                    както и да подавате сигнали при възникнали проблеми или нередности.
+                </p>
+            </div>
+        </div>
+
+        <div class="row text-center g-4 mb-5">
+            <div class="col-md-4">
+                <div class="p-4 bg-light rounded h-100 shadow-sm">
+                    <h5 class="fw-bold mb-3">📊 Преглед на такси</h5>
+                    <p class="text-muted">
+                        Вижте начислените входни и апартаментни такси,
+                        текущото си състояние и историята на плащанията.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-4 bg-light rounded h-100 shadow-sm">
+                    <h5 class="fw-bold mb-3">📝 Подаване на сигнали</h5>
+                    <p class="text-muted">
+                        Подайте сигнал при техническа неизправност
+                        или проблем в общите части на сградата.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-4 bg-light rounded h-100 shadow-sm">
+                    <h5 class="fw-bold mb-3">🔒 Сигурен достъп</h5>
+                    <p class="text-muted">
+                        Всеки потребител има защитен личен профил
+                        с достъп само до своята информация.
+                    </p>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- СЕКЦИЯ ЗА ЛОГНАТ ПОТРЕБИТЕЛ -->
+
+        <div class="row text-center mb-5">
+            <div class="col-md-8 mx-auto">
+                <h2 class="fw-bold mb-3">Вашият контролен панел</h2>
+                <p class="text-muted">
+                    Оттук можете да управлявате своята информация,
+                    да следите начислените такси и да подавате сигнали.
+                </p>
+            </div>
+        </div>
+
+        <div class="row text-center g-4 mb-5">
+
+            <div class="col-md-4">
+                <div class="p-4 bg-light rounded h-100 shadow-sm">
+                    <h5 class="fw-bold mb-3">💰 Моите такси</h5>
+                    <p class="text-muted">
+                        Проверете текущите си задължения и историята на плащанията.
+                    </p>
+                    <a class="btn btn-outline-primary mt-2"
+                       asp-area="Identity"
+                       asp-page="/Account/Manage/Index">
+                        Преглед
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-4 bg-light rounded h-100 shadow-sm">
+                    <h5 class="fw-bold mb-3">🏢 Моят апартамент</h5>
+                    <p class="text-muted">
+                        Вижте информацията за своя апартамент и статуса на заявката си.
+                    </p>
+                    <a class="btn btn-outline-primary mt-2"
+                       asp-area="Identity"
+                       asp-page="/Account/Manage/Index">
+                        Моят апартамент
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-4 bg-light rounded h-100 shadow-sm">
+                    <h5 class="fw-bold mb-3">🚨 Подай сигнал</h5>
+                    <p class="text-muted">
+                        Съобщете за проблем или нередност директно към управителя.
+                    </p>
+                    <a class="btn btn-outline-primary mt-2"
+                       asp-area="Identity"
+                       asp-page="/Account/Manage/Index">
+                        Подай сигнал
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    }
 </div>

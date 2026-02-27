@@ -1,0 +1,48 @@
+﻿@page
+@model DeletePersonalDataModel
+@{
+    ViewData["Title"] = "Изтриване на лични данни";
+    ViewData["ActivePage"] = ManageNavPages.PersonalData;
+}
+
+<div class="row ">
+    <div class="col-md-7">
+        <div class="card shadow-sm p-4" style="border-radius:0.75rem; background:local;">
+
+            <h3 class="mb-4 fw-bold text-center">@ViewData["Title"]</h3>
+
+            <div class="alert alert-warning text-center" role="alert">
+                <p class="mb-0"><strong>Изтриването на тези данни ще премахне акаунта ви завинаги и не може да бъде възстановено.</strong></p>
+            </div>
+
+            <form id="delete-user" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                @if (Model.RequirePassword)
+                {
+                    <div class="form-floating mb-4">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="current-password" placeholder="Въведете паролата си" />
+                        <label asp-for="Input.Password">Парола</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                }
+
+                <button type="submit" class="btn w-100 text-white"
+                        style="background: linear-gradient(135deg,#DC3545,#C82333);
+                               border:none; border-radius:0.5rem; padding:0.75rem; font-weight:500;
+                               transition: all 0.2s;">
+                    Изтрий акаунта и данните
+                </button>
+            </form>
+
+            <p class="text-muted small mt-3 text-center">
+                Това действие е окончателно.
+            </p>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

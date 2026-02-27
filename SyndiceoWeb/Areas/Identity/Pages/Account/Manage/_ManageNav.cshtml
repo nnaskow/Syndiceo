@@ -2,14 +2,56 @@
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }
-<ul class="nav nav-pills flex-column">
-    <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Profile</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Password</a></li>
+
+<div class="d-flex flex-column" style="gap:0.5rem;">
+    <a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)"
+       asp-page="./Index"
+       style="padding:0.75rem 1rem; border-radius:0.5rem;
+              background:@(ManageNavPages.IndexNavClass(ViewContext) == "active" ? "linear-gradient(135deg,#2C5282,#2B6CB0)" : "#2B6CB0");
+              color:white; font-weight:500; text-align:center; transition: all 0.2s;">
+        Профил
+    </a>
+
+    <a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)"
+       asp-page="./Email"
+       style="padding:0.75rem 1rem; border-radius:0.5rem;
+              background:@(ManageNavPages.EmailNavClass(ViewContext) == "active" ? "linear-gradient(135deg,#2C5282,#2B6CB0)" : "#2B6CB0");
+              color:white; font-weight:500; text-align:center; transition: all 0.2s;">
+        Имейл
+    </a>
+
+    <a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)"
+       asp-page="./ChangePassword"
+       style="padding:0.75rem 1rem; border-radius:0.5rem;
+              background:@(ManageNavPages.ChangePasswordNavClass(ViewContext) == "active" ? "linear-gradient(135deg,#2C5282,#2B6CB0)" : "#2B6CB0");
+              color:white; font-weight:500; text-align:center; transition: all 0.2s;">
+        Парола
+    </a>
+
     @if (hasExternalLogins)
     {
-        <li id="external-logins" class="nav-item"><a id="external-login" class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" asp-page="./ExternalLogins">External logins</a></li>
+        <a class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)"
+           asp-page="./ExternalLogins"
+           style="padding:0.75rem 1rem; border-radius:0.5rem;
+                      background:@(ManageNavPages.ExternalLoginsNavClass(ViewContext) == "active" ? "linear-gradient(135deg,#2C5282,#2B6CB0)" : "#2B6CB0");
+                      color:white; font-weight:500; text-align:center; transition: all 0.2s;">
+            Външни логини
+        </a>
     }
-    <li class="nav-item"><a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication">Two-factor authentication</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData">Personal data</a></li>
-</ul>
+
+    <a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)"
+       asp-page="./PersonalData"
+       style="padding:0.75rem 1rem; border-radius:0.5rem;
+              background:@(ManageNavPages.PersonalDataNavClass(ViewContext) == "active" ? "linear-gradient(135deg,#2C5282,#2B6CB0)" : "#2B6CB0");
+              color:white; font-weight:500; text-align:center; transition: all 0.2s;">
+        Лични данни
+    </a>
+</div>
+
+<style>
+    .nav-link:hover {
+        background: linear-gradient(135deg,#2B6CB0,#2C5282);
+        text-decoration: none;
+        color: white;
+    }
+</style>

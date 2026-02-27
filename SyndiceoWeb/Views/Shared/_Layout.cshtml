@@ -1,58 +1,93 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="bg">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - SyndiceoWeb</title>
+    <title>@ViewData["Title"]</title>
+    <link rel="icon" type="image/png" href="~/images/logo.png" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/SyndiceoWeb.styles.css" asp-append-version="true" />
 </head>
+
 <body>
 
+    <div class="bg-objects"></div>
+    <!-- ================= NAVBAR ================= -->
+    @{
+        var isHome = ViewContext.RouteData.Values["Controller"]?.ToString() == "Home"
+        && ViewContext.RouteData.Values["Action"]?.ToString() == "Index";
+    }
+    <header class="modern-header-alt">
+        <div class="container-xxl d-flex justify-content-between align-items-center py-3">
 
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">SyndiceoWeb</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+            <a href="/" class="logo d-flex align-items-center gap-2">
+                <img src="~/images/logo.png" alt="Logo" height="40">
+                <span>Syndiceo</span>
+            </a>
 
-                    @if (!(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home"
-                                              && ViewContext.RouteData.Values["Action"]?.ToString() == "Index"))
+            <nav class="d-flex align-items-center gap-4">
+
+                <ul class="nav-menu d-flex gap-4 mb-0">
+                    <li><a href="/" class="nav-link">Начало</a></li>
+                    <li><a class="nav-link" asp-area="Identity" asp-page="/Contact">Контакти</a></li>
+                </ul>
+
+                <div class="auth d-flex align-items-center">
+
+                    @if (User.Identity.IsAuthenticated)
                     {
-                        <partial name="_LoginPartial" />
+                        if (isHome)
+                        {
+                            <form asp-area="Identity"
+                                  asp-page="/Account/Logout"
+                                  method="post"
+                                  class="m-0">
+                                <button type="submit" class="btn auth-button">
+                                    Изход
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <partial name="_LoginPartial" />
+                        }
                     }
+                    else
+                    {
+                        if (!isHome)
+                        {
+                            <partial name="_LoginPartial" />
+                        }
+                    }
+
                 </div>
-            </div>
-        </nav>
+
+            </nav>
+        </div>
     </header>
+    <!-- ================= MAIN ================= -->
+    <main class="content-wrapper container-xxl py-4">
+        @RenderBody()
+    </main>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Syndiceo - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <!-- ================= FOOTER ================= -->
+    <footer class="custom-footer mt-5">
+        <div class="container-xxl d-flex justify-content-between align-items-center flex-wrap py-3">
+            <div>
+                © 2026 Syndiceo. Всички права запазени
+            </div>
+            <div>
+                <a asp-controller="Home" asp-action="Privacy">Политика за поверителност</a>
+            </div>
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+
+    <!-- Scripts -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>
