@@ -12,77 +12,86 @@
 <body>
 
     <div class="bg-objects"></div>
-    <!-- ================= NAVBAR ================= -->
+
     @{
         var isHome = ViewContext.RouteData.Values["Controller"]?.ToString() == "Home"
         && ViewContext.RouteData.Values["Action"]?.ToString() == "Index";
     }
+
+    <!-- ================= NAVBAR ================= -->
     <header class="modern-header-alt">
         <div class="container-xxl d-flex justify-content-between align-items-center py-3">
 
-            <a href="/" class="logo d-flex align-items-center gap-2">
-                <img src="~/images/logo.png" alt="Logo" height="40">
-                <span>Syndiceo</span>
-            </a>
-
-            <nav class="d-flex align-items-center gap-4">
-
-                <ul class="nav-menu d-flex gap-4 mb-0">
-                    <li><a href="/" class="nav-link">Начало</a></li>
-                    <li><a class="nav-link" asp-area="Identity" asp-page="/Contact">Контакти</a></li>
-                </ul>
-
-                <div class="auth d-flex align-items-center">
-
-                    @if (User.Identity.IsAuthenticated)
+            @* --- Администраторски navbar --- *@
+            @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+            {
+                <div class="d-flex align-items-center">
+                    @if (ViewContext.RouteData.Values["Controller"]?.ToString() == "Administrator" &&
+                                    ViewContext.RouteData.Values["Action"]?.ToString() != "AdminDashboard")
                     {
-                        if (isHome)
-                        {
-                            <form asp-area="Identity"
-                                  asp-page="/Account/Logout"
-                                  method="post"
-                                  class="m-0">
-                                <button type="submit" class="btn auth-button">
-                                    Изход
-                                </button>
-                            </form>
-                        }
-                        else
-                        {
-                            <partial name="_LoginPartial" />
-                        }
+                        <a asp-controller="Administrator" asp-action="AdminDashboard" class="btn auth-button btn-sm">
+                            ← Админ панел
+                        </a>
                     }
-                    else
-                    {
-                        if (!isHome)
-                        {
-                            <partial name="_LoginPartial" />
-                        }
-                    }
-
                 </div>
 
-            </nav>
+                <div class="d-flex justify-content-center flex-grow-1">
+                    <a asp-controller="Administrator" asp-action="AdminDashboard" class="logo d-flex align-items-center gap-2">
+                        <img src="~/images/logo.png" alt="Logo" height="40">
+                        <span>Syndiceo</span>
+                    </a>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <form asp-area="Identity" asp-page="/Account/Logout" method="post" class="m-0">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn auth-button">
+                            Изход
+                        </button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                @* --- Стандартен navbar за потребители --- *@
+                <a href="/" class="logo d-flex align-items-center gap-2">
+                    <img src="~/images/logo.png" alt="Logo" height="40">
+                    <span>Syndiceo</span>
+                </a>
+
+                <nav class="d-flex align-items-center gap-4">
+                    <ul class="nav-menu d-flex gap-4 mb-0">
+                        <li><a href="/" class="nav-link">Начало</a></li>
+                        <li><a class="nav-link" asp-area="Identity" asp-page="/Contact">Контакти</a></li>
+                    </ul>
+
+                    <div class="auth d-flex align-items-center">
+                        @if (!(isHome && !User.Identity.IsAuthenticated))
+                        {
+                            <partial name="_LoginPartial" />
+                        }
+                    </div>
+                </nav>
+            }
         </div>
     </header>
+
     <!-- ================= MAIN ================= -->
     <main class="content-wrapper container-xxl py-4">
         @RenderBody()
     </main>
 
-
     <!-- ================= FOOTER ================= -->
     <footer class="custom-footer mt-5">
         <div class="container-xxl d-flex justify-content-between align-items-center flex-wrap py-3">
             <div>
-                © 2026 Syndiceo. Всички права запазени
+                © 2026 Syndiceo. Всички права запазени. Разработено от NYXON
             </div>
             <div>
                 <a asp-controller="Home" asp-action="Privacy">Политика за поверителност</a>
             </div>
         </div>
     </footer>
-
 
     <!-- Scripts -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

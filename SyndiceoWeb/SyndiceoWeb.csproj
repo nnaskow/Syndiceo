@@ -47,4 +47,8 @@
     <Folder Include="Resources\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Syndiceo.Data\Syndiceo.Data.csproj" />
+  </ItemGroup>
+
 </Project>

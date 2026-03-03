@@ -1,0 +1,103 @@
+﻿@model SyndiceoWeb.Models.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Администраторски панел";
+}
+
+<div class="container py-5">
+
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+             style="width:90px;height:90px;background:linear-gradient(135deg,#2C5282,#2B6CB0);font-size:38px;color:white;">
+            🛠
+        </div>
+        <h2 class="fw-bold">Административен панел</h2>
+        <p class="text-muted">
+            Управлявайте входове, потребители и сигнали.
+        </p>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-4 mb-5">
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-4">
+                <h3 class="fw-bold text-primary">0</h3>
+                <p class="text-muted mb-0">Регистрирани входа</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-4">
+                <h3 class="fw-bold text-success">0</h3>
+                <p class="text-muted mb-0">Активни потребители</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-4">
+                <h3 class="fw-bold text-danger">0</h3>
+                <p class="text-muted mb-0">Нови сигнали</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-4">
+                <h3 class="fw-bold text-warning">0</h3>
+                <p class="text-muted mb-0">Чакащи потвърждения</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-lg p-4 text-center h-100">
+                <div class="mb-3" style="font-size:32px;">📄</div>
+                <h5 class="fw-semibold">Преглед на сигнали</h5>
+                <p class="text-muted small">
+                    Виж всички подадени сигнали от потребители.
+                </p>
+                <a asp-controller="Administrator"
+                   asp-action="ReportsList"
+                   class="btn btn-outline-primary btn-sm mt-2">
+                    Отвори
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-lg p-4 text-center h-100">
+                <div class="mb-3" style="font-size:32px;">🏢</div>
+                <h5 class="fw-semibold">Потвърждение на адреси</h5>
+                <p class="text-muted small">
+                    Одобрявай заявки за вход и местоживеене.
+                </p>
+                <a asp-controller="Administrator"
+                   asp-action="ResidenceConfirmation"
+                   class="btn btn-outline-primary btn-sm mt-2">
+                    Отвори
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-lg p-4 text-center h-100">
+                <div class="mb-3" style="font-size:32px;">⚙</div>
+                <h5 class="fw-semibold">Управление на потребители</h5>
+                <p class="text-muted small">
+                    Преглед и управление на роли и достъп.
+                </p>
+                <a asp-controller="Administrator"
+                   asp-action="AdminDashboard"
+                   class="btn btn-outline-primary btn-sm mt-2">
+                    Управление
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>

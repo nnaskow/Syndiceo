@@ -9,7 +9,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Collections.Generic;
-
+using Syndiceo.Data.Models;
+using Syndiceo.Data;
 namespace Syndiceo.Windows
 {
     public partial class TaxesWindow : Window
@@ -157,7 +158,7 @@ namespace Syndiceo.Windows
             else if (_entranceId.HasValue)
                 categoryType = "entrances";
 
-            var newCategory = new Syndiceo.Models.Category
+            var newCategory = new Syndiceo.Data.Models.Category
             {
                 Name = name,
                 Kind = kind,
@@ -175,17 +176,17 @@ namespace Syndiceo.Windows
 
         private void addCatButton_Click(object sender, RoutedEventArgs e)
         {
-            if (CategoryListBox.SelectedItem is Syndiceo.Models.Category selectedCategory)
+            if (CategoryListBox.SelectedItem is Syndiceo.Data.Models.Category selectedCategory)
                 AddCategoryToPanel(selectedCategory);
         }
 
         private void CategoryListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (CategoryListBox.SelectedItem is Syndiceo.Models.Category selectedCategory)
+            if (CategoryListBox.SelectedItem is Syndiceo.Data.Models.Category selectedCategory)
                 AddCategoryToPanel(selectedCategory);
         }
 
-        private void AddCategoryToPanel(Syndiceo.Models.Category selectedCategory)
+        private void AddCategoryToPanel(Syndiceo.Data.Models.Category selectedCategory)
         {
             var vm = new CategoryViewModel { Id = selectedCategory.Id, Name = selectedCategory.Name, Amount = "0" };
 

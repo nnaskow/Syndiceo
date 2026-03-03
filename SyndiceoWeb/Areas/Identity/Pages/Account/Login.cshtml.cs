@@ -22,10 +22,14 @@ namespace SyndiceoWeb.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<SyndiceoWebUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
-
-        public LoginModel(SignInManager<SyndiceoWebUser> signInManager, ILogger<LoginModel> logger)
+        private readonly UserManager<SyndiceoWebUser> _userManager;
+        public LoginModel(
+            SignInManager<SyndiceoWebUser> signInManager,
+            UserManager<SyndiceoWebUser> userManager,
+            ILogger<LoginModel> logger)
         {
             _signInManager = signInManager;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -117,7 +121,20 @@ namespace SyndiceoWeb.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
+
+                    var user = await _userManager.FindByEmailAsync(Input.Email);
+
+                    if (await _userManager.IsInRoleAsync(user, "Admin"))
+                    {
+                        return RedirectToAction("AdminDashboard", "Administrator");
+                    }
+
+                    if (await _userManager.IsInRoleAsync(user, "User"))
+                    {
+                        return RedirectToAction("Index", "Home"); 
+                    }
+
+                    return LocalRedirect(returnUrl ?? "/");
                 }
                 if (result.RequiresTwoFactor)
                 {

@@ -4,7 +4,8 @@ using Syndiceo.Models;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-
+using Syndiceo.Data.Models;
+using Syndiceo.Data;
 namespace Syndiceo.Windows
 {
     public partial class AddToDBWindow : Window

@@ -85,7 +85,7 @@
             <DockPanel LastChildFill="True" Margin="10">
                 <!-- Dashboard -->
                 <Border DockPanel.Dock="Left"
-        Width="208"
+        Width="240"
         Margin="10,0,0,0"
         Padding="10"
         Background="GhostWhite"
@@ -118,7 +118,7 @@
                                 <Separator Height="11"/>
                                 <TextBlock Text="Търсачка:" FontFamily="Calibri" FontWeight="Bold" Foreground="#FF001A2C" FontSize="14" Margin="5,2"/>
 
-                                <Grid Width="186">
+                                <Grid Width="215">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="40"/>
@@ -146,7 +146,7 @@
                             </StackPanel>
 
                             <!-- NotesPreview (фиксиран) -->
-                            <Border Grid.Row="1" Background="WhiteSmoke" BorderBrush="#ccc" BorderThickness="1" Padding="5" CornerRadius="4" Width="186" Height="204" Margin="0,5,0,10">
+                            <Border Grid.Row="1" Background="WhiteSmoke" BorderBrush="#ccc" BorderThickness="1" Padding="5" CornerRadius="4" Width="215" Height="204" Margin="0,5,0,10" HorizontalAlignment="Stretch">
                                 <ScrollViewer>
                                     <TextBlock x:Name="NotesPreview" Text="*Тук ще се показват бележките за избраният от вас апартамент*" TextWrapping="Wrap" FontFamily="Calibri" Foreground="#222" FontStyle="Italic" VerticalAlignment="Top" FontSize="12"/>
                                 </ScrollViewer>
@@ -167,6 +167,7 @@
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <Button Content="📝" ToolTip="Запазване на архив" Width="40" Style="{StaticResource SmallButtonStyle}" Margin="2" x:Name="ArchiveButton" Click="ArchiveButton_Click"/>
                                 <Button Content="⚙️" ToolTip="Настройки" Width="40" Style="{StaticResource SmallButtonStyle}" Margin="2" x:Name="SettingsButton" Click="SettingsButton_Click"/>
+                                <Button x:Name="openSiteButton" Content="🌐" ToolTip ="Уеб страница" Width="40" Style="{StaticResource SmallButtonStyle}" Margin="2" Click="openSiteButton_Click"/>
                                 <Button Content="🔄" ToolTip="Проверка за актуализации" Width="40" Style="{StaticResource SmallButtonStyle}" Margin="2"  x:Name="UpdateButton" Click="UpdateButton_Click"/>
                                 <Button x:Name="aboutButton" Content="❓" ToolTip ="Относно приложението" Width="40" Style="{StaticResource SmallButtonStyle}" Margin="2" Click="aboutButton_Click"/>
                             </StackPanel>

@@ -1,13 +1,14 @@
-﻿using Syndiceo.Models;
-using Syndiceo.Utilities;
-using DocumentFormat.OpenXml.InkML;
+﻿using DocumentFormat.OpenXml.InkML;
 using Microsoft.EntityFrameworkCore;
+using Syndiceo.Models;
+using Syndiceo.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Globalization;
@@ -26,8 +27,8 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using Block = Syndiceo.Models.Block;
-
+using Block = Syndiceo.Data.Models.Block;
+using Syndiceo.Data.Models;
 
 namespace Syndiceo.Windows
 {
@@ -2303,6 +2304,15 @@ namespace Syndiceo.Windows
             {
                 saveEntranceId = en.Id;
             }
+        }
+
+        private void openSiteButton_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = @"D:\Syndiceo\SyndiceoWeb\bin\Debug\net8.0\SyndiceoWeb.exe",
+                UseShellExecute = true
+            });
         }
     }
 }

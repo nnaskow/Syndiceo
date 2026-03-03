@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Начална страница";
+    var firstName = User.FindFirst("FirstName")?.Value ?? User.Identity?.Name;
 }
 
 <div class="container mt-5">
@@ -8,15 +9,14 @@
     <div class="bg-white p-5 rounded hero-shadow text-center mb-5">
         <img src="~/images/logo.png" height="140" class="mb-4" />
 
-        <h1 class="display-5 fw-bold mb-3">Добре дошли в Syndiceo</h1>
-
-        <p class="lead mb-4">
-            Помощникът за управление на входни и апартаментни такси,
-            създаден специално за вас.
-        </p>
-
         @if (!User.Identity.IsAuthenticated)
         {
+            <h1 class="display-5 fw-bold mb-3">Добре дошли в Syndiceo</h1>
+
+            <p class="lead mb-4">
+                Помощникът за управление на входни и апартаментни такси,
+                създаден специално за вас.
+            </p>
             <p class="mb-4">
                 Влезте в профила си или се регистрирайте, за да получите достъп
                 до вашата информация.
@@ -38,15 +38,23 @@
         }
         else
         {
-            <p class="fs-5 text-success">
-                Вече имате профил. Продължете към вашата информация.
+            <h1 class="display-5 fw-bold mb-3">
+                Добре дошли, @firstName 👋
+            </h1>
+
+            <p class="fs-5 mb-2">
+                Радваме се да ви видим отново в <strong>Syndiceo</strong>!
             </p>
 
-            <a class="btn btn-success btn-lg"
-               asp-area="Identity"
-               asp-page="/Account/Manage/Index">
-                Моят профил
-            </a>
+            <p class="text-muted mb-4">
+                Днес е чудесен ден да проверите текущите си такси, да видите статуса на апартамента ви
+                или да подадете бързо сигнал за какъвто и да е проблем.
+            </p>
+
+            <p class="text-muted">
+                Също така можете да прегледате историята си или просто да се уверите, че всичко е наред.
+                Syndiceo е тук, за да направи управлението на апартамента ви лесно и удобно.
+            </p>
         }
     </div>
 
@@ -119,24 +127,20 @@
                     <p class="text-muted">
                         Проверете текущите си задължения и историята на плащанията.
                     </p>
-                    <a class="btn btn-outline-primary mt-2"
-                       asp-area="Identity"
-                       asp-page="/Account/Manage/Index">
-                        Преглед
+                    <a class="btn btn-outline-primary" asp-controller="User" asp-action="ApartmentTaxes" asp-route-apartmentId="1">
+                        💰 Моите такси
                     </a>
                 </div>
             </div>
 
             <div class="col-md-4">
                 <div class="p-4 bg-light rounded h-100 shadow-sm">
-                    <h5 class="fw-bold mb-3">🏢 Моят апартамент</h5>
+                    <h5 class="fw-bold mb-3">🏢 Моите жилища</h5>
                     <p class="text-muted">
-                        Вижте информацията за своя апартамент и статуса на заявката си.
+                        Вижте информацията за вашите жилища и статуса на заявката си.
                     </p>
-                    <a class="btn btn-outline-primary mt-2"
-                       asp-area="Identity"
-                       asp-page="/Account/Manage/Index">
-                        Моят апартамент
+                    <a class="btn btn-outline-primary" asp-controller="User" asp-action="Index">
+                        🏢 Моите жилища
                     </a>
                 </div>
             </div>
@@ -148,9 +152,9 @@
                         Съобщете за проблем или нередност директно към управителя.
                     </p>
                     <a class="btn btn-outline-primary mt-2"
-                       asp-area="Identity"
-                       asp-page="/Account/Manage/Index">
-                        Подай сигнал
+                       asp-controller="User"
+                       asp-action="Reports">
+                        📢 Подай сигнал
                     </a>
                 </div>
             </div>

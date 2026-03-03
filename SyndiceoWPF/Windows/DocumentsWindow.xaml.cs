@@ -10,7 +10,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
+using Syndiceo.Data.Models;
+using Syndiceo.Data;
 namespace Syndiceo.Windows
 {
     public partial class DocumentsWindow : Window

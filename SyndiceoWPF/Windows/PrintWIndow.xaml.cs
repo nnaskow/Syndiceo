@@ -10,7 +10,8 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using Syndiceo.Models;
 using Microsoft.EntityFrameworkCore;
 using Syndiceo.Utilities;
-
+using Syndiceo.Data.Models;
+using Syndiceo.Data;
 namespace Syndiceo.Windows
 {
     public partial class PrintWIndow : Window
@@ -117,7 +118,7 @@ namespace Syndiceo.Windows
 
                 if (remainingCategory == null)
                 {
-                    remainingCategory = new Syndiceo.Models.Category
+                    remainingCategory = new Syndiceo.Data.Models.Category
                     {
                         Name = "Несъбрана такса",
                         Kind = "Разход",

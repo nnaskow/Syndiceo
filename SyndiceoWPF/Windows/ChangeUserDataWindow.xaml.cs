@@ -15,7 +15,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.IO;
 using Syndiceo.Models;
-
+using Syndiceo.Data.Models;
+using Syndiceo.Data;
 namespace Syndiceo.Windows
 {
     /// <summary>

@@ -1,0 +1,52 @@
+﻿@model SyndiceoWeb.Controllers.UserController.ApartmentTaxesModel
+
+@{
+    ViewData["Title"] = "Такси за апартамент";
+}
+
+<div class="container py-5">
+    <h2>@Model.ApartmentName</h2>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>@Model.ApartmentName</strong>
+            <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#taxesCollapse">
+                ⬇️ Покажи такси
+            </button>
+        </div>
+
+        <div class="collapse" id="taxesCollapse">
+            <div class="card-body d-flex flex-column gap-2">
+
+                <!-- Такса за входа -->
+                <div class="card text-white bg-success mb-2">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Такса за вход</strong><br />
+                            <small>@Model.EntranceTax.Amount.ToString("C") | @Model.EntranceTax.DueDate.ToShortDateString()</small>
+                        </div>
+                        <button class="btn auth-button btn-sm" @(Model.EntranceTax.IsPaid ? "disabled" : "")>
+                            @(Model.EntranceTax.IsPaid ? "Платена" : "Неплатена")
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Такса за апартамента -->
+                <div class="card text-white bg-info">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Такса за апартамент</strong><br />
+                            <small>@Model.ApartmentTax.Amount.ToString("C") | @Model.ApartmentTax.DueDate.ToShortDateString()</small>
+                        </div>
+                        <button class="btn auth-button btn-sm" @(Model.ApartmentTax.IsPaid ? "disabled" : "")>
+                            @(Model.ApartmentTax.IsPaid ? "Платена" : "Неплатена")
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <a asp-controller="User" asp-action="Index" class="btn auth-button mt-3">⬅️ Обратно към апартаментите</a>
+</div>

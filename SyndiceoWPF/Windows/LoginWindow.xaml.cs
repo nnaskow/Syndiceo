@@ -20,7 +20,8 @@ using DocumentFormat.OpenXml.Math;
 using Microsoft.EntityFrameworkCore.Migrations.Internal;
 using System.Data.SqlClient;
 using System.IO;
-
+using Syndiceo.Data.Models;
+using Syndiceo.Data;
 namespace Syndiceo.Windows
 {
     /// <summary>

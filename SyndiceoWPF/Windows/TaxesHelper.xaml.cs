@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
-
+using Syndiceo.Data.Models;
+using Syndiceo.Data;
 namespace Archon
 {
     public partial class TaxesHelper : Window

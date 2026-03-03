@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Windows;
 using static Syndiceo.Windows.ManagementWindow;
-
+using Syndiceo.Data.Models;
+using Syndiceo.Data;
 namespace Syndiceo.Windows
 {
     public partial class ShowApartmentWindow : Window

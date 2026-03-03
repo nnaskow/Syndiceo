@@ -1,0 +1,119 @@
+﻿
+@model SyndiceoWeb.Views.Administrator.ReportListModel
+@{
+    ViewData["Title"] = "Списък с сигнали";
+    var reports = Model.Reports;
+}
+
+<div class="container py-5">
+
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+             style="width:90px;height:90px;background:linear-gradient(135deg,#2C5282,#2B6CB0);font-size:38px;color:white;">
+            📄
+        </div>
+        <h2 class="fw-bold">Сигнали от потребители</h2>
+        <p class="text-muted">
+            Прегледайте всички подадени сигнали и управлявайте техния статус.
+        </p>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-4">
+                <h3 class="fw-bold text-danger">@reports.Count</h3>
+                <p class="text-muted mb-0">Общо сигнали</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-4">
+                <h3 class="fw-bold text-warning">@reports.Count(r => !r.Processed)</h3>
+                <p class="text-muted mb-0">Нови / необработени</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports Table -->
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-primary text-white fw-bold">
+            Всички сигнали
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>№</th>
+                        <th>Потребител</th>
+                        <th>Заглавие</th>
+                        <th>Описание</th>
+                        <th>Дата</th>
+                        <th>Статус</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < reports.Count; i++)
+                    {
+                        var report = reports[i];
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@report.UserId</td>
+                            <td>@report.Title</td>
+                            <td>@report.Description</td>
+                            <td>@report.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                @if (report.Processed)
+                                {
+                                    <span class="badge bg-success">Обработен</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Ново</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-page="/Administrator/ReportDetails" asp-route-id="@report.Id" class="btn btn-sm btn-outline-primary">Отвори</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-lg p-4 text-center h-100">
+                <div class="mb-3" style="font-size:32px;">🏢</div>
+                <h5 class="fw-semibold">Потвърждение на адреси</h5>
+                <p class="text-muted small">
+                    Одобрявай заявки за вход и местоживеене.
+                </p>
+                <a asp-controller="Administrator"
+                   asp-action="ResidenceConfirmation"
+                   class="btn btn-outline-primary btn-sm mt-2">
+                    Отвори
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-lg p-4 text-center h-100">
+                <div class="mb-3" style="font-size:32px;">⚙</div>
+                <h5 class="fw-semibold">Управление на потребители</h5>
+                <p class="text-muted small">
+                    Преглед и управление на роли и достъп.
+                </p>
+                <a asp-controller="Administrator"
+                   asp-action="AdminDashboard"
+                   class="btn btn-outline-primary btn-sm mt-2">
+                    Управление
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>

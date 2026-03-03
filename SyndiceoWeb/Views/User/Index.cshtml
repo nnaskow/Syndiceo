@@ -1,0 +1,57 @@
+﻿@model List<SyndiceoWeb.Controllers.UserController.Apartment>
+
+<div class="container py-5">
+    <h2 class="mb-4 text-center">Сигнали по входове</h2>
+
+    <div class="accordion" id="entrancesAccordion">
+        @foreach (var apt in Model)
+        {
+            @foreach (var entrance in apt.Entrances)
+            {
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>@entrance.Name</strong>
+                        <form method="get" asp-controller="User" asp-action="AddApartment" class="m-0">
+                            <input type="hidden" name="entranceId" value="@entrance.Id" />
+                            <button type="submit" class="btn btn-sm btn-success">Добави апартамент</button>
+                        </form>
+                    </div>
+                    <div id="collapseEntrance@entrance.Id" class="collapse" data-bs-parent="#entrancesAccordion">
+                        <div class="card-body d-flex flex-column gap-2">
+                            <div class="card mb-2 d-flex justify-content-between align-items-center p-3">
+                                <div>
+                                    <strong>@apt.Name</strong><br />
+                                    <small>@apt.Address</small>
+                                </div>
+                                <form method="post" asp-controller="User" asp-action="SignalApartment" class="m-0">
+                                    <input type="hidden" name="apartmentId" value="@apt.Id" />
+                                    <button type="submit" class="btn btn-warning">⚠️ Подай сигнал</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="mt-3">
+        <a asp-controller="User" asp-action="Index" class="btn btn-secondary">⬅️ Обратно към началната страница</a>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.card-header').forEach(header => {
+        const card = header.parentElement;
+        const collapse = card.querySelector('.collapse');
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'btn btn-sm btn-primary';
+        toggleBtn.type = 'button';
+        toggleBtn.textContent = '⬇️ Покажи апартаменти';
+        toggleBtn.setAttribute('data-bs-toggle', 'collapse');
+        toggleBtn.setAttribute('data-bs-target', `#${collapse.id}`);
+
+        header.insertBefore(toggleBtn, header.lastElementChild);
+    });
+</script>
