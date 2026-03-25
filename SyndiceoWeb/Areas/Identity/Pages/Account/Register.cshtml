@@ -9,7 +9,6 @@
 
         <div class="card border-0 shadow-lg p-4 p-md-5 text-center">
 
-            <!-- Emoji Icon -->
             <div class="mb-4">
                 <div class="d-inline-flex align-items-center justify-content-center rounded-circle"
                      style="width:80px;height:80px;background:linear-gradient(135deg,#2C5282,#2B6CB0);font-size:36px;">
@@ -40,6 +39,15 @@
                            autocomplete="name"
                            placeholder="Иван" />
                     <span asp-validation-for="Input.FirstName"
+                          class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.LastName" class="form-label fw-semibold">Фамилия</label>
+                    <input asp-for="Input.LastName"
+                           class="form-control form-control-lg"
+                           placeholder="Петров" />
+                    <span asp-validation-for="Input.LastName"
                           class="text-danger small"></span>
                 </div>
 

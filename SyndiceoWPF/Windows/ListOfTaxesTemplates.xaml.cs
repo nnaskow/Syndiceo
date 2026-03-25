@@ -1,4 +1,4 @@
-﻿using Syndiceo.Models;
+﻿using Syndiceo.Data.Models;
 using Syndiceo.Utilities;
 using System;
 using System.Collections.Generic;

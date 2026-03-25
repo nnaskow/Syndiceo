@@ -1,0 +1,96 @@
+﻿@model IEnumerable<Syndiceo.Data.Models.Report>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">🛠️ Управление на сигнали</h2>
+        
+        <div class="btn-group shadow-sm">
+            <a asp-action="ManageReports" asp-route-statusFilter="" 
+               class="btn btn-outline-secondary @(ViewBag.CurrentFilter == null ? "active" : "")">Всички</a>
+            <a asp-action="ManageReports" asp-route-statusFilter="pending" 
+               class="btn btn-outline-secondary @(ViewBag.CurrentFilter == "pending" ? "active" : "")">Отворени</a>
+            <a asp-action="ManageReports" asp-route-statusFilter="resolved" 
+               class="btn btn-outline-secondary @(ViewBag.CurrentFilter == "resolved" ? "active" : "")">Решени</a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Дата / Потребител</th>
+                        <th>Вход</th>
+                        <th>Сигнал</th>
+                        <th>Статус</th>
+                        <th class="text-end pe-4">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">Няма намерени сигнали.</td>
+                        </tr>
+                    }
+                    @foreach (var report in Model)
+                    {
+                        <tr class="@(report.IsResolved ? "opacity-75" : "")">
+                            <td class="ps-4">
+                                <div class="small fw-bold">@report.CreatedAt.ToString("dd.MM.yyyy HH:mm")</div>
+                                <div class="text-muted small">@report.User?.Email</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary">
+                                    Вход @report.Entrance?.EntranceName
+                                </span>
+                            </td>
+                            <td style="max-width: 300px;">
+                                <div class="fw-bold text-dark">@report.Title</div>
+                                <div class="small text-muted text-truncate">@report.Description</div>
+                            </td>
+                            <td>
+                                @if (report.IsResolved)
+                                {
+                                    <span class="badge bg-success">Решен</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger pulse-animation">Отворен</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <form asp-action="ToggleReportStatus" method="post">
+                                        <input type="hidden" name="reportId" value="@report.Id" />
+                                        <button type="submit" class="btn btn-sm @(report.IsResolved ? "btn-outline-warning" : "btn-outline-success")">
+                                            @(report.IsResolved ? "Отложи" : "Маркирай като решен")
+                                        </button>
+                                    </form>
+                                    
+                                    <form asp-action="DeleteReport" method="post" onsubmit="return confirm('Изтриване на сигнала?');">
+                                        <input type="hidden" name="reportId" value="@report.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+    @@keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.6; }
+        100% { opacity: 1; }
+    }
+</style>

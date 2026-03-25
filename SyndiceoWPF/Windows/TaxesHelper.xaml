@@ -1,4 +1,4 @@
-﻿<Window x:Class="Archon.TaxesHelper"
+﻿<Window x:Class="Syndiceo.Windows.TaxesHelper"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Помощник за такси" Height="450" Width="400"
@@ -6,7 +6,7 @@
         ResizeMode="NoResize"
         FontFamily="Calibri"        
         Icon="pack://application:,,,/Resources/helper.ico"
-        Visibility="Collapsed">
+        Visibility="Visible">
     <ScrollViewer Margin="10">
         <StackPanel Orientation="Vertical" >
 

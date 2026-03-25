@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Syndiceo.Data.Models;
 using SyndiceoWeb.Models;
 using System.Diagnostics;
 
@@ -7,7 +8,7 @@ namespace SyndiceoWeb.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
+        SyndiceoDBContext _context = new SyndiceoDBContext();
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;

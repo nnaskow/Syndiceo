@@ -3,338 +3,394 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Syndiceo"
+ xmlns:local="clr-namespace:Syndiceo"
         mc:Ignorable="d"
         Title="Syndiceo"
         MinHeight="750" MinWidth="1000"
         WindowStartupLocation="CenterScreen"
         WindowState="Maximized"
         ResizeMode="CanResize"
-        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
-        FontFamily="Calibri"
-        Closing="Window_Closing" Background="{StaticResource AppBackground}" Width="1444" Height="856">
-    
+        Icon="pack://application:,,,/Resources/Ico/logo256.ico"
+        FontFamily="Segoe UI, Calibri"
+        Closing="Window_Closing" Background="#F5F7F9" Width="1444" Height="856">
+
     <Window.Resources>
         <Storyboard x:Key="WatermarkRotateStoryboard" RepeatBehavior="Forever">
+
             <DoubleAnimation
+
             Storyboard.TargetName="WatermarkRotate"
+
             Storyboard.TargetProperty="Angle"
+
             From="0" To="360"
+
             Duration="0:0:1"
+
             RepeatBehavior="3x"/>
+
         </Storyboard>
+
         <local:MarkedToBrushConverter x:Key="MarkedToBrushConverter"/>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#E1E5EB"/>
+            <Setter Property="Foreground" Value="#2C3E50"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="BorderBrush" Value="#D0D7DE"/>
+        </Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="GridLinesVisibility" Value="None"/>
+            <Setter Property="RowHeight" Value="35"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+        </Style>
     </Window.Resources>
-    <Grid Background="{StaticResource AppBackground}">
+
+    <Grid>
         <DockPanel LastChildFill="True">
-
-            <!-- Горна лента с AppIcon и бутони вдясно -->
-            <Grid DockPanel.Dock="Top" Background="{StaticResource AppBackground}" Height="57">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <Label Grid.Column="0"
-           FontSize="20"
-           VerticalAlignment="Center"
-           Margin="10,0"
-           FontWeight="Bold"/>
-                <Image Source="/Resources/logo.png" Margin="19,1,41,1"/>
-
-                <!-- Централна част с две групи бутони и текстове под тях -->
-                <Grid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border DockPanel.Dock="Top" Background="White" Height="70" BorderBrush="#D0D7DE" BorderThickness="0,0,0,1">
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="10"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Първа група бутони -->
-                    <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Bottom" Margin="80,0,0,0">
-                        <StackPanel Orientation="Horizontal">
-                            <Button Name="AddButton" Content="➕ Нов адрес" Width="115" Style="{StaticResource MainButtonStyle}" Margin="2,2" Click="AddButton_Click" ToolTip="Добавяне на адрес"/>
-                            <Button Content="✏️ Редактиране" Width="134" Name="EditButton" Style="{StaticResource MainButtonStyle}" Margin="2,2" ToolTip="Редактиране на адрес/данни за контакт" Click="EditButton_Click"/>
-                            <Button Content="🗑️ Изтриване" Width="120" Name="DeleteButton" Style="{StaticResource MainButtonStyle}" Margin="2,2" ToolTip="Изтриване на адрес" Click="DeleteButton_Click"/>
-                            <Button Content="🔄 Обновяване" Width="126" x:Name="RefershButton" Click="RefershButton_Click" Style="{StaticResource MainButtonStyle}" ToolTip="Обновяване на списъка с адреси"/>
-                        </StackPanel>
-                        <TextBlock Text="Лента с бутони за управление на адреси" FontSize="10" Foreground="Gray" HorizontalAlignment="Center" Margin="0,0,0,0"/>
-                    </StackPanel>
-
-                    <!-- Втора група бутони -->
-                    <StackPanel Grid.Column="2" Orientation="Vertical" VerticalAlignment="Bottom" Margin="5,0,0,0">
-                        <StackPanel Orientation="Horizontal">
-                            <Button Content="📝 Добави бележка" x:Name="AddNoteButton" Width="154" Style="{StaticResource MainButtonStyle}" FontSize="14" ToolTip="Добавяне или редактиране на бележка към апартамент" Click="Button1_Click"/>
-                            <Button Content="💰 Такси" Width="106" x:Name="ManageTaxesButton" Style="{StaticResource MainButtonStyle}" Margin="2,2" ToolTip="Управление на такси" Click="ManageTaxesButton_Click"/>
-                            <Button Content="🔧 Ремонти" Width="107" x:Name="MaintenanceHistoryButton" Style="{StaticResource MainButtonStyle}" Margin="2,2" ToolTip="Извършени ремонтни дейности" Click="MaintenanceHistoryButton_Click"/>
-                            <Button Content="🗂️ Документи" Width="131" x:Name="DocumentsButton" Style="{StaticResource MainButtonStyle}" Margin="2,2" ToolTip="Всички документи за даден вход" Click="DocumentsButton_Click"/>
-                            <Button Content="📊 Отчети" x:Name="PrintButton" Style="{StaticResource MainButtonStyle}" ToolTip="Генериране на отчет с шаблон" Height="38" Width="113" Click="PrintButton_Click"/>
-                        </StackPanel>
-                        <TextBlock Text="Лента с бутони за допълнителни действия" FontSize="10" Foreground="Gray" HorizontalAlignment="Center" Margin="0,0,0,0"/>
-                    </StackPanel>
-                </Grid>
-
-
-            </Grid>
-
-            <!-- Разделител -->
-            <Separator DockPanel.Dock="Top" Height="1" Background="#FF001A2C"/>
-
-            <!-- Основно съдържание -->
-            <DockPanel LastChildFill="True" Margin="10">
-                <!-- Dashboard -->
-                <Border DockPanel.Dock="Left"
-        Width="240"
-        Margin="10,0,0,0"
-        Padding="10"
-        Background="GhostWhite"
-        BorderBrush="#ddd"
-        BorderThickness="1">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <!-- Основно съдържание и бележки -->
-                            <RowDefinition Height="Auto"/>
-                            <!-- Бутони най-долу -->
-                        </Grid.RowDefinitions>
-
-                        <!-- Основно съдържание -->
-                        <Grid Grid.Row="0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <!-- Заглавия и търсачка -->
-                                <RowDefinition Height="Auto"/>
-                                <!-- NotesPreview -->
-                                <RowDefinition Height="*"/>
-                                <!-- NotesTextBox се разтяга -->
-                            </Grid.RowDefinitions>
-
-                            <!-- Заглавия и търсачка -->
-                            <StackPanel Grid.Row="0" Orientation="Vertical">
-                                <TextBlock Text="📊 Контролен панел" FontWeight="Bold" FontSize="16" Margin="0,0,0,10" Foreground="#FF001C2D"/>
-                                <Separator/>
-                                <TextBlock x:Name="welcomeLabel" Text="Добре дошли, {user}!" Margin="0,0,0,5" FontFamily="Calibri" FontWeight="Bold" Foreground="#FF001A2C" FontSize="14"/>
-                                <Separator Height="11"/>
-                                <TextBlock Text="Търсачка:" FontFamily="Calibri" FontWeight="Bold" Foreground="#FF001A2C" FontSize="14" Margin="5,2"/>
-
-                                <Grid Width="215">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="40"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBox x:Name="searchTxtBox" 
-                             Text="Име,Тел. номер" 
-                             FontFamily="Calibri" 
-                             FontWeight="Bold" 
-                             Foreground="Gray" 
-                             FontSize="14" 
-                             Style="{StaticResource RoundedTextBox}" 
-                             GotFocus="searchTxtBox_GotFocus" 
-                             LostFocus="searchTxtBox_LostFocus" 
-                             FontStyle="Italic"
-                             Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,32,0"/>
-
-                                    <Button x:Name="searchButton"
-                            Content="🔍" Style="{StaticResource SmallButtonStyle}"
-                            ToolTip="Търсене"
-                            Margin="10,0,0,1"
-                            Grid.Column="1"
-                            Click="searchInDB_Click"/>
-                                </Grid>
-                            </StackPanel>
-
-                            <!-- NotesPreview (фиксиран) -->
-                            <Border Grid.Row="1" Background="WhiteSmoke" BorderBrush="#ccc" BorderThickness="1" Padding="5" CornerRadius="4" Width="215" Height="204" Margin="0,5,0,10" HorizontalAlignment="Stretch">
-                                <ScrollViewer>
-                                    <TextBlock x:Name="NotesPreview" Text="*Тук ще се показват бележките за избраният от вас апартамент*" TextWrapping="Wrap" FontFamily="Calibri" Foreground="#222" FontStyle="Italic" VerticalAlignment="Top" FontSize="12"/>
-                                </ScrollViewer>
-                            </Border>
-
-                            <!-- NotesTextBox се разтяга -->
-                            <TextBox Grid.Row="2" x:Name="NotesTextBox" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
-                     FontFamily="Calibri" Foreground="#222" Text="*Тук може да се водят напомняния и лични записки*"
-                     GotFocus="NotesTextBox_GotFocus" LostFocus="NotesTextBox_LostFocus"
-                     FontStyle="Italic" Style="{StaticResource RoundedTextBox}" VerticalAlignment="Stretch"/>
-                        </Grid>
-
-                        <!-- Бутони най-долу -->
-                        <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" Margin="0,10,0,0">
-                            <TextBlock Text="Часът в момента е:" x:Name="Clock" FontFamily="Calibri" FontStyle="Italic" HorizontalAlignment="Right" Foreground="Gray"/>
-                            <Separator Height="11" Background="#ccc" Margin="0,0,0,5"/>
-
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Button Content="📝" ToolTip="Запазване на архив" Width="40" Style="{StaticResource SmallButtonStyle}" Margin="2" x:Name="ArchiveButton" Click="ArchiveButton_Click"/>
-                                <Button Content="⚙️" ToolTip="Настройки" Width="40" Style="{StaticResource SmallButtonStyle}" Margin="2" x:Name="SettingsButton" Click="SettingsButton_Click"/>
-                                <Button x:Name="openSiteButton" Content="🌐" ToolTip ="Уеб страница" Width="40" Style="{StaticResource SmallButtonStyle}" Margin="2" Click="openSiteButton_Click"/>
-                                <Button Content="🔄" ToolTip="Проверка за актуализации" Width="40" Style="{StaticResource SmallButtonStyle}" Margin="2"  x:Name="UpdateButton" Click="UpdateButton_Click"/>
-                                <Button x:Name="aboutButton" Content="❓" ToolTip ="Относно приложението" Width="40" Style="{StaticResource SmallButtonStyle}" Margin="2" Click="aboutButton_Click"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-
-
-                <!-- Вертикален разделител -->
-                <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="6,0,0,1">
-                    <TextBlock x:Name="BreadCrumbText" Text="Навигация: Изберете адрес"
-                   FontSize="14" FontWeight="Bold" Foreground="DimGray" Margin="0,0,0,1"/>
-                </StackPanel>
-                <!-- Breadcrumbs и часовник -->
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="6,0,0,2" HorizontalAlignment="Right">
-
-                </StackPanel>
-                <!-- Breadcrumbs и часовник на един ред -->
-                <Grid DockPanel.Dock="Top" Margin="4,0,0,0">
-                    <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Breadcrumbs вляво -->
-                    <StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center">
-                        <Button Content="Адреси" Name="BreadcrumbAddresses" Click="BreadcrumbAddresses_Click"
-                Background="Transparent" BorderBrush="Transparent" Foreground="CornflowerBlue"/>
-                        <TextBlock x:Name="arr1" Text=" > " VerticalAlignment="Center"/>
-                        <Button Content="Блокове" Name="BreadcrumbBlocks" Click="BreadcrumbBlocks_Click"
-                Background="Transparent" BorderBrush="Transparent" Foreground="CornflowerBlue"/>
-                        <TextBlock x:Name="arr2" Text=" > " VerticalAlignment="Center"/>
-                        <Button Content="Входове" Name="BreadcrumbEntrances" Click="BreadcrumbEntrances_Click"
-                Background="Transparent" BorderBrush="Transparent" Foreground="CornflowerBlue"/>
-                        <TextBlock x:Name="arr3" Text=" > " VerticalAlignment="Center"/>
-                        <Button Content="Апартаменти" Name="BreadcrumbApartments" Click="BreadcrumbApartments_Click"
-                Background="Transparent" BorderBrush="Transparent" Foreground="CornflowerBlue"/>
-                    </StackPanel>
+                    <Image Source="/Resources/logo.png" Margin="25,10,19,7" Stretch="Uniform" Grid.Column="0"/>
 
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Height="31">
-                        <Button x:Name="SaveAsTemplateButton" Content="💾" Style="{StaticResource SmallButtonStyle}" Visibility="Collapsed"
-                ToolTip="Запазване на шаблон" Width="30" Height="30" Margin="2"/>
-                        <Button x:Name="OpenTemplateButton" Content="📂" Style="{StaticResource SmallButtonStyle}" Visibility="Collapsed"
-                ToolTip="Отваряне на шаблон" Width="30" Height="30" Margin="2"/>
+                    <Grid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
 
-                        <Rectangle Width="1" Height="22" Fill="Gray" Margin="5,0" Visibility="Collapsed"/>
+                        <Grid.ColumnDefinitions>
 
-                        <Button ToolTip="Маркиране на апартамент в зелено" x:Name="MarkInGreenButton"
-                Visibility="Visible" Content="✔️" Width="30" Height="30" Style="{StaticResource SmallButtonStyle}" 
-                Click="MarkInGreenButton_Click" Background="Green" Margin="2"/>
-                        <Button ToolTip="Премахване на маркировка" x:Name="UnmarkButton" 
-                Content="❌" Visibility="Visible" Width="30" Height="30" Style="{StaticResource SmallButtonStyle}" 
-                Click="UnmarkButton_Click" Background="Red" Margin="2"/>
-                    </StackPanel>
-                </Grid>
+                            <ColumnDefinition Width="Auto"/>
 
-                <Grid Background="#f2f2f2">
-                    <!-- Watermark -->
-                    <Grid x:Name="WatermarkLayer" Background="#AAFFFFFF" Panel.ZIndex="10" Visibility="Visible">
-                        <Image x:Name="WatermarkImage"
-           Source="pack://application:,,,/Resources/logo.png"
-           Opacity="0.375"
-           Stretch="Uniform"
-           HorizontalAlignment="Center"
-           VerticalAlignment="Center"
-           Width="200" Height="200"
-           RenderTransformOrigin="0.5,0.5">
-                            <Image.RenderTransform>
-                                <RotateTransform x:Name="WatermarkRotate"/>
-                            </Image.RenderTransform>
-                        </Image>
+                            <ColumnDefinition Width="10"/>
+
+                            <ColumnDefinition Width="Auto"/>
+
+                        </Grid.ColumnDefinitions>
+
+
+
+                        <!-- Първа група бутони -->
+
+                        <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Bottom" Margin="80,0,0,0">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Button Name="AddButton" Content="➕ Нов адрес" Width="115" Style="{StaticResource MainButtonStyle}" Margin="2,2" Click="AddButton_Click" ToolTip="Добавяне на адрес"/>
+
+                                <Button Content="✏️ Редактиране" Width="134" Name="EditButton" Style="{StaticResource MainButtonStyle}" Margin="2,2" ToolTip="Редактиране на адрес/данни за контакт" Click="EditButton_Click"/>
+
+                                <Button Content="🗑️ Изтриване" Width="120" Name="DeleteButton" Style="{StaticResource MainButtonStyle}" Margin="2,2" ToolTip="Изтриване на адрес" Click="DeleteButton_Click"/>
+
+                                <Button Content="🔄 Обновяване" Width="126" x:Name="RefershButton" Click="RefershButton_Click" Style="{StaticResource MainButtonStyle}" ToolTip="Обновяване на списъка с адреси"/>
+
+                            </StackPanel>
+
+                            <TextBlock Text="УПРАВЛЕНИЕ НА АДРЕСИ" FontSize="10" FontWeight="Bold" Foreground="#ABB2B9" HorizontalAlignment="Center" Margin="0,0,0,0"/>
+
+                        </StackPanel>
+
+
+
+                        <!-- Втора група бутони -->
+
+                        <StackPanel Grid.Column="2" Orientation="Vertical" VerticalAlignment="Bottom" Margin="5,0,0,0">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Button Content="📝 Добави бележка" x:Name="AddNoteButton" Width="154" Style="{StaticResource MainButtonStyle}" FontSize="14" ToolTip="Добавяне или редактиране на бележка към апартамент" Click="Button1_Click"/>
+
+                                <Button Content="💰 Такси" Width="106" x:Name="ManageTaxesButton" Style="{StaticResource MainButtonStyle}" Margin="2,2" ToolTip="Управление на такси" Click="ManageTaxesButton_Click"/>
+
+                                <Button Content="🔧 Ремонти" Width="107" x:Name="MaintenanceHistoryButton" Style="{StaticResource MainButtonStyle}" Margin="2,2" ToolTip="Извършени ремонтни дейности" Click="MaintenanceHistoryButton_Click"/>
+
+                                <Button Content="🗂️ Документи" Width="131" x:Name="DocumentsButton" Style="{StaticResource MainButtonStyle}" Margin="2,2" ToolTip="Всички документи за даден вход" Click="DocumentsButton_Click"/>
+
+                                <Button Content="📊 Отчети" x:Name="PrintButton" Style="{StaticResource MainButtonStyle}" ToolTip="Генериране на отчет с шаблон" Height="38" Width="113" Click="PrintButton_Click"/>
+
+                            </StackPanel>
+
+                            <TextBlock Text="ДОПЪЛНИТЕЛНИ ДЕЙСТВИЯ" FontSize="10" FontWeight="Bold" Foreground="#ABB2B9" HorizontalAlignment="Center" Margin="0,0,0,0"/>
+
+                        </StackPanel>
+
                     </Grid>
 
-                    <!-- Основно съдържание -->
-                    <Grid x:Name="ContentLayer" Panel.ZIndex="1">
-                        <!-- Addresses DataGrid -->
-                        <DataGrid x:Name="AddressesDataGrid"
-                  AutoGenerateColumns="False"
-                                   SelectionMode="Single"  ItemsSource="{Binding Addresses}"
-          SelectionUnit="FullRow"
-                  IsReadOnly="True"
-                  Background="White"
-                  BorderBrush="#ddd"
-                  BorderThickness="1"
-                  RowBackground="White"
-                  AlternatingRowBackground="#f6f6f6"
-                  Visibility="Visible"
-                  MouseDoubleClick="AddressesDataGrid_MouseDoubleClick"
-                  FontFamily="Calibri"
-                  SelectionChanged="AddressesDataGrid_SelectionChanged"
-                  FontSize="14">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Адрес" Binding="{Binding Street}" Width="*"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
 
-                        <!-- Blocks DataGrid -->
-                        <DataGrid x:Name="BlocksDataGrid"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  Background="White" ItemsSource="{Binding Blocks}"
-                  BorderBrush="#ddd"
-                  BorderThickness="1" SelectionChanged="BlockDataGrid_SelectionChanged"
-                  RowBackground="White"
-                  AlternatingRowBackground="#f6f6f6"
-                  Visibility="Hidden"
-                  MouseDoubleClick="BlocksDataGrid_MouseDoubleClick"
-                  FontFamily="Calibri"
-                  FontSize="14">
-                            <DataGrid.RowStyle>
-                                <Style TargetType="DataGridRow">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsFullyMarked}" Value="True">
-                                            <Setter Property="Background" Value="LightGreen"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsFullyMarked}" Value="False">
-                                            <Setter Property="Background" Value="White"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGrid.RowStyle>
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Блокове" Binding="{Binding BlockName}" Width="*"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
 
-                        <!-- Entrances DataGrid -->
-                        <DataGrid x:Name="EntrancesDataGrid"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  Background="White"
-                  BorderBrush="#ddd"
-                  BorderThickness="1"
-                  RowBackground="White"
-                  AlternatingRowBackground="#f6f6f6"
-                  Visibility="Hidden" SelectionChanged="EntranceDataGrid_SelectionChanged"
-                  MouseDoubleClick="EntrancesDataGrid_MouseDoubleClick"
-                  FontFamily="Calibri"
-                  FontSize="14">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Входове" Binding="{Binding EntranceName}" Width="*"/>
-                                <DataGridTextColumn Header="Обща дължима сума за целия вход" Binding="{Binding TotalAmount}" Width="180"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-
-                        <!-- Apartments DataGrid -->
-                        <DataGrid x:Name="ApartmentsDataGrid"
-                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                  Background="White"
-                  BorderBrush="#ddd"
-                  BorderThickness="1"
-                  Visibility="Hidden"
-                  MouseDoubleClick="ApartmentsDataGrid_MouseDoubleClick"
-                  SelectionChanged="ApartmentsDataGrid_SelectionChanged"
-                  FontFamily="Calibri"
-                  FontSize="14">
-                            <DataGrid.RowStyle>
-                                <Style TargetType="DataGridRow">
-                                    <Setter Property="Background" Value="{Binding PaymentStatusColor}"/>
-                                </Style>
-                            </DataGrid.RowStyle>
-                        </DataGrid>
-                    </Grid>
                 </Grid>
-            </DockPanel>
+            </Border>
+
+            <Grid Margin="15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="240"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="White" CornerRadius="12" BorderBrush="#E0E6ED" BorderThickness="1" Padding="18">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="15" Direction="270" RenderingBias="Quality" ShadowDepth="2" Opacity="0.05"/>
+                    </Border.Effect>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="220"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                            <TextBlock Text="📊 Контролен панел" FontWeight="Bold" FontSize="20" Foreground="#1A2B3C" Margin="0,0,0,8"/>
+                            <TextBlock x:Name="welcomeLabel" Text="Добре дошли, {user}!" FontSize="14" Foreground="#4A5568" Margin="2,0,0,18"/>
+
+                            <TextBlock Text="Бързо търсене" FontWeight="SemiBold" FontSize="11" Foreground="#4A5568" Margin="5,0,0,6" Opacity="0.8"/>
+                            <Grid Margin="0,0,0,15">
+                                <TextBox x:Name="searchTxtBox" 
+                         Text="Име,Тел. номер" 
+                         Style="{StaticResource RoundedTextBox}" 
+                         Height="38" 
+                         Padding="12,0,38,0" 
+                         VerticalContentAlignment="Center" 
+                         FontSize="13"
+                         BorderBrush="#CBD5E0"
+                         FontStyle="Italic"
+                         Foreground="#A0AEC0"/>
+                                <Button x:Name="searchButton" 
+                        Content="🔍" 
+                        HorizontalAlignment="Right" 
+                        Width="32" Height="32" 
+                        Margin="3" 
+                        Style="{StaticResource SmallButtonStyle}" 
+                        Background="Transparent"
+                                        Foreground="#4A5568"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="searchInDB_Click"/>
+                            </Grid>
+                            <Separator Background="#F1F4F8" Margin="0,5,0,15"/>
+                        </StackPanel>
+
+                        <Grid Grid.Row="1" Margin="0,0,0,15">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="📝 Бележки за обекта" FontSize="11" FontWeight="Bold" Foreground="#A0AEC0" Margin="5,0,0,5"/>
+                            <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Padding="12">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <TextBlock x:Name="NotesPreview" 
+                               TextWrapping="Wrap" 
+                               FontSize="13" 
+                               LineHeight="18"
+                               Foreground="#475569" 
+                               FontStyle="Italic" 
+                               Text="*Изберете апартамент за бележки*"/>
+                                </ScrollViewer>
+                            </Border>
+                        </Grid>
+
+                        <Grid Grid.Row="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="📌 Лични записки" FontSize="11" FontWeight="Bold" Foreground="#A0AEC0" Margin="5,0,0,5"/>
+                            <TextBox Grid.Row="1" x:Name="NotesTextBox" 
+                     AcceptsReturn="True" 
+                     TextWrapping="Wrap" 
+                     Style="{StaticResource RoundedTextBox}" 
+                     Padding="12" 
+                     FontSize="13"
+                     Background="#FFFDF2" 
+                     BorderBrush="#FEEBC8" 
+                     Foreground="#744210"
+                     Text="Тук може да си водите лични записки..."/>
+                        </Grid>
+
+                        <Grid Grid.Row="3" Margin="0,20,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock x:Name="Clock" Grid.Row="0" Text="00:00:00" 
+               FontSize="11" FontWeight="Medium" 
+               Foreground="#94A3B8" 
+               HorizontalAlignment="Center" 
+               Margin="0,0,0,15"/>
+                            <Separator Width="50" Foreground="#4A5568"/>
+
+                            <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="10" Padding="4">
+                                <UniformGrid Columns="5">
+                                    <Button x:Name="ArchiveButton" Content="💾" ToolTip="Архив" Height="38" Style="{StaticResource CleanIconButton}" Click="ArchiveButton_Click"/>
+                                    <Button x:Name="SettingsButton" Content="⚙️" ToolTip="Настройки" Height="38" Style="{StaticResource CleanIconButton}" Click="SettingsButton_Click"/>
+                                    <Button x:Name="UpdateButton" Content="🔄" ToolTip="Обновяване" Height="38" Style="{StaticResource CleanIconButton}" Click="UpdateButton_Click"/>
+                                    <Button x:Name="websiteButton" Content="🌐" ToolTip="Сайт за живущи" Height="38" Style="{StaticResource CleanIconButton}" Click="websiteButton_Click"/>
+                                    <Button x:Name="aboutButton" Content="❓" ToolTip="Помощ" Height="38" Style="{StaticResource CleanIconButton}" Click="aboutButton_Click"/>
+                                </UniformGrid>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Border>
+                <Grid Grid.Column="1" Margin="15,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                            <TextBlock x:Name="BreadCrumbText" 
+                   Text="Навигация: изберете адрес" 
+                   VerticalAlignment="Center" 
+                   Foreground="#5D6D7E" 
+                   FontSize="13" 
+                   Margin="0,0,15,0" 
+                   FontWeight="SemiBold"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Content="Адреси" Name="BreadcrumbAddresses" Click="BreadcrumbAddresses_Click" Foreground="#3498DB" Cursor="Hand" Background="Transparent" BorderThickness="0" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="arr1" Text=" › " VerticalAlignment="Center" Foreground="#ABB2B9" FontSize="16"/>
+                            <Button Content="Блокове" Name="BreadcrumbBlocks" Click="BreadcrumbBlocks_Click" Foreground="#3498DB" Background="Transparent" BorderThickness="0"/>
+                            <TextBlock x:Name="arr2" Text=" › " VerticalAlignment="Center" Foreground="#ABB2B9" FontSize="16"/>
+                            <Button Content="Входове" Name="BreadcrumbEntrances" Click="BreadcrumbEntrances_Click" Foreground="#3498DB" Background="Transparent" BorderThickness="0"/>
+                            <TextBlock x:Name="arr3" Text=" › " VerticalAlignment="Center" Foreground="#ABB2B9" FontSize="16"/>
+                            <Button Content="Апартаменти" Name="BreadcrumbApartments" Click="BreadcrumbApartments_Click" Foreground="#3498DB" Background="Transparent" BorderThickness="0"/>
+                        </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,5,0">
+                            <Border Background="Transparent" Padding="2">
+                                <StackPanel Orientation="Horizontal">
+
+                                    <Button x:Name="MarkInGreenButton" 
+                    Content="✓"  
+                    Style="{StaticResource SmallButtonStyle}" 
+                    ToolTip="Маркирай" 
+                    Width="26" Height="26" 
+                    Background="#27AE60" 
+                    Foreground="White" 
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Cursor="Hand"
+                    Click="MarkInGreenButton_Click">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="13"/>
+                                            </Style>
+                                        </Button.Resources>
+                                    </Button>
+
+                                    <Rectangle Width="1" Height="14" Fill="#D1D5DB" Margin="8,0" VerticalAlignment="Center"/>
+
+                                    <Button x:Name="UnmarkButton" 
+                    Style="{StaticResource SmallButtonStyle}" 
+                    Content="✕" 
+                    ToolTip="Изчисти" 
+                    Width="26" Height="26" 
+                    Background="#E74C3C" 
+                    Foreground="White" 
+                    FontSize="12"
+                    FontWeight="Bold"
+                    Cursor="Hand"
+                    Click="UnmarkButton_Click">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="13"/>
+                                            </Style>
+                                        </Button.Resources>
+                                    </Button>
+
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" BorderBrush="#D0D7DE" BorderThickness="1" ClipToBounds="True">
+                        <Grid>
+                            <Grid x:Name="WatermarkLayer" Panel.ZIndex="10" Visibility="Visible" Background="#CCFFFFFF">
+                                <Image x:Name="WatermarkImage" Source="pack://application:,,,/Resources/logo.png" Opacity="0.1" Width="250" RenderTransformOrigin="0.5,0.5">
+                                    <Image.RenderTransform>
+                                        <RotateTransform x:Name="WatermarkRotate"/>
+                                    </Image.RenderTransform>
+                                </Image>
+                            </Grid>
+
+                            <Grid x:Name="ContentLayer">
+                                <Grid.Resources>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="DataGridCell">
+                                                    <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                                                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                    </Style>
+
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                        <Setter Property="Padding" Value="10,5" />
+                                    </Style>
+                                </Grid.Resources>
+
+                                <DataGrid x:Name="AddressesDataGrid" Visibility="Visible" 
+              ItemsSource="{Binding Addresses}" 
+              MouseDoubleClick="AddressesDataGrid_MouseDoubleClick" 
+              SelectionChanged="AddressesDataGrid_SelectionChanged"  
+              AutoGenerateColumns="False" SelectionMode="Single" IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Адрес" Binding="{Binding Street}" Width="*"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <DataGrid x:Name="BlocksDataGrid" Visibility="Hidden" 
+              ItemsSource="{Binding Blocks}" 
+              MouseDoubleClick="BlocksDataGrid_MouseDoubleClick" 
+              SelectionChanged="BlockDataGrid_SelectionChanged"   
+              AutoGenerateColumns="False" SelectionMode="Single" IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Блок" Binding="{Binding BlockName}" Width="*"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <DataGrid x:Name="EntrancesDataGrid" Visibility="Hidden" 
+              MouseDoubleClick="EntrancesDataGrid_MouseDoubleClick" 
+              SelectionChanged="EntranceDataGrid_SelectionChanged"  
+              AutoGenerateColumns="False" SelectionMode="Single" IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Вход" Binding="{Binding EntranceName}" Width="*"/>
+                                        <DataGridTextColumn Header="Дължима сума (Общо)" Binding="{Binding TotalAmount}" Width="200"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <DataGrid x:Name="ApartmentsDataGrid" Visibility="Hidden" 
+              MouseDoubleClick="ApartmentsDataGrid_MouseDoubleClick" 
+              SelectionChanged="ApartmentsDataGrid_SelectionChanged"  
+              AutoGenerateColumns="False" SelectionMode="Single" IsReadOnly="True">
+                                    <DataGrid.RowStyle>
+                                        <Style TargetType="DataGridRow">
+                                            <Setter Property="Background" Value="{Binding PaymentStatusColor}"/>
+                                        </Style>
+                                    </DataGrid.RowStyle>
+                                </DataGrid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
         </DockPanel>
     </Grid>
 </Window>

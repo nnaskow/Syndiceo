@@ -5,33 +5,67 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Syndiceo"
         mc:Ignorable="d"
-        Title="Избиране на дата"
+        Title="Избор на период"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        WindowStyle="ToolWindow"
-        Height="172"
-        Width="400"
+        WindowStyle="None" 
+        AllowsTransparency="True"
+        Background="Transparent"
+        Height="243" 
+        Width="418"
         Topmost="True"
         ShowInTaskbar="False"
-        Background="#FFFAFAFA" Loaded="Window_Loaded">
+        Loaded="Window_Loaded">
 
-    <StackPanel Margin="10" VerticalAlignment="Center" HorizontalAlignment="Center">
-        <!-- Label за избор на дата -->
-        <Label Content="Изберете дата:" 
-               FontSize="16" 
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center" FontFamily="Calibri" FontWeight="Bold"/>
+    <Border Margin="15,15,-19,10" CornerRadius="15" Background="White" BorderBrush="#E2E8F0" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="2" Color="#64748B"/>
+        </Border.Effect>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <!-- Месец -->
-            <ComboBox x:Name="MonthComboBox" Width="130" Margin="0,0,10,0" Style="{StaticResource RoundComboBox}">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-            </ComboBox>
+            <StackPanel Grid.Row="0" Margin="0,0,0,15">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="📅" FontSize="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Избор на дата" 
+                               FontSize="16" FontWeight="Bold" 
+                               Foreground="#1E293B" VerticalAlignment="Center"
+                               FontFamily="Segoe UI"/>
+                </StackPanel>
+                <Separator Margin="0,10,0,0" Background="#F1F5F9" Height="1"/>
+            </StackPanel>
 
-            <!-- Година -->
-            <ComboBox x:Name="YearComboBox" Width="80" Style="{StaticResource RoundComboBox}" Height="30"/>
-        </StackPanel>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Margin="0,0,10,0">
+                    <TextBlock Text="Месец" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" Margin="5,0,0,3"/>
+                    <ComboBox x:Name="MonthComboBox" 
+                              Width="150" Height="38" 
+                              Style="{StaticResource RoundComboBox}"
+                              VerticalContentAlignment="Center" Padding="10,0"/>
+                </StackPanel>
 
-        <Button Content="Избиране" Style="{StaticResource MainButtonStyle}" Name="ChooseDateButton" Click="ChooseDateButton_Click" Margin="0,5,0,0"/>
-    </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Година" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" Margin="5,0,0,3"/>
+                    <ComboBox x:Name="YearComboBox" 
+                              Width="100" Height="38" 
+                              Style="{StaticResource RoundComboBox}"
+                              VerticalContentAlignment="Center" Padding="10,0"/>
+                </StackPanel>
+            </StackPanel>
+
+            <Button Grid.Row="2" x:Name="ChooseDateButton" 
+                    Content="Избери период" 
+                    Style="{StaticResource MainButtonStyle}" 
+                    Click="ChooseDateButton_Click" 
+                    Height="42" Width="180"
+                    Margin="0,15,0,0"
+                    Cursor="Hand"
+                    FontWeight="SemiBold"/>
+        </Grid>
+    </Border>
 </Window>

@@ -47,9 +47,11 @@ public partial class SyndiceoDBContext :  IdentityDbContext<SyndiceoWebUser>
 
     public virtual DbSet<TotalSum> TotalSums { get; set; }
 
+    public virtual DbSet<Report> Reports { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=(LocalDB)\\MSSQLLocalDB;Initial Catalog=SyndiceoDB;Integrated Security=True; TrustServerCertificate=true;");
+        => optionsBuilder.UseSqlServer("Server=db45189.public.databaseasp.net; Database=db45189; User Id=db45189; Password=qJ!5@f8Sd9H_; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -71,6 +73,11 @@ public partial class SyndiceoDBContext :  IdentityDbContext<SyndiceoWebUser>
 
             entity.Property(e => e.ApartmentId).HasColumnName("ApartmentID");
             entity.Property(e => e.EntranceId).HasColumnName("EntranceID");
+
+            entity.HasOne(d => d.User)
+          .WithMany() 
+          .HasForeignKey(d => d.UserId)
+          .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(d => d.Entrance).WithMany(p => p.Apartments)
                 .HasForeignKey(d => d.EntranceId)
@@ -217,6 +224,10 @@ public partial class SyndiceoDBContext :  IdentityDbContext<SyndiceoWebUser>
                 .IsRequired()
                 .HasMaxLength(50)
                 .HasColumnName("person_name");
+            entity.Property(e => e.SecurityQuestion)
+  .HasColumnName("securityquestion");
+            entity.Property(e => e.SecurityAnswerHash)
+               .HasColumnName("securityanswer_hash");
             entity.Property(e => e.Username)
                 .IsRequired()
                 .HasMaxLength(100)
@@ -256,9 +267,28 @@ public partial class SyndiceoDBContext :  IdentityDbContext<SyndiceoWebUser>
 
             entity.ToTable("TotalSum");
 
-            entity.HasOne(d => d.Entrance).WithMany(p => p.TotalSums)
+            entity.HasOne(d => d.Entrance)
+         .WithMany(p => p.TotalSums)
+         .HasForeignKey(d => d.EntranceId)
+         .HasConstraintName("FK_TotalSum_Entrances");
+        });
+
+        modelBuilder.Entity<Report>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).IsRequired();
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.User)
+                .WithMany() 
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.Entrance)
+                .WithMany()
                 .HasForeignKey(d => d.EntranceId)
-                .HasConstraintName("FK__TotalSum__Entran__756D6ECB");
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         OnModelCreatingPartial(modelBuilder);

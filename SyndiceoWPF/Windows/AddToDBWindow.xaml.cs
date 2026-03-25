@@ -1,18 +1,20 @@
-﻿
+﻿using Syndiceo.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using Syndiceo.Models;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Syndiceo.Data.Models;
-using Syndiceo.Data;
+
 namespace Syndiceo.Windows
 {
     public partial class AddToDBWindow : Window
     {
-        public AddToDBWindow()
+        public AddToDBWindow(string street = "", string blockName = "", string entranceName = "")
         {
             InitializeComponent();
+
+            AddressComboBox.Text = street;
+            BlockComboBox.Text = blockName;
+            EntranceComboBox.Text = entranceName;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -20,7 +22,6 @@ namespace Syndiceo.Windows
             string addressText = AddressComboBox.Text.Trim();
             string blockText = BlockComboBox.Text.Trim();
             string entranceText = EntranceComboBox.Text.Trim();
-            int apartmentText = int.Parse(ApartmentNumberTextBox.Text);
             string ownerName = ownerNameTxtBox.Text.Trim();
             string ownerPhone = ownerPhoneNumberTxtBox.Text.Trim();
             string noteText = NoteTextBox.Text.Trim();
@@ -33,16 +34,14 @@ namespace Syndiceo.Windows
 
             using (var context = new SyndiceoDBContext())
             {
-                // --- Адрес ---
                 var address = context.Addresses.FirstOrDefault(a => a.Street == addressText);
                 if (address == null)
                 {
                     address = new Address { Street = addressText };
-                    context.Add(address);
+                    context.Addresses.Add(address);
                     context.SaveChanges();
                 }
 
-                // --- Блок ---
                 Block block = null;
                 if (!string.IsNullOrWhiteSpace(blockText))
                 {
@@ -55,7 +54,6 @@ namespace Syndiceo.Windows
                     }
                 }
 
-                // --- Вход ---
                 Entrance entrance = null;
                 if (!string.IsNullOrWhiteSpace(entranceText) && block != null)
                 {
@@ -68,37 +66,35 @@ namespace Syndiceo.Windows
                     }
                 }
 
-                // --- Апартамент ---
-                // --- Апартамент ---
                 Apartment apartment = null;
-                if ( apartmentText !=null && entrance != null)
+                string aptInput = ApartmentNumberTextBox.Text.Trim();
+
+                if (!string.IsNullOrWhiteSpace(aptInput) && entrance != null)
                 {
+                    if (!int.TryParse(aptInput, out int apartmentNumber))
+                    {
+                        MessageBox.Show("Номерът на апартамента трябва да бъде число!", "Грешка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
                     apartment = context.Apartments
-                        .FirstOrDefault(a => a.ApartmentNumber == apartmentText && a.EntranceId == entrance.EntranceId);
+                        .FirstOrDefault(a => a.ApartmentNumber == apartmentNumber && a.EntranceId == entrance.EntranceId);
 
                     if (apartment == null)
                     {
-                        // безопасно парсване на броя живущи
                         int residentCount = 0;
                         if (!string.IsNullOrWhiteSpace(ResidentsCountTextBox.Text))
                         {
                             if (!int.TryParse(ResidentsCountTextBox.Text, out residentCount))
                             {
-                                MessageBox.Show("Моля, въведете валиден брой живущи (число).",
-                                    "Грешка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                return;
-                            }
-                            if (residentCount < 0)
-                            {
-                                MessageBox.Show("Броят живущи не може да бъде отрицателен.",
-                                    "Грешка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                MessageBox.Show("Моля, въведете валиден брой живущи (число).", "Грешка", MessageBoxButton.OK, MessageBoxImage.Warning);
                                 return;
                             }
                         }
 
                         apartment = new Apartment
                         {
-                            ApartmentNumber = apartmentText,
+                            ApartmentNumber = apartmentNumber,
                             Note = noteText,
                             IsMarked = false,
                             EntranceId = entrance.EntranceId,
@@ -110,8 +106,7 @@ namespace Syndiceo.Windows
                     }
                 }
 
-                // --- Собственик ---
-                if (!string.IsNullOrWhiteSpace(ownerName) && !string.IsNullOrWhiteSpace(ownerPhone) && apartment != null)
+                if (!string.IsNullOrWhiteSpace(ownerName) && apartment != null)
                 {
                     var ownerExists = context.Owners.Any(o => o.ApartmentId == apartment.ApartmentId &&
                                                                (o.OwnerName == ownerName || o.PhoneNumber == ownerPhone));
@@ -129,17 +124,8 @@ namespace Syndiceo.Windows
                 }
             }
 
-            // --- Изчистване на полетата ---
-            AddressComboBox.Text = "";
-            BlockComboBox.Text = "";
-            EntranceComboBox.Text = "";
-            ApartmentNumberTextBox.Clear();
-            ownerNameTxtBox.Clear();
-            ownerPhoneNumberTxtBox.Clear();
-            NoteTextBox.Clear();
             this.Close();
         }
-
         private void AddressComboBox_DropDownOpened(object sender, EventArgs e)
         {
             using var context = new SyndiceoDBContext();
@@ -191,6 +177,7 @@ namespace Syndiceo.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+
         }
       
     }

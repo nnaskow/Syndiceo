@@ -1,4 +1,5 @@
-﻿using OfficeOpenXml.Drawing.Slicer.Style;
+﻿using Syndiceo.Data.Models;
+using OfficeOpenXml.Drawing.Slicer.Style;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,9 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.IO;
-using Syndiceo.Models;
-using Syndiceo.Data.Models;
-using Syndiceo.Data;
+
 namespace Syndiceo.Windows
 {
     /// <summary>
@@ -31,6 +30,7 @@ namespace Syndiceo.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+
             if (Properties.Settings.Default.ChangeName == true)
             {
                 ChangeNameGrid.Visibility = Visibility.Visible;

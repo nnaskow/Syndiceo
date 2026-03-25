@@ -1,0 +1,66 @@
+﻿@using System.Linq
+@{
+    ViewData["Title"] = "Одобряване на потребители";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary mb-0">Нови регистрации (Акаунти)</h2>
+        <a asp-action="AdminDashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Назад
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60%">Потребител</th>
+                        <th style="width: 40%" class="text-end">Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.Pendings == 0)
+                    {
+                        <tr>
+                            <td colspan="2" class="text-center py-5 text-muted">
+                                <i class="bi bi-people mb-2 d-block" style="font-size: 2rem;"></i>
+                                Няма чакащи потребители за одобрение.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">@user.Email</div>
+                                    <small class="text-muted text-uppercase" style="font-size: 10px;">ID: @user.Id</small>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <form asp-action="ApproveUserAccount" method="post">
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="btn btn-sm btn-success px-3 shadow-sm">
+                                                <i class="bi bi-check-lg"></i>✅ Одобри
+                                            </button>
+                                        </form>
+
+                                        <form asp-action="RejectUser" method="post" onsubmit="return confirm('Сигурни ли сте, че искате да ИЗТРИЕТЕ този потребител?');">
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger px-3">
+                                                <i class="bi bi-trash"></i>🗑️ Изтрий
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

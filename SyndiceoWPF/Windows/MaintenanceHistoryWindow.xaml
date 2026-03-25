@@ -5,119 +5,132 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Syndiceo"
         mc:Ignorable="d"
-        Title="Ремонтни дейности"
-        MinWidth="600" MinHeight="400"
-        Width="800" Height="468"
+        Title="Ремонтни дейности и поддръжка"
+        MinWidth="850" MinHeight="500"
+        Width="950" Height="550"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="CanMinimize"
-        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
-        FontFamily="Calibri"
-        Loaded="Window_Loaded" Background="{StaticResource AppBackground}">
+        ResizeMode="CanResize"
+        Icon="pack://application:,,,/Resources/Ico/logo256.ico"
+        Loaded="Window_Loaded" Background="#F8FAFC">
 
-    <Grid Margin="20" Background="{StaticResource AppBackground}">
-        <!-- Watermark -->
-        <Image Source="/Resources/logo.png"
-               Opacity="0.05"
-               Stretch="Uniform"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               Panel.ZIndex="0"/>
-
-        <!-- Основно съдържание -->
-        <Grid>
+    <Grid Margin="0">
+        <Grid Margin="25" Panel.ZIndex="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="320"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Лява част – добавяне на ремонт -->
-            <Border CornerRadius="10" Padding="20" BorderBrush="#DDD" BorderThickness="1" Background="Transparent" Margin="0,0,10,0">
+            <Border Grid.Column="0" CornerRadius="15" Background="White" Padding="20" Margin="0,0,20,0" 
+                    BorderBrush="#E2E8F0" BorderThickness="1" VerticalAlignment="Stretch">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.05" ShadowDepth="2" Color="#64748B"/>
+                </Border.Effect>
+
                 <StackPanel>
-                    <TextBlock Text="Добавяне на ремонтна дейност"
-                               FontFamily="Calibri" FontWeight="Bold" FontSize="18"
-                               HorizontalAlignment="Center" Foreground="#333"/>
-                    <Separator Margin="0,10,0,10"/>
-
-                    <!-- Описание -->
-                    <StackPanel Margin="0,5,0,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,5">
-                            <TextBlock Text="🔧" FontSize="16" Height="20"/>
-                            <Label Content="Описание:" FontWeight="Bold" FontSize="14" Width="75"/>
-                        </StackPanel>
-                        <TextBox x:Name="DescriptionTextBox" 
-                                 Style="{StaticResource RoundedTextBox}" 
-                                 FontFamily="Calibri" Height="60" 
-                                 TextWrapping="Wrap" AcceptsReturn="True"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                        <TextBlock Text="🛠️" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Нов ремонт" 
+                                   FontFamily="Segoe UI" FontWeight="Bold" FontSize="18" 
+                                   Foreground="#1E293B" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <!-- Сума -->
-                    <StackPanel Margin="0,10,0,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,5">
-                            <TextBlock Text="💰" FontSize="16" Height="19"/>
-                            <Label Content="Сума:" FontWeight="Bold" FontSize="14"/>
-                        </StackPanel>
-                        <TextBox x:Name="AmountTextBox"
-                                 Style="{StaticResource RoundedTextBox}" 
-                                 FontFamily="Calibri" Height="30"/>
-                    </StackPanel>
+                    <Separator Margin="0,0,0,20" Background="#F1F5F9" Height="1"/>
 
-                    <!-- Дата -->
-                    <StackPanel Margin="0,10,0,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,5">
-                            <TextBlock Text="📅" FontSize="16" Margin="0,0,5,0"/>
-                            <Label Content="Дата:" FontWeight="Bold" FontSize="14"/>
-                        </StackPanel>
-                        <DatePicker x:Name="DatePicker"
-                                    FontFamily="Calibri" 
-                                    Height="30" FontWeight="Bold">
-                            <DatePicker.Resources>
-                                <!-- Закръглени краища -->
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="8"/>
-                                    <Setter Property="Background" Value="#E3EBF5"/>
-                                </Style>
+                    <Label Content="Описание на дейността:" FontWeight="SemiBold" FontSize="13" Foreground="#475569" Margin="0,0,0,5"/>
+                    <TextBox x:Name="DescriptionTextBox" 
+                             Style="{StaticResource RoundedTextBox}" 
+                             Height="80" Margin="0,0,0,15" Padding="10"
+                             TextWrapping="Wrap" AcceptsReturn="True" FontSize="13"
+                             VerticalContentAlignment="Top"/>
 
-                                <!-- Placeholder чрез DatePickerTextBox -->
-                                <Style TargetType="DatePickerTextBox">
-                                    <Setter Property="Foreground" Value="#111111"/>
-                                    <Setter Property="Background" Value="White"/>
-                                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
-                                    <Setter Property="Text" Value="Изберете дата"/>
-                                </Style>
-                            </DatePicker.Resources>
-                        </DatePicker>
-                    </StackPanel>
+                    <Label Content="Обща сума (€):" FontWeight="SemiBold" FontSize="13" Foreground="#475569" Margin="0,0,0,5"/>
+                    <TextBox x:Name="AmountTextBox"
+                             Style="{StaticResource RoundedTextBox}" 
+                             Height="38" Margin="0,0,0,15" Padding="10,0"
+                             VerticalContentAlignment="Center" FontSize="14" FontWeight="Bold"/>
+
+                    <Label Content="Дата на извършване:" FontWeight="SemiBold" FontSize="13" Foreground="#475569" Margin="0,0,0,5"/>
+                    <DatePicker x:Name="DatePicker" Height="38" Margin="0,0,0,25" VerticalContentAlignment="Center">
+                        <DatePicker.Resources>
+
+                            <!-- Закръглени краища -->
+
+                            <Style TargetType="Border">
+
+                                <Setter Property="CornerRadius" Value="8"/>
+
+                                <Setter Property="Background" Value="#E3EBF5"/>
+
+                            </Style>
+
+
+
+                            <!-- Placeholder чрез DatePickerTextBox -->
+
+                            <Style TargetType="DatePickerTextBox">
+
+                                <Setter Property="Foreground" Value="#111111"/>
+
+                                <Setter Property="Background" Value="White"/>
+
+                                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+
+                                <Setter Property="Text" Value="Изберете дата"/>
+
+                            </Style>
+
+                        </DatePicker.Resources>
+                    </DatePicker>
 
                     <Button Style="{StaticResource MainButtonStyle}" 
-                            Content="💾 Запази ремонта" 
-                            Width="180" Height="45" 
-                            HorizontalAlignment="Center" Margin="0,20,0,0" Click="Button_Click"
-                            />
+                            Content="💾 Запази записа" 
+                            Height="45" FontWeight="Bold"
+                            HorizontalAlignment="Stretch" Click="Button_Click"
+                            Cursor="Hand"/>
                 </StackPanel>
             </Border>
 
-            <!-- Дясна част – списък с ремонти -->
-            <Border Grid.Column="1" CornerRadius="10" Padding="20" BorderBrush="#DDD" BorderThickness="1" Background="Transparent">
-                <StackPanel>
-                    <TextBlock Text="История на ремонтите"
-                               FontFamily="Calibri" FontWeight="Bold" FontSize="18"
-                               HorizontalAlignment="Center" Foreground="#333"/>
-                    <Separator Margin="0,10,0,10"/>
+            <Border Grid.Column="1" CornerRadius="15" Background="White" Padding="20" 
+                    BorderBrush="#E2E8F0" BorderThickness="1">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.05" ShadowDepth="2" Color="#64748B"/>
+                </Border.Effect>
+
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,15">
+                        <TextBlock Text="📋" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="История на дейностите" 
+                                   FontFamily="Segoe UI" FontWeight="Bold" FontSize="18" 
+                                   Foreground="#1E293B" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Separator DockPanel.Dock="Top" Margin="0,0,0,15" Background="#F1F5F9" Height="1"/>
 
                     <DataGrid x:Name="MaintenanceDataGrid" 
                               AutoGenerateColumns="False" 
                               CanUserAddRows="False" 
                               IsReadOnly="True"
-                              FontFamily="Calibri"
-                              RowHeaderWidth="0">
+                              RowHeaderWidth="0"
+                              GridLinesVisibility="None"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              FontSize="13">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="*"/>
-                            <DataGridTextColumn Header="Сума" Binding="{Binding Price}" Width="100"/>
-                            <DataGridTextColumn Header="Дата" Binding="{Binding DateOfMaintenance, StringFormat=d}" Width="120"/>
+                            <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextWrapping" Value="Wrap"/>
+                                        <Setter Property="Padding" Value="5"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Сума" Binding="{Binding Price, StringFormat={}{0:N2} лв.}" Width="100"/>
+                            <DataGridTextColumn Header="Дата" Binding="{Binding DateOfMaintenance, StringFormat=d}" Width="110"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                </StackPanel>
+                </DockPanel>
             </Border>
         </Grid>
     </Grid>

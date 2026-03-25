@@ -1,12 +1,11 @@
-﻿using DocumentFormat.OpenXml.Office2010.PowerPoint;
-using Syndiceo.Models;
-using Syndiceo.Utilities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using Syndiceo.Data.Models;
-using Syndiceo.Data;
+using Syndiceo.Utilities;
+using DocumentFormat.OpenXml.Office2010.PowerPoint;
+
 namespace Syndiceo.Windows
 {
     public partial class LastTransactionsWindow : Window

@@ -8,27 +8,17 @@
         Title="Образци" Height="250" Width="564"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanMinimize"
-        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
+        Icon="pack://application:,,,/Resources/Ico/logo256.ico"
         FontFamily="Calibri" Loaded="Window_Loaded" Focusable="True" Background="{StaticResource AppBackground}">
 
     <Grid Margin="20" Background="{StaticResource AppBackground}">
-        <!-- Watermark -->
-        <Image Source="/Resources/logo.png"
-               Opacity="0.05"
-               Stretch="Uniform"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               Panel.ZIndex="0"/>
 
-        <!-- Основно съдържание -->
         <Border CornerRadius="10" Padding="20" BorderBrush="#DDD" BorderThickness="1" Background="Transparent" VerticalAlignment="Center">
             <StackPanel>
                 <TextBlock Text="Напишете име на образеца" Name="templateLabel"
                            FontFamily="Calibri" FontWeight="Bold" FontSize="18" 
                            HorizontalAlignment="Center" Foreground="#333"/>
                 <Separator Margin="0,10,0,10"/>
-
-                <!-- Път до избраната папка -->
                 <TextBox x:Name="TemplateNameTextBox"
                          Style="{StaticResource RoundedTextBox}"
                          FontFamily="Calibri"
@@ -36,7 +26,6 @@
                          IsReadOnly="True"
                          Margin="0,0,0,10"/>
 
-                <!-- Бутон за избор -->
                 <Button Style="{StaticResource MainButtonStyle}" 
                         Content="Запиши" 
                         Width="180" Height="45" 

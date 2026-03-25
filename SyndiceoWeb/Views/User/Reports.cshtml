@@ -1,46 +1,70 @@
-﻿@model List<SyndiceoWeb.Controllers.UserController.Report>
+﻿@model IEnumerable<Syndiceo.Data.Models.Report>
 
-@{
-    ViewData["Title"] = "Моите сигнали";
-}
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm p-4">
+                <h4 class="fw-bold mb-3">📢 Подай сигнал</h4>
+                <p class="text-muted small">Опишете проблема, който сте забелязали в общите части на сградата.</p>
+                
+                <form asp-action="SubmitReport" method="post">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">За кой вход се отнася?</label>
+                        <select name="entranceId" class="form-select" required>
+                            @foreach (var ent in ViewBag.MyEntrances)
+                            {
+                                <option value="@ent.EntranceId">Вход @ent.EntranceName</option>
+                            }
+                        </select>
+                    </div>
 
-<div class="container py-5">
-    <h2>Моите сигнали</h2>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Тема</label>
+                        <input type="text" name="title" class="form-control" placeholder="напр. Изгоряла крушка" required />
+                    </div>
 
-    @if (Model != null && Model.Any())
-    {
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Дата</th>
-                    <th>Тип сигнал</th>
-                    <th>Описание</th>
-                    <th>Статус</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var report in Model)
-                {
-                    <tr>
-                        <td>@report.Date.ToShortDateString()</td>
-                        <td>@report.Type</td>
-                        <td>@report.Description</td>
-                        <td>@report.Status</td>
-                        <td>
-                            <a asp-controller="User" asp-action="ReportDetails" asp-route-id="@report.Id" class="btn btn-sm btn-primary">
-                                Детайли
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <p class="text-muted">Все още няма подадени сигнали.</p>
-    }
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Описание</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="Опишете детайлно проблема..." required></textarea>
+                    </div>
 
-    <a asp-controller="User" asp-action="AddReport" class="btn btn-success mt-3">Добави нов сигнал</a>
+                    <button type="submit" class="btn btn-danger w-100 py-2 shadow-sm">
+                        Изпрати сигнал
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <h4 class="fw-bold mb-3">📜 Моите сигнали</h4>
+            
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 bg-white rounded shadow-sm">
+                    <span class="text-muted">Все още не сте подавали сигнали.</span>
+                </div>
+            }
+            
+            @foreach (var report in Model)
+            {
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="fw-bold mb-1">@report.Title</h5>
+                            @if (report.IsResolved)
+                            {
+                                <span class="badge bg-success-subtle text-success border border-success">Решен</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning-subtle text-warning border border-warning">В процес</span>
+                            }
+                        </div>
+                        <p class="text-muted small mb-2">Изпратен на: @report.CreatedAt.ToString("dd.MM.yyyy HH:mm") | Вход: @report.Entrance.EntranceName</p>
+                        <p class="mb-0 card-text">@report.Description</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 </div>

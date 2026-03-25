@@ -5,71 +5,72 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Syndiceo"
         mc:Ignorable="d"
-        Title="Плащания"
+        Title="История на плащанията"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        WindowStyle="ToolWindow"
+        WindowStyle="None" 
+        AllowsTransparency="True"
+        Background="Transparent"
         ShowInTaskbar="False"
-        Height="380"
-        Width="360"
-        MinWidth="320"
-        MinHeight="320"
-        Background="{StaticResource AppBackground}"
-        FontFamily="Calibri"
-        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
+        Height="420"
+        Width="380"
         Topmost="True"
         Closing="Window_Closing">
 
-    <Border Margin="12" Padding="14" CornerRadius="12" Background="White" BorderBrush="#DDD" BorderThickness="1">
-        <Grid>
+    <Border Margin="15" CornerRadius="15" Background="White" BorderBrush="#E2E8F0" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" Opacity="0.1" ShadowDepth="2" Color="#64748B"/>
+        </Border.Effect>
+
+        <Grid Margin="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- 🔹 Заглавие -->
-            <TextBlock Text="Последни плащания"
-                       FontSize="20"
-                       FontWeight="Bold"
-                       Foreground="#333"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,10"/>
+            <StackPanel Grid.Row="0" Margin="0,0,0,15">
+                <TextBlock Text="💳 Последни плащания"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="#1E293B"
+                           HorizontalAlignment="Center"
+                           FontFamily="Segoe UI"/>
+                <Separator Margin="0,10,0,0" Background="#F1F5F9" Height="1"/>
+            </StackPanel>
 
-            <!-- 🔹 Списък с плащания -->
             <ListView x:Name="TransactionsList"
                       Grid.Row="1"
-                      BorderBrush="#E0E0E0"
-                      BorderThickness="1"
-                      Margin="0,0,0,12"
-                      Background="#FFF"
+                      BorderThickness="0"
+                      Background="Transparent"
                       ScrollViewer.VerticalScrollBarVisibility="Auto"
-                      SelectionMode="Single">
+                      SelectionMode="Single"
+                      Margin="0,5">
 
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
-                        <Setter Property="Margin" Value="0,2"/>
-                        <Setter Property="Padding" Value="6,4"/>
-                        <Setter Property="Background" Value="#FAFAFA"/>
-                        <Setter Property="Cursor" Value="Hand"/>
+                        <Setter Property="Margin" Value="0,4"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Background" Value="#F8FAFC"/>
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListViewItem">
                                     <Border x:Name="Bd"
-                                            CornerRadius="6"
+                                            CornerRadius="10"
                                             BorderThickness="1"
-                                            BorderBrush="#DDD"
-                                            Background="{TemplateBinding Background}">
-                                        <ContentPresenter Margin="6,3"/>
+                                            BorderBrush="#F1F5F9"
+                                            Background="{TemplateBinding Background}"
+                                            Padding="10,8">
+                                        <ContentPresenter />
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="#F3F6FF"/>
-                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#C2D2FF"/>
+                                            <Setter TargetName="Bd" Property="Background" Value="#F1F5F9"/>
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#E2E8F0"/>
                                         </Trigger>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="#E6EEFF"/>
-                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#7BA0FF"/>
+                                            <Setter TargetName="Bd" Property="Background" Value="#EFF6FF"/>
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#DBEAFE"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -80,67 +81,67 @@
 
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Margin="2">
+                        <Grid>
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- 🔸 Сума -->
-                            <TextBlock Text="{Binding Amount, StringFormat='{}{0:F2} лв.'}"
-                                       FontSize="16"
-                                       FontFamily="Consolas"
-                                       VerticalAlignment="Center"
-                                       Foreground="#333"
-                                       Margin="8,0"/>
+                            <TextBlock Text="💰" FontSize="14" VerticalAlignment="Center" Margin="5,0,10,0"/>
 
-                            <!-- 🔸 Бутон за изтриване -->
-                            <Button Grid.Column="1"
-                                    Width="34"
-                                    Height="40"
-                                    Margin="6,0,6,0"
-                                    FontSize="16"
-                                    ToolTip="Премахни плащането"
+                            <TextBlock Grid.Column="1" 
+                                       Text="{Binding Amount, StringFormat='{}{0:N2} лв.'}"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       FontFamily="Segoe UI"
+                                       VerticalAlignment="Center"
+                                       Foreground="#334155"/>
+
+                            <Button Grid.Column="2"
+                                    Width="32"
+                                    Height="32"
+                                    Content="✕"
+                                    FontSize="12"
+                                    FontWeight="Bold"
+                                    ToolTip="Премахни"
                                     Click="DeleteTransaction_Click"
-                                    Background="#FFF5F5F5"
-                                    BorderBrush="#DDD"
-                                    BorderThickness="1"
-                                    Content="🗑️"
-                                    Cursor="Hand">
+                                    Cursor="Hand"
+                                    Background="Transparent"
+                                    Foreground="#94A3B8"
+                                    BorderThickness="0">
                                 <Button.Style>
-                                    <Style TargetType="Button" BasedOn="{StaticResource MainButtonStyle}">
-                                        <Setter Property="Background" Value="#FFF5F5F5"/>
-                                        <Setter Property="Foreground" Value="#444"/>
-                                        <Setter Property="BorderBrush" Value="#CCC"/>
+                                    <Style TargetType="Button">
                                         <Style.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#FFE8E8E8"/>
-                                                <Setter Property="BorderBrush" Value="#B0B0B0"/>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter Property="Background" Value="#FFDDDDDD"/>
-                                                <Setter Property="BorderBrush" Value="#999"/>
+                                                <Setter Property="Foreground" Value="#E74C3C"/>
+                                                <Setter Property="Background" Value="#FEE2E2"/>
                                             </Trigger>
                                         </Style.Triggers>
                                     </Style>
                                 </Button.Style>
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="16"/>
+                                    </Style>
+                                </Button.Resources>
                             </Button>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
 
-            <!-- 🔹 Долен бутон -->
-            <Button Content="Затвори"
-                    Grid.Row="2"
-                    Width="130"
-                    Height="38"
-                    FontSize="15"
+            <Button Grid.Row="2"
+                    Content="Затвори"
+                    Width="140"
+                    Height="40"
+                    FontSize="14"
                     FontWeight="SemiBold"
                     HorizontalAlignment="Center"
-                    Margin="0,5,0,0"
+                    Margin="0,15,0,0"
                     Style="{StaticResource MainButtonStyle}"
-                    Click="Close_Click"/>
+                    Click="Close_Click"
+                    Cursor="Hand"/>
         </Grid>
     </Border>
 </Window>

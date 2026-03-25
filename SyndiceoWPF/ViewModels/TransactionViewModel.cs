@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Syndiceo.Models
+namespace Syndiceo.ViewModels
 {
     public class TransactionViewModel
     {

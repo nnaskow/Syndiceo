@@ -1,13 +1,12 @@
-﻿
+﻿using Syndiceo.Data.Models;
 using Microsoft.IdentityModel.Tokens;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Syndiceo.Models;
 using static Syndiceo.Windows.ManagementWindow;
 using Syndiceo.Data.Models;
-using Syndiceo.Data;
+
 namespace Syndiceo.Windows
 {
     public partial class EditWindow : Window
@@ -47,6 +46,7 @@ namespace Syndiceo.Windows
 
         private void LoadAndSetEditable()
         {
+            // Зареждаме всички полета от ViewModel
             AdressTextBox.Text = _addressVM?.Street ?? "";
             BlockTextBox.Text = _blockVM?.BlockName ?? "";
             EntranceTextBox.Text = _entranceVM?.Name ?? "";
@@ -63,6 +63,7 @@ namespace Syndiceo.Windows
             SetReadOnly(ownerNameTxtBox);
             SetReadOnly(ownerPhoneNumberTxtBox);
 
+            // Определяме кой тип е editable
             if (_apartmentVM != null)
             {
                 SetEditable(ApartmentNumberTextBox);
@@ -91,6 +92,7 @@ namespace Syndiceo.Windows
             {
                 if (_apartmentVM != null)
                 {
+                    // Обновяване на ViewModel с полетата
                     _apartmentVM.ApartmentNumber = int.Parse(ApartmentNumberTextBox.Text);
                     _apartmentVM.OwnerName = ownerNameTxtBox.Text.Trim();
                     _apartmentVM.OwnerPhone = ownerPhoneNumberTxtBox.Text.Trim();
@@ -214,6 +216,7 @@ namespace Syndiceo.Windows
             if (apartment == null)
                 return;
 
+            // Взимаме стойностите от TextBox
             string nameText = string.IsNullOrWhiteSpace(ownerNameTxtBox.Text) || ownerNameTxtBox.Text == "Няма данни"
                 ? "Няма данни"
                 : ownerNameTxtBox.Text.Trim();
@@ -226,15 +229,18 @@ namespace Syndiceo.Windows
             {
                 using (var context = new SyndiceoDBContext())
                 {
+                    // Проверка за съществуващ Owner
                     var owner = context.Owners.FirstOrDefault(o => o.ApartmentId == apartment.ApartmentId);
 
                     if (owner != null)
                     {
+                        // Обновяване
                         owner.OwnerName = nameText;
                         owner.PhoneNumber = phoneText;
                     }
                     else
                     {
+                        // Създаване на нов собственик
                         owner = new Owner
                         {
                             ApartmentId = apartment.ApartmentId,
@@ -247,6 +253,7 @@ namespace Syndiceo.Windows
                     context.SaveChanges();
                 }
 
+                // Обновяване на ViewModel
                 apartment.OwnerName = nameText;
                 apartment.OwnerPhone = phoneText;
 
@@ -263,8 +270,14 @@ namespace Syndiceo.Windows
             }
         }
 
+
+
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+
+
+            // Показваме "Няма данни" само за UI, без да записваме в базата
             ownerNameTxtBox.Text = string.IsNullOrWhiteSpace(_apartmentVM?.OwnerName)
                 ? "Няма данни"
                 : _apartmentVM.OwnerName;

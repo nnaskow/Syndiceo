@@ -1,4 +1,4 @@
-﻿using Syndiceo.Models;
+﻿using Syndiceo.Data.Models;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -15,8 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using MessageBox = System.Windows.MessageBox;
-using Syndiceo.Data.Models;
-using Syndiceo.Data;
+
 namespace Syndiceo.Windows
 {
     /// <summary>
@@ -46,7 +45,7 @@ namespace Syndiceo.Windows
 
             using (var context = new SyndiceoDBContext())
             {
-                var user = context.Logins.FirstOrDefault();
+                var user = context.Logins.FirstOrDefault(); // взема единствения запис
 
                 if (user != null)
                 {

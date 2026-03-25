@@ -5,39 +5,91 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Syndiceo"
         mc:Ignorable="d"
-        Title="Принтиране" Height="639" Width="500"
-        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
-        ResizeMode="CanMinimize"
-        WindowStartupLocation="CenterScreen" Loaded="Window_Loaded">
+        Title="Генериране на отчет" 
+        Height="662" Width="530"
+        Icon="pack://application:,,,/Resources/Ico/logo256.ico"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen" 
+        Loaded="Window_Loaded"
+        Background="#F8FAFC">
 
-    <Grid Margin="20" Background="#FFF">
-        <!-- Воден знак -->
-        <Image Source="/Resources/logo.png"
-               Opacity="0.05"
-               Stretch="Uniform"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               Panel.ZIndex="0"/>
+    <Grid Margin="0">
+        <Border Margin="25" CornerRadius="15" Background="White" BorderBrush="#E2E8F0" BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="15" Opacity="0.05" ShadowDepth="2" Color="#64748B"/>
+            </Border.Effect>
 
-        <Border CornerRadius="10" Padding="20" BorderBrush="#DDD" BorderThickness="1">
-            <StackPanel>
+            <Grid Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <TextBlock Text="Шаблони за принтиране" 
-                           FontFamily="Calibri" FontWeight="Bold" FontSize="18" 
-                           HorizontalAlignment="Center" Foreground="#333" Margin="0,0,0,10"/>
-                <ListBox x:Name="FilesListBox" Height="417" Background="Transparent" 
-                         BorderBrush="#CCC" BorderThickness="1" FontFamily="Calibri" FontSize="16" Width="406"/>
-
-                <!-- ListBox за файлове -->
-
-                <!-- Бутони в хоризонтален StackPanel -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0" >
-                    <Button Style="{StaticResource MainButtonStyle}" x:Name="PrintBtn" Content="Генерирай отчет" Width="133" Height="40" Margin="5"
-                            FontFamily="Calibri" FontWeight="Bold" FontSize="16" Click="PrintBtn_Click"/>
-                    <Button Style="{StaticResource MainButtonStyle}" x:Name="OpenFolderBtn" Content="📁" Width="65" Height="40"
-                            FontFamily="Calibri" FontWeight="Bold" FontSize="16" Click="OpenFolderBtn_Click"/>
+                <StackPanel Grid.Row="0" Margin="0,0,0,15">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="🖨️" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Избор на шаблон" 
+                                   FontFamily="Segoe UI" FontWeight="Bold" FontSize="18" 
+                                   Foreground="#1E293B" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Separator Margin="0,15,0,0" Background="#F1F5F9" Height="1"/>
                 </StackPanel>
-            </StackPanel>
+
+                <Border Grid.Row="1" CornerRadius="10" BorderBrush="#F1F5F9" BorderThickness="1" Background="#F8FAFC">
+                    <ListBox x:Name="FilesListBox" 
+                             Background="Transparent" 
+                             BorderThickness="0" 
+                             FontFamily="Segoe UI" 
+                             FontSize="14" 
+                             Foreground="#334155"
+                             Padding="5">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Padding" Value="12,10"/>
+                                <Setter Property="Margin" Value="2"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#EFF6FF"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#DBEAFE"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                </Border>
+
+                <Grid Grid.Row="2" Margin="0,20,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="PrintBtn" 
+                            Grid.Column="0"
+                            Style="{StaticResource MainButtonStyle}" 
+                            Content="📊 Генерирай отчет" 
+                            Height="48" 
+                            FontSize="15" FontWeight="SemiBold"
+                            Click="PrintBtn_Click"
+                            Cursor="Hand"
+                            Margin="0,0,10,0"/>
+
+                    <Button x:Name="OpenFolderBtn" 
+                            Grid.Column="1"
+                            Style="{StaticResource MainButtonStyle}" 
+                            Content="📁" 
+                            Width="60" Height="48"
+                            FontSize="18"
+                            Click="OpenFolderBtn_Click"
+                            ToolTip="Отвори папката с шаблони"
+                            Cursor="Hand"/>
+                </Grid>
+            </Grid>
         </Border>
     </Grid>
 </Window>

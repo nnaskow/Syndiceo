@@ -1,78 +1,30 @@
 ﻿
-@model SyndiceoWeb.Views.Administrator.ResidenceConfirmationModel
+@model IEnumerable<Syndiceo.Data.Models.Apartment>
 @{
     ViewData["Title"] = "Потвърждение на адреси";
-    var pendingRequests = Model.PendingRequests;
 }
 
-<div class="container py-5">
 
-    <!-- Header -->
-    <div class="text-center mb-5">
-        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
-             style="width:90px;height:90px;background:linear-gradient(135deg,#2C5282,#2B6CB0);font-size:38px;color:white;">
-            🏢
-        </div>
-        <h2 class="fw-bold">Потвърждение на нови адреси</h2>
-        <p class="text-muted">
-            Прегледайте новите потребители и потвърдете дали местоживеенето им е валидно.
-        </p>
-    </div>
-
-    <!-- Pending Requests Table -->
-    <div class="card shadow-sm border-0 mb-5">
-        <div class="card-header bg-primary text-white fw-bold">
-            Нови заявки за адрес
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-striped mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>№</th>
-                        <th>Потребител</th>
-                        <th>Адрес</th>
-                        <th>Дата</th>
-                        <th>Статус</th>
-                        <th>Действие</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (pendingRequests.Any())
-                    {
-                        for (int i = 0; i < pendingRequests.Count; i++)
-                        {
-                            var request = pendingRequests[i];
-                            <tr>
-                                <td>@(i + 1)</td>
-                                <td>@request.UserId</td>
-                                <td>@request.Address</td>
-                                <td>@request.CreatedAt.ToString("dd.MM.yyyy")</td>
-                                <td>
-                                    @if (request.IsConfirmed)
-                                    {
-                                        <span class="badge bg-success">Потвърдено</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-danger">Чакащ</span>
-                                    }
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-success" @(request.IsConfirmed ? "disabled" : "")>✅ Потвърди</button>
-                                    <button class="btn btn-sm btn-danger">❌ Отхвърли</button>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="6" class="text-center text-muted">Няма чакащи заявки</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Потребител</th>
+            <th>Вход / Апартамент</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model) {
+        <tr>
+            <td>@item.User.Email</td>
+            <td>Вход: @item.Entrance.EntranceName, Ап. @item.ApartmentNumber</td>
+            <td>
+                <form asp-action="ConfirmResidence" method="post">
+                    <input type="hidden" name="apartmentId" value="@item.ApartmentId" />
+                    <button class="btn btn-primary btn-sm">Потвърди адрес</button>
+                </form>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>

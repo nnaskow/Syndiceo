@@ -6,19 +6,11 @@
         xmlns:local="clr-namespace:Syndiceo"
         mc:Ignorable="d"
         Title="Принтиране" Height="639" Width="500"
-        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
+        Icon="pack://application:,,,/Resources/Ico/logo256.ico"
         ResizeMode="CanMinimize"
         WindowStartupLocation="CenterScreen" Loaded="Window_Loaded">
 
     <Grid Margin="20" Background="#FFF">
-        <!-- Воден знак -->
-        <Image Source="/Resources/logo.png"
-               Opacity="0.05"
-               Stretch="Uniform"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               Panel.ZIndex="0"/>
-
         <Border CornerRadius="10" Padding="20" BorderBrush="#DDD" BorderThickness="1">
             <StackPanel>
 

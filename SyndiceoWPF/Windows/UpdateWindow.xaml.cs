@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+
 namespace Syndiceo.Windows
 {
     public partial class UpdateWindow : Window
@@ -39,7 +40,7 @@ namespace Syndiceo.Windows
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             await CheckForUpdateAsync();
-            CurrentVersionTextBlock.Text = "Текуща версия: " + Properties.Settings.Default.appVersion;
+            CurrentVersionTextBlock.Text =  Properties.Settings.Default.appVersion;
         }
 
         private async void CheckAgainButton_Click(object sender, RoutedEventArgs e)
@@ -122,7 +123,9 @@ namespace Syndiceo.Windows
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = tempPath,
-                    UseShellExecute = true
+                    Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-",
+                    UseShellExecute = true,
+                    Verb = "runas" 
                 });
 
                 Application.Current.Shutdown();

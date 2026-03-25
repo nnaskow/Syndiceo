@@ -1,10 +1,9 @@
-﻿using Syndiceo.Models;
+﻿using Syndiceo.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Windows;
 using static Syndiceo.Windows.ManagementWindow;
-using Syndiceo.Data.Models;
-using Syndiceo.Data;
+
 namespace Syndiceo.Windows
 {
     public partial class ShowApartmentWindow : Window
@@ -57,11 +56,12 @@ namespace Syndiceo.Windows
             ownerNameTxtBox.Text = owner?.OwnerName ?? "Няма данни";
             ownerPhoneTxtBox.Text = owner?.PhoneNumber ?? "Няма данни";
             residentCountTxtBox.Text = (apartmentEntity?.ResidentCount ?? 0).ToString();
-            NotesTxtBox.Text = apartmentEntity.Note ?? "";
+            NotesTextBox.Text = apartmentEntity.Note ?? "";
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+
         }
       
     }

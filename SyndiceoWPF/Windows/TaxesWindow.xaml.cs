@@ -1,6 +1,5 @@
-﻿using Archon;
+﻿using Syndiceo.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using Syndiceo.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,9 +7,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Collections.Generic;
 using Syndiceo.Data.Models;
-using Syndiceo.Data;
+
 namespace Syndiceo.Windows
 {
     public partial class TaxesWindow : Window
@@ -25,7 +23,9 @@ namespace Syndiceo.Windows
 
         private ObservableCollection<CategoryViewModel> _selectedIncomeCategories = new ObservableCollection<CategoryViewModel>();
         private ObservableCollection<CategoryViewModel> _selectedExpenseCategories = new ObservableCollection<CategoryViewModel>();
+
         private TaxesHelper _helper;
+
         public TaxesWindow(int? apartmentId = null, int? entranceId = null)
         {
             InitializeComponent();
@@ -83,6 +83,9 @@ namespace Syndiceo.Windows
                         Name = t.Name,
                         Amount = t.Amount.ToString("N2")
                     };
+
+                    if (!Properties.Settings.Default.taxesWdHelpNeeded)
+                        SubscribeCategory(vm, _apartmentId.Value);
 
                     if (t.Kind == "Приход") _selectedIncomeCategories.Add(vm);
                     else _selectedExpenseCategories.Add(vm);
@@ -190,6 +193,9 @@ namespace Syndiceo.Windows
         {
             var vm = new CategoryViewModel { Id = selectedCategory.Id, Name = selectedCategory.Name, Amount = "0" };
 
+            if (_apartmentId.HasValue && !Properties.Settings.Default.taxesWdHelpNeeded)
+                SubscribeCategory(vm, _apartmentId.Value);
+
             if (selectedCategory.Kind == "Приход")
                 _selectedIncomeCategories.Add(vm);
             else
@@ -197,6 +203,7 @@ namespace Syndiceo.Windows
 
             RefreshCategoryList();
         }
+
 
         private void RemoveIncomeCategory_Click(object sender, RoutedEventArgs e)
         {
@@ -375,11 +382,13 @@ namespace Syndiceo.Windows
 
             foreach (var cat in allCategories)
             {
+                // Вземаме или създаваме EntranceTransaction
                 var entranceTransaction = context.EntranceTransactions
                     .FirstOrDefault(t => t.EntranceId == entranceId && t.CategoryId == cat.Id);
 
                 if (entranceTransaction == null)
                 {
+                    // Ако няма запис, създаваме с общо от апартаментите
                     decimal totalAssigned = context.ApartmentTransactions
                         .Where(t => apartmentsInEntrance.Contains(t.ApartmentId) && t.CategoryId == cat.Id)
                         .Sum(t => t.Amount);
@@ -395,8 +404,9 @@ namespace Syndiceo.Windows
                 }
             }
 
-            context.SaveChanges();
+            context.SaveChanges(); // Важно: записваме преди helper-а!
 
+            // Сега създаваме CategoryViewModel с остатъци
             foreach (var cat in allCategories)
             {
                 decimal totalAssigned = context.ApartmentTransactions
@@ -472,6 +482,7 @@ namespace Syndiceo.Windows
         {
             using var context = new SyndiceoDBContext();
 
+            // Намери входа на апартамента
             var entranceId = context.Apartments
                 .Where(a => a.ApartmentId == apartmentId)
                 .Select(a => a.EntranceId)
@@ -480,11 +491,13 @@ namespace Syndiceo.Windows
             if (entranceId == 0)
                 return;
 
+            // Изчисли всички дължими суми по апартаменти във входа
             var apartments = context.Apartments
                 .Where(a => a.EntranceId == entranceId)
                 .Select(a => a.ApartmentId)
                 .ToList();
 
+            // 🔹 Приходи и разходи за категории тип "apartments"
             decimal totalExpenses = context.ApartmentTransactions
                 .Where(t => apartments.Contains(t.ApartmentId) &&
                             t.Category.Kind != "Приход" &&
@@ -499,6 +512,7 @@ namespace Syndiceo.Windows
 
             decimal remaining = totalExpenses - totalIncomes;
 
+            // 🔹 Запис в таблицата TotalSum
             var totalSum = context.TotalSums.FirstOrDefault(ts => ts.EntranceId == entranceId);
             if (totalSum != null)
                 totalSum.Summary = (int)remaining;
@@ -563,6 +577,97 @@ namespace Syndiceo.Windows
             context.SaveChanges();
         }
 
+        private void removeCatButton_Click(object sender, RoutedEventArgs e)
+        {
+            // 1. Проверка дали изобщо е избрано нещо
+            var selectedCategory = CategoryListBox.SelectedItem as Syndiceo.Data.Models.Category;
+
+            if (selectedCategory == null)
+            {
+                MessageBox.Show("Моля, изберете категория от списъка.", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 2. Потвърждение от потребителя (за сигурност)
+            var result = MessageBox.Show($"Сигурни ли сте, че искате да изтриете категория '{selectedCategory.Name}'? " +
+                                         "\nВсички свързани транзакции също ще бъдат изтрити!",
+                                         "Потвърждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    using (var context = new SyndiceoDBContext())
+                    {
+                        // Намираме категорията в текущия контекст по ID
+                        var categoryInDb = context.Categories.FirstOrDefault(c => c.Id == selectedCategory.Id);
+
+                        if (categoryInDb != null)
+                        {
+                            // Изтриваме свързаните транзакции в апартаментите
+                            var aptTransactions = context.ApartmentTransactions.Where(t => t.CategoryId == categoryInDb.Id);
+                            context.ApartmentTransactions.RemoveRange(aptTransactions);
+
+                            // Изтриваме свързаните транзакции във входовете
+                            var entTransactions = context.EntranceTransactions.Where(t => t.CategoryId == categoryInDb.Id);
+                            context.EntranceTransactions.RemoveRange(entTransactions);
+
+                            // Изтриваме самата категория
+                            context.Categories.Remove(categoryInDb);
+
+                            // Запазваме промените
+                            context.SaveChanges();
+
+                            // Обновяваме UI
+                            LoadCategories();
+                            LoadExistingTransactions();
+
+                            MessageBox.Show("Категорията беше премахната успешно.", "Готово", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Грешка при изтриване: {ex.Message}", "Критична грешка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+        /*        public void ReapplyApartmentTransactions(int apartmentId)
+                {
+                    using var context = new SyndiceoDBContext();
+
+                    var apartment = context.Apartments
+                        .Include(a => a.ApartmentTransactions)
+                        .FirstOrDefault(a => a.ApartmentId == apartmentId);
+
+                    if (apartment == null)
+                        return;
+
+                    // ⚡ Взимаме копие на текущите транзакции,
+                    // за да не модифицираме колекцията, докато я обхождаме
+                    var oldTransactions = apartment.ApartmentTransactions.ToList();
+
+                    foreach (var oldTransaction in oldTransactions)
+                    {
+                        var newTransaction = new ApartmentTransaction
+                        {
+                            ApartmentId = apartment.ApartmentId,
+                            CategoryId = oldTransaction.CategoryId,
+                            Amount = oldTransaction.Amount,
+                            TransDate = DateOnly.FromDateTime(DateTime.Now)
+                        };
+
+                        context.ApartmentTransactions.Add(newTransaction);
+                    }
+
+                    context.SaveChanges();
+
+                    // След това обновяваме сбора и дълговете
+                    UpdateEntranceTotalSum(apartment.ApartmentId);
+                    UpdateDebtForApartment(apartment.ApartmentId);
+                }
+        */
+
     }
 
     public class AmountChangedEventArgs : EventArgs
@@ -583,7 +688,7 @@ namespace Syndiceo.Windows
         public string Name { get; set; }
 
 
-        private string _amount = "0";
+        private string _amount = "0"; // Гарантира, че никога не е null
         private decimal _previousAmount = 0m;
 
         public string Amount
@@ -596,6 +701,8 @@ namespace Syndiceo.Windows
                     decimal oldValue = GetDecimalAmount();
 
                     _amount = string.IsNullOrWhiteSpace(value) ? "0" : value.Trim();
+
+                    // Парсинг с InvariantCulture
                     if (!decimal.TryParse(_amount.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal newValue))
                         newValue = 0m;
 
@@ -609,6 +716,7 @@ namespace Syndiceo.Windows
 
         public decimal GetDecimalAmount()
         {
+            // Никога не връща null
             if (string.IsNullOrWhiteSpace(_amount))
                 return 0m;
 

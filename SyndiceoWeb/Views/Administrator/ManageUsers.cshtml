@@ -1,0 +1,94 @@
+﻿@{
+    ViewData["Title"] = "Активни потребители";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark mb-0">👥 Управление на активни потребители</h2>
+        <span class="badge bg-primary px-3 py-2">Общо: @ViewBag.TotalActive</span>
+    </div>
+
+    <div class="card border-0 shadow-sm p-3 mb-4 bg-white">
+        <form method="get" asp-action="UsersList" class="row g-2">
+            <div class="col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0">
+                        🔍
+                    </span>
+                    <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch"
+                           class="form-control border-start-0" placeholder="Търсене на потребител по имейл..." />
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">Търси</button>
+                @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch))
+                {
+                    <a asp-action="UsersList" class="btn btn-outline-secondary">❌</a>
+                }
+            </div>
+        </form>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Имейл адрес</th>
+                        <th>Статус на адреса</th>
+                        <th class="text-end pe-4">Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.TotalActive == 0)
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center py-5 text-muted">
+                                Няма намерени активни потребители.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <span class="fw-semibold">@user.Email</span>
+                            </td>
+                            <td>
+                                <td>
+                                    @if (((List<string>)ViewBag.ConfirmedUserIds).Contains(user.Id))
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success">
+                                            ● Потвърден адрес
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-muted border">
+                                            ○ Без потвърден адрес
+                                        </span>
+                                    }
+                                </td>
+                            </td>
+                            <td class="text-end pe-4">
+                                <form asp-action="DeleteUser" method="post"
+                                      onsubmit="return confirm('ВНИМАНИЕ: Изтриването на @user.Email ще премахне достъпа му до системата! Продължавате ли?');">
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <button type="submit" class="btn btn-sm btn-link text-danger text-decoration-none">
+                                        Изтрий акаунт
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="AdminDashboard" class="text-decoration-none text-secondary">
+            ← Обратно към административното табло
+        </a>
+    </div>
+</div>

@@ -5,123 +5,106 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Syndiceo"
         mc:Ignorable="d"
-        Title="Редактиране"
-        MinWidth="400" MinHeight="300"
-        Width="718" Height="556"
+        Title="Редактиране на данни"
+        MinWidth="800" MinHeight="600"
+        Width="850" Height="620"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="CanMinimize"
-        Icon="pack://application:,,,/Resources/Ico/logo128.ico"
-        Loaded="Window_Loaded" Background="{StaticResource AppBackground}">
+        ResizeMode="NoResize"
+        Icon="pack://application:,,,/Resources/Ico/logo256.ico"
+        Loaded="Window_Loaded" Background="#F8FAFC">
 
-    <Grid Margin="20" Background="{StaticResource AppBackground}">
-        <!-- Единен воден знак за цялото съдържание -->
-        <Image Source="/Resources/logo.png"
-               Opacity="0.05"
-               Stretch="Uniform"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               Panel.ZIndex="0"/>
-
-        <!-- Основно съдържание върху водния знак -->
-        <Grid>
+    <Grid Margin="0">
+        <Grid Margin="25">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="221*" />
-                <ColumnDefinition Width="5"/>
-                <ColumnDefinition Width="32*" />
-                <ColumnDefinition Width="189*"/>
+                <ColumnDefinition Width="1.2*"/>
+                <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Лява страна -->
-            <Border Grid.Column="0" CornerRadius="10" Padding="15" Margin="0,0,10,0" 
-                    BorderBrush="#DDD" BorderThickness="1" VerticalAlignment="Center">
+            <Border Grid.Column="0" CornerRadius="15" Background="White" Padding="20" Margin="0,0,10,0" 
+                    BorderBrush="#E2E8F0" BorderThickness="1" VerticalAlignment="Stretch">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.05" ShadowDepth="2" Color="#64748B"/>
+                </Border.Effect>
+
                 <StackPanel>
-                    <TextBlock Text="Редактиране на адрес" 
-                               FontFamily="Calibri" FontWeight="Bold" FontSize="18" 
-                               HorizontalAlignment="Center" Foreground="#333"/>
-                    <Separator Margin="0,10,0,10"/>
+                    <TextBlock Text="🏠 Редактиране на обект" 
+                               FontFamily="Segoe UI" FontWeight="Bold" FontSize="20" 
+                               HorizontalAlignment="Left" Foreground="#1E293B"/>
+                    <Separator Margin="0,15,0,20" Background="#F1F5F9" Height="1"/>
 
-                    <!-- Адрес -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,5,0,0">
-                        <TextBlock Text="📍" FontSize="16" Margin="0,0,5,0"/>
-                        <Label Content="Адрес:" FontWeight="Bold" FontSize="14"/>
+                    <StackPanel Margin="0,0,0,12">
+                        <Label Content="Адрес (Улица):" FontWeight="SemiBold" FontSize="13" Foreground="#475569"/>
+                        <TextBox Style="{StaticResource RoundedTextBox}" x:Name="AdressTextBox" 
+                                 Height="38" TextAlignment="Left" Padding="10,0" VerticalContentAlignment="Center"
+                                 KeyDown="AdressTextBox_KeyDown"/>
                     </StackPanel>
-                    <TextBox Style="{StaticResource RoundedTextBox}" x:Name="AdressTextBox" TextAlignment="Center" FontFamily="Calibri" KeyDown="AdressTextBox_KeyDown"></TextBox>
 
-                    <!-- Блок -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
-                        <TextBlock Text="🏢" FontSize="16" Margin="0,0,5,0"/>
-                        <Label Content="Блок:" FontWeight="Bold" FontSize="14"/>
-                    </StackPanel>
-                    <TextBox Style="{StaticResource RoundedTextBox}" x:Name="BlockTextBox" TextAlignment="Center" FontFamily="Calibri" KeyDown="BlockTextBox_KeyDown"></TextBox>
-
-                    <!-- Вход -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10,0,0">
-                        <TextBlock Text="🚪" FontSize="16" Margin="0,0,5,0"/>
-                        <Label Content="Вход:" FontWeight="Bold" FontSize="14"/>
-                    </StackPanel>
-                    <TextBox Style="{StaticResource RoundedTextBox}" x:Name="EntranceTextBox" TextAlignment="Center" FontFamily="Calibri" KeyDown="EntranceTextBox_KeyDown"></TextBox>
-                    <!-- Апартамент -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
-                        <!-- Апартамент № -->
-                        <StackPanel Orientation="Vertical" Margin="0,0,10,0">
-                            <Label Content="🏠Апартамент №:" 
-  FontFamily="Calibri" FontWeight="Bold" 
-  HorizontalAlignment="Center" FontSize="16"/>
-                            <TextBox Style="{StaticResource RoundedTextBox}" 
-    x:Name="ApartmentNumberTextBox" 
-    Height="33" TextAlignment="Center" Width="145"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <Label Content="Блок:" FontWeight="SemiBold" FontSize="13" Foreground="#475569"/>
+                            <TextBox Style="{StaticResource RoundedTextBox}" x:Name="BlockTextBox" 
+                                     Height="38" TextAlignment="Center" KeyDown="BlockTextBox_KeyDown"/>
                         </StackPanel>
-
-                        <!-- Брой живущи -->
-                        <StackPanel Orientation="Vertical">
-                            <Label Content="👥Брой живущи:" 
-  FontFamily="Calibri" FontWeight="Bold" 
-  HorizontalAlignment="Center" FontSize="16"/>
-                            <TextBox Style="{StaticResource RoundedTextBox}" 
-    x:Name="ResidentsCountTextBox" 
-    Height="34" TextAlignment="Center" Width="131" KeyDown="ResidentsCountTextBox_KeyDown"/>
+                        <StackPanel Grid.Column="1">
+                            <Label Content="Вход:" FontWeight="SemiBold" FontSize="13" Foreground="#475569"/>
+                            <TextBox Style="{StaticResource RoundedTextBox}" x:Name="EntranceTextBox" 
+                                     Height="38" TextAlignment="Center" KeyDown="EntranceTextBox_KeyDown"/>
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
 
-                    <Button Style="{StaticResource MainButtonStyle}" Content="✏️ Редактирай"
-                            Width="160" Height="45" HorizontalAlignment="Center" Margin="0,20,0,0"
-                            x:Name="editAddressButton" Click="SavePropertyButton_Click"/>
+                    <Grid Margin="0,5,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <Label Content="Апартамент №:" FontWeight="SemiBold" FontSize="13" Foreground="#475569"/>
+                            <TextBox Style="{StaticResource RoundedTextBox}" x:Name="ApartmentNumberTextBox" 
+                                     Height="38" FontWeight="Bold" FontSize="15" TextAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <Label Content="Брой живущи:" FontWeight="SemiBold" FontSize="13" Foreground="#475569"/>
+                            <TextBox Style="{StaticResource RoundedTextBox}" x:Name="ResidentsCountTextBox" 
+                                     Height="38" FontWeight="Bold" FontSize="15" TextAlignment="Center" 
+                                     KeyDown="ResidentsCountTextBox_KeyDown"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Button Style="{StaticResource MainButtonStyle}" Content="💾 Обнови адрес"
+                            Width="200" Height="48" HorizontalAlignment="Center" Margin="0,20,0,0"
+                            x:Name="editAddressButton" Click="SavePropertyButton_Click" Cursor="Hand"/>
                 </StackPanel>
             </Border>
 
-            <!-- Вертикален разделител -->
-            <Border Grid.Column="1"
-                    Width="1"
-                    Background="#DDD"
-                    VerticalAlignment="Stretch"
-                    Margin="0,10"/>
+            <Border Grid.Column="1" CornerRadius="15" Background="White" Padding="25" Margin="10,0,0,0" 
+                    BorderBrush="#E2E8F0" BorderThickness="1" VerticalAlignment="Top">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.05" ShadowDepth="2" Color="#64748B"/>
+                </Border.Effect>
 
-            <!-- Дясна страна -->
-            <Border Grid.Column="2" Grid.ColumnSpan="2" CornerRadius="10" Padding="20" Margin="10,0,0,0" 
-                    BorderBrush="#DDD" BorderThickness="1" VerticalAlignment="Center" Height="416">
-                <StackPanel VerticalAlignment="Center" Height="383">
-                    <TextBlock Text="Редактиране на данни за контакт" 
-                               FontFamily="Calibri" FontWeight="Bold" FontSize="18" 
-                               HorizontalAlignment="Center" Foreground="#333"/>
-                    <Separator Margin="0,10,0,10"/>
+                <StackPanel>
+                    <TextBlock Text="👤 Данни за собственик" 
+                               FontFamily="Segoe UI" FontWeight="Bold" FontSize="18" 
+                               HorizontalAlignment="Left" Foreground="#1E293B"/>
+                    <Separator Margin="0,15,0,20" Background="#F1F5F9" Height="1"/>
 
-                    <!-- Име -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,5,0,0">
-                        <TextBlock Text="👤" FontSize="16" Margin="0,0,5,0"/>
-                        <Label Content="Име на собственик:" FontWeight="Bold" FontSize="14"/>
-                    </StackPanel>
-                    <TextBox Style="{StaticResource RoundedTextBox}" x:Name="ownerNameTxtBox" Height="36" TextAlignment="Center" KeyDown="ownerNameTxtBox_KeyDown"/>
+                    <Label Content="Име на собственик:" FontWeight="SemiBold" FontSize="13" Foreground="#475569"/>
+                    <TextBox Style="{StaticResource RoundedTextBox}" x:Name="ownerNameTxtBox" 
+                             Height="40" Margin="0,0,0,15" Padding="10,0" VerticalContentAlignment="Center"
+                             KeyDown="ownerNameTxtBox_KeyDown"/>
 
-                    <!-- Телефон -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,15,0,0">
-                        <TextBlock Text="📞" FontSize="16" Margin="0,0,5,0"/>
-                        <Label Content="Телефон на собственик:" FontWeight="Bold" FontSize="14"/>
-                    </StackPanel>
-                    <TextBox Style="{StaticResource RoundedTextBox}" x:Name="ownerPhoneNumberTxtBox" Height="36" TextAlignment="Center" KeyDown="ownerPhoneNumberTxtBox_KeyDown"/>
+                    <Label Content="Телефон за връзка:" FontWeight="SemiBold" FontSize="13" Foreground="#475569"/>
+                    <TextBox Style="{StaticResource RoundedTextBox}" x:Name="ownerPhoneNumberTxtBox" 
+                             Height="40" Margin="0,0,0,15" Padding="10,0" VerticalContentAlignment="Center"
+                             KeyDown="ownerPhoneNumberTxtBox_KeyDown"/>
 
-                    <Button Style="{StaticResource MainButtonStyle}" Content="✏️ Редактирай"
-                            Width="160" Height="53" HorizontalAlignment="Center" Margin="0,20,0,24"
-                            x:Name="editOwnerButton" Click="editOwnerButton_Click"/>
+                    <Button Style="{StaticResource MainButtonStyle}" Content="🔄 Обнови контакт"
+                            Width="180" Height="48" HorizontalAlignment="Center" Margin="0,20,0,0"
+                            x:Name="editOwnerButton" Click="editOwnerButton_Click" Cursor="Hand"/>
                 </StackPanel>
             </Border>
         </Grid>

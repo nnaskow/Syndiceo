@@ -1,7 +1,8 @@
 ﻿using DocumentFormat.OpenXml.InkML;
 using Microsoft.EntityFrameworkCore;
-using Syndiceo.Models;
+using Syndiceo.Data.Models;
 using Syndiceo.Utilities;
+using Syndiceo.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,7 +29,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Block = Syndiceo.Data.Models.Block;
-using Syndiceo.Data.Models;
+
 
 namespace Syndiceo.Windows
 {
@@ -54,7 +55,7 @@ namespace Syndiceo.Windows
             clockTimer.Interval = TimeSpan.FromSeconds(1);
             clockTimer.Tick += (s, e) =>
             {
-                Clock.Text = $"🕓 Часът в момента е: {DateTime.Now:HH:mm:ss}";
+                Clock.Text = $"{DateTime.Now:HH:mm:ss}";
             };
             clockTimer.Start();
 
@@ -372,15 +373,53 @@ namespace Syndiceo.Windows
             {
                 if (_openAddWindow != null && _openAddWindow.IsVisible)
                 {
-                    MessageBox.Show("Прозорецът за добавяне вече е отворен.", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
                     _openAddWindow.Focus();
                     return;
                 }
 
-                _openAddWindow = new AddToDBWindow();
+                string street = "";
+                string block = "";
+                string entrance = "";
 
+                if (BlocksDataGrid.Visibility == Visibility.Visible)
+                {
+                    var selectedAddr = AddressesDataGrid.SelectedItem as AddressViewModel;
+                    if (selectedAddr != null) street = selectedAddr.Street;
+                }
+                else if (EntrancesDataGrid.Visibility == Visibility.Visible)
+                {
+                    var selectedBlk = BlocksDataGrid.SelectedItem as BlockViewModel;
+                    if (selectedBlk != null)
+                    {
+                        block = selectedBlk.BlockName;
+                        street = selectedBlk.Address?.Street ?? "";
+                    }
+                }
+                if (ApartmentsDataGrid.Visibility == Visibility.Visible)
+                {
+                    var selectedEnt = EntrancesDataGrid.SelectedItem as EntranceViewModel;
+                    if (selectedEnt != null)
+                    {
+                        entrance = selectedEnt.Name;
+
+                        var selectedBlk = BlocksDataGrid.SelectedItem as BlockViewModel;
+                        if (selectedBlk != null)
+                        {
+                            block = selectedBlk.BlockName;
+
+
+                            var selectedAddr = AddressesDataGrid.SelectedItem as AddressViewModel;
+                            if (selectedAddr != null)
+                            {
+                                street = selectedAddr.Street;
+                            }
+                        }
+                    }
+                }
+
+                _openAddWindow = new AddToDBWindow(street, block, entrance);
+                _openAddWindow.Owner = this;
                 _openAddWindow.Closed += (s, args) => _openAddWindow = null;
-
                 _openAddWindow.ShowDialog();
 
                 LoadData();
@@ -388,7 +427,7 @@ namespace Syndiceo.Windows
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Грешка при отваряне на прозореца за добавяне: {ex.Message}", "Грешка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Грешка: {ex.Message}");
             }
         }
         private EditWindow _openEditWindow;
@@ -528,7 +567,6 @@ namespace Syndiceo.Windows
                     entrance: selectedEntranceVm,
                     apartment: selectedApartmentVm
                 );
-
                 _openEditWindow.Closed += (s, args) => _openEditWindow = null;
 
                 _openEditWindow.ShowDialog();
@@ -584,6 +622,7 @@ namespace Syndiceo.Windows
 
                 using var context = new SyndiceoDBContext();
 
+                // 🏠 Адрес
                 if (itemType == "адрес" && selectedItem is AddressViewModel addressVm)
                 {
                     var entity = context.Addresses
@@ -611,6 +650,7 @@ namespace Syndiceo.Windows
                     }
                 }
 
+                // 🧱 Блок
                 else if (itemType == "блок" && selectedItem is BlockViewModel blockVm)
                 {
                     var entity = context.Blocks
@@ -638,6 +678,7 @@ namespace Syndiceo.Windows
                     }
                 }
 
+                // 🚪 Вход
                 else if (itemType == "вход" && selectedItem is EntranceViewModel entranceVm)
                 {
                     var entity = context.Entrances
@@ -662,6 +703,7 @@ namespace Syndiceo.Windows
                     }
                 }
 
+                // 🏢 Апартамент
                 else if (itemType == "апартамент" && selectedItem is ApartmentViewModel apartmentVm)
                 {
                     var entity = context.Apartments
@@ -974,6 +1016,7 @@ namespace Syndiceo.Windows
 
                     var apartments = apartmentsFromDb.Select(a =>
                     {
+                        // 🔹 филтрираме транзакции само за категории от типа "apartments"
                         var expenseAmounts = a.ApartmentTransactions
                             .Where(t => t.Category.Kind != "Приход" && t.Category.Appliance == "apartments")
                             .GroupBy(t => t.Category.Name)
@@ -1030,6 +1073,7 @@ namespace Syndiceo.Windows
         {
             using var db = new SyndiceoDBContext();
 
+            // Филтрираме само апартаментите според избраното
             var query = db.Apartments
                 .Include(a => a.Entrance)
                     .ThenInclude(e => e.Block)
@@ -1045,6 +1089,7 @@ namespace Syndiceo.Windows
 
             var apartments = query.OrderBy(a => a.ApartmentNumber).ToList();
 
+            // 🔹 Филтрираме категориите само за "apartments"
             var expenseCategories = db.Categories
                 .Where(c => c.Kind != "Приход" && c.Appliance == "apartments")
                 .OrderBy(c => c.Name)
@@ -1054,6 +1099,7 @@ namespace Syndiceo.Windows
                 .Where(c => c.Kind == "Приход" && c.Appliance == "apartments")
                 .OrderBy(c => c.Name)
                 .ToList();
+            // Създаваме view моделите
             var apartmentVMs = apartments.Select(a =>
             {
                 var expenseDict = new Dictionary<string, decimal>();
@@ -1077,6 +1123,7 @@ namespace Syndiceo.Windows
                     incomeDict[cat.Name] = amount;
                 }
 
+                // Взимаме конкретния debt за този апартамент
                 var debt = db.Debts.FirstOrDefault(d => d.ApartmentId == a.ApartmentId);
 
                 var total = debt?.TotalSum ?? expenseDict.Values.Sum();
@@ -1095,6 +1142,7 @@ namespace Syndiceo.Windows
                 };
             }).ToList();
 
+            // Генерираме колоните
             ApartmentsDataGrid.Columns.Clear();
 
             ApartmentsDataGrid.Columns.Add(new DataGridTextColumn
@@ -1181,6 +1229,7 @@ namespace Syndiceo.Windows
 
             using var db = new SyndiceoDBContext();
 
+            // Ако няма запазен адрес, вземи първия от базата
             if (saveAddressId == 0)
             {
                 var firstAddress = db.Addresses
@@ -1196,6 +1245,7 @@ namespace Syndiceo.Windows
                     saveAddressId = firstAddress.Id;
             }
 
+            // Зареждане на блокове за избрания адрес
             var blocks = db.Blocks
                 .Where(b => b.AddressId == saveAddressId)
                 .OrderBy(b => b.BlockName)
@@ -1213,6 +1263,7 @@ namespace Syndiceo.Windows
 
             BlocksDataGrid.ItemsSource = blocks;
 
+            // Ако няма запазен блок, вземи първия
             if (blocks.Any())
             {
                 if (saveBlockId == 0)
@@ -1234,6 +1285,7 @@ namespace Syndiceo.Windows
 
             using var db = new SyndiceoDBContext();
 
+            // Ако няма блок, вземи първия за текущия адрес
             if (saveBlockId == 0)
             {
                 var firstBlock = db.Blocks
@@ -1250,6 +1302,7 @@ namespace Syndiceo.Windows
                     saveBlockId = firstBlock.Id;
             }
 
+            // Зареждане на входове за избрания блок
             var entrances = db.Entrances
                 .Where(en => en.BlockId == saveBlockId)
                 .OrderBy(en => en.EntranceName)
@@ -1269,6 +1322,7 @@ namespace Syndiceo.Windows
 
             EntrancesDataGrid.ItemsSource = entrances;
 
+            // Ако няма запазен вход, вземи първия
             if (entrances.Any())
             {
                 if (saveEntranceId == 0)
@@ -1490,7 +1544,7 @@ namespace Syndiceo.Windows
 
         private void UpdateEntranceMarking(EntranceViewModel entrance)
         {
-            if (entrance == null) return;
+            if (entrance == null) return; // проверка за null
 
             entrance.IsFullyMarked = Apartments
                 .Where(a => a.Entrance != null && a.Entrance.Id == entrance.Id)
@@ -1509,6 +1563,7 @@ namespace Syndiceo.Windows
 
             if (ap == null) return;
 
+            // Маркираме апартамента
             ap.IsMarked = true;
             context.SaveChanges();
 
@@ -1516,13 +1571,61 @@ namespace Syndiceo.Windows
             UpdateEntranceMarking(apartment.Entrance);
             ApplyPaymentMarkingToApartments();
 
+            // Отваряне на прозореца за суми
             var summaryWindow = new SummaryPriceWindow(apartment.ApartmentId);
             summaryWindow.Owner = this;
             summaryWindow.ShowDialog();
             LoadData();
             ApplyPaymentMarkingToApartments();
 
+        /*    // Добавяне на платени такси към входа (една редица "Събрани такси")
+            var debt = context.Debts.FirstOrDefault(d => d.ApartmentId == apartment.ApartmentId);
+            if (debt != null && debt.PaidSum > 0)
+            {
+                var entranceId = ap.EntranceId;
+                var amount = debt.PaidSum;
 
+                // Взимаме категорията "Събрани такси", ако няма – създаваме я
+                var category = context.Categories
+                                      .SingleOrDefault(c => c.Name == "Събрани такси" && c.Kind == "Приход");
+
+                if (category == null)
+                {
+                    category = new Category
+                    {
+                        Name = "Събрани такси",
+                        Kind = "Приход"
+                    };
+                    context.Categories.Add(category);
+                    context.SaveChanges();
+                }
+
+                // Взимаме транзакцията за входа, ако има – добавяме, ако няма – създаваме
+                var entranceTransaction = context.EntranceTransactions
+                                                 .FirstOrDefault(t => t.EntranceId == entranceId &&
+                                                                      t.CategoryId == category.Id);
+
+                if (entranceTransaction != null)
+                {
+                    // Добавяме новата сума към съществуващата
+                    entranceTransaction.Amount += amount;
+                    entranceTransaction.TransDate = DateOnly.FromDateTime(DateTime.Now);
+                }
+                else
+                {
+                    // Създаваме нов запис за входа
+                    var transaction = new EntranceTransaction
+                    {
+                        EntranceId = entranceId,
+                        CategoryId = category.Id,
+                        Amount = amount,
+                        TransDate = DateOnly.FromDateTime(DateTime.Now)
+                    };
+                    context.EntranceTransactions.Add(transaction);
+                }*/
+/*
+                context.SaveChanges();
+            }*/
         }
 
         private void UnmarkApartment(ApartmentViewModel apartment)
@@ -1537,15 +1640,18 @@ namespace Syndiceo.Windows
 
             if (ap == null) return;
 
+            // Взимаме дълга на апартамента
             var debt = context.Debts.FirstOrDefault(d => d.ApartmentId == apartment.ApartmentId);
             if (debt != null && debt.PaidSum > 0)
             {
                 var entranceId = ap.EntranceId;
                 var amountToRemove = debt.PaidSum;
 
+                // Намаляваме PaidSum
                 debt.PaidSum = 0;
                 context.SaveChanges();
 
+                // Взимаме категорията "Събрани такси"
                 var category = context.Categories
                                       .SingleOrDefault(c => c.Name == "Събрани такси" && c.Kind == "Приход");
 
@@ -1557,8 +1663,10 @@ namespace Syndiceo.Windows
 
                     if (entranceTransaction != null)
                     {
+                        // Намаляваме сумата
                         entranceTransaction.Amount -= amountToRemove;
 
+                        // Ако сумата стане 0 или по-малка, може да изтрием реда или да оставим 0
                         if (entranceTransaction.Amount <= 0)
                         {
                             entranceTransaction.Amount = 0;
@@ -1569,6 +1677,7 @@ namespace Syndiceo.Windows
                 }
             }
 
+            // Маркираме апартамента като немаркиран
             ap.IsMarked = false;
             apartment.PaidAmount = 0;
             apartment.IsMarked = false;
@@ -1627,12 +1736,13 @@ namespace Syndiceo.Windows
 
                     if (row != null)
                     {
+                        // Оцветяване според плащането
                         if (apartment.PaidAmount >= apartment.TotalSum && apartment.TotalSum > 0)
-                            row.Background = Brushes.LightGreen;
+                            row.Background = Brushes.LightGreen; // напълно платено
                         else if (apartment.IsPartiallyPaid)
-                            row.Background = Brushes.LightGoldenrodYellow;
+                            row.Background = Brushes.LightGoldenrodYellow; // частично платено
                         else
-                            row.Background = Brushes.White;
+                            row.Background = Brushes.White; // не е платено
                     }
                 }
             }
@@ -1641,11 +1751,11 @@ namespace Syndiceo.Windows
         {
             if (ApartmentsDataGrid.SelectedItem is ApartmentViewModel selectedApartment)
             {
-                MarkApartment(selectedApartment);
+                MarkApartment(selectedApartment); // маркиране и SummaryPriceWindow
             }
             else if (EntrancesDataGrid.SelectedItem is EntranceViewModel selectedEntrance)
             {
-                MarkEntrance(selectedEntrance); 
+                MarkEntrance(selectedEntrance); // маркиране без SummaryPriceWindow
             }
         }
 
@@ -1781,14 +1891,14 @@ namespace Syndiceo.Windows
 
                         foreach (var apVm in Apartments)
                         {
-                            apVm.IsMarked = false;
+                            apVm.IsMarked = false; 
 
                             var apDb = db2.Apartments.Find(apVm.ApartmentId);
                             if (apDb != null)
                                 apDb.IsMarked = false;
                         }
 
-                        db2.SaveChanges();
+                        db2.SaveChanges(); 
                     }
 
                 };
@@ -1975,8 +2085,13 @@ namespace Syndiceo.Windows
             }
             Properties.Settings.Default.MainWindowClosing = true;
             ArchiveWindow a = new ArchiveWindow();
-            a.Show();
-            Properties.Settings.Default.WindowState = this.WindowState.ToString();
+            a.Closed += (s, args) =>
+            {
+                Application.Current.Shutdown();
+            };
+
+            a.Show(); Properties.Settings.Default.WindowState = this.WindowState.ToString();
+            Properties.Settings.Default.taxesWdHelpNeeded = false;
             Properties.Settings.Default.Save();
         }
 
@@ -2092,8 +2207,8 @@ namespace Syndiceo.Windows
                 }
                 else
                 {
-                    taxesWd.Close(); // затваряме стария
-                    taxesWd = new TaxesWindow(entranceId: selectedEntranceId.Value); // нов за правилния вход
+                    taxesWd.Close();
+                    taxesWd = new TaxesWindow(entranceId: selectedEntranceId.Value);
                     taxesWd.Closed += (s, args) => LoadData();
                     taxesWd.Show();
                 }
@@ -2218,22 +2333,23 @@ namespace Syndiceo.Windows
                 get
                 {
                     if (PaidAmount >= TotalSum && TotalSum > 0)
-                        return Brushes.LightGreen;           // напълно платено
+                        return Brushes.LightGreen;
                     else if (IsPartiallyPaid)
-                        return Brushes.LightGoldenrodYellow; // частично платено
+                        return Brushes.LightGoldenrodYellow;
                     else
-                        return Brushes.White;                // не е платено
+                        return Brushes.White;
                 }
             }
 
             public void UpdatePayment(decimal newlyPaid)
             {
-                PaidAmount += newlyPaid; // добавяме новоплатената сума
+                PaidAmount += newlyPaid; 
                 if (PaidAmount > TotalSum)
                     PaidAmount = TotalSum;
 
-                IsMarked = RemainingSum == 0; // маркираме само ако няма останало
+                IsMarked = RemainingSum == 0;
             }
+
 
             public event PropertyChangedEventHandler PropertyChanged;
             protected void OnPropertyChanged(string propertyName) =>
@@ -2252,7 +2368,6 @@ namespace Syndiceo.Windows
 
             public string Street => Block?.Address?.Street ?? "";
             public string BlockNumber => Block?.BlockName ?? "";
-
             public string OwnerName { get; set; }
             public string OwnerPhone { get; set; }
             private bool _isFullyMarked;
@@ -2283,7 +2398,6 @@ namespace Syndiceo.Windows
             public int Id { get; set; }
             public string Street { get; set; }
         }
-
         private void AddressesDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (AddressesDataGrid.SelectedItem is AddressViewModel selectedAddress)
@@ -2306,13 +2420,22 @@ namespace Syndiceo.Windows
             }
         }
 
-        private void openSiteButton_Click(object sender, RoutedEventArgs e)
+        private void websiteButton_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start(new ProcessStartInfo
+            try
             {
-                FileName = @"D:\Syndiceo\SyndiceoWeb\bin\Debug\net8.0\SyndiceoWeb.exe",
-                UseShellExecute = true
-            });
+                string url = "https://syndiceo.runasp.net";
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Грешка при отваряне на сайта: " + ex.Message);
+            }
         }
     }
 }

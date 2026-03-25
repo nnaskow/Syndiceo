@@ -1,4 +1,5 @@
-﻿using Syndiceo.Models;
+﻿using Syndiceo.Data.Models;
+using Syndiceo.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Syndiceo.Data.Models;
+
 namespace Syndiceo.Windows
 {
     /// <summary>
@@ -82,6 +83,7 @@ namespace Syndiceo.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+
             LoadMaintenanceData();
         }
         private void LoadMaintenanceData()

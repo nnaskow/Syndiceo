@@ -9,5 +9,12 @@ namespace SyndiceoWeb.Areas.Identity.Data;
 // Add profile data for application users by adding properties to the SyndiceoWebUser class
 public class SyndiceoWebUser : IdentityUser
 {
+    [PersonalData]
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+
+    public bool IsApproved { get; set; } = false;
+
+
 }
 

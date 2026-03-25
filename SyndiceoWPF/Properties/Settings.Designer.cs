@@ -9,254 +9,410 @@
 //------------------------------------------------------------------------------
 
 namespace Syndiceo.Properties {
-    
-    
+
+
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.14.0.0")]
-    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
-        
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "18.4.0.0")]
+    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase
+    {
+
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
-        
-        public static Settings Default {
-            get {
+
+        public static Settings Default
+        {
+            get
+            {
                 return defaultInstance;
             }
         }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1.0.0")]
-        public string appVersion {
-            get {
-                return ((string)(this["appVersion"]));
-            }
-        }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool AutoArchive {
-            get {
+        public bool AutoArchive
+        {
+            get
+            {
                 return ((bool)(this["AutoArchive"]));
             }
-            set {
+            set
+            {
                 this["AutoArchive"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool RememberUsername {
-            get {
+        public bool RememberUsername
+        {
+            get
+            {
                 return ((bool)(this["RememberUsername"]));
             }
-            set {
+            set
+            {
                 this["RememberUsername"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool RememberPassword {
-            get {
+        public bool RememberPassword
+        {
+            get
+            {
                 return ((bool)(this["RememberPassword"]));
             }
-            set {
+            set
+            {
                 this["RememberPassword"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastBackupPath {
-            get {
+        public string LastBackupPath
+        {
+            get
+            {
                 return ((string)(this["LastBackupPath"]));
             }
-            set {
+            set
+            {
                 this["LastBackupPath"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool DetailedReport {
-            get {
+        public bool DetailedReport
+        {
+            get
+            {
                 return ((bool)(this["DetailedReport"]));
             }
-            set {
+            set
+            {
                 this["DetailedReport"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool ChangeUsername {
-            get {
+        public bool ChangeUsername
+        {
+            get
+            {
                 return ((bool)(this["ChangeUsername"]));
             }
-            set {
+            set
+            {
                 this["ChangeUsername"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool ChangePassword {
-            get {
+        public bool ChangePassword
+        {
+            get
+            {
                 return ((bool)(this["ChangePassword"]));
             }
-            set {
+            set
+            {
                 this["ChangePassword"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool ChangeName {
-            get {
+        public bool ChangeName
+        {
+            get
+            {
                 return ((bool)(this["ChangeName"]));
             }
-            set {
+            set
+            {
                 this["ChangeName"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool ChangeEmail {
-            get {
+        public bool ChangeEmail
+        {
+            get
+            {
                 return ((bool)(this["ChangeEmail"]));
             }
-            set {
+            set
+            {
                 this["ChangeEmail"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool MainWindowClosing {
-            get {
+        public bool MainWindowClosing
+        {
+            get
+            {
                 return ((bool)(this["MainWindowClosing"]));
             }
-            set {
+            set
+            {
                 this["MainWindowClosing"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool isUsernameChanged {
-            get {
+        public bool isUsernameChanged
+        {
+            get
+            {
                 return ((bool)(this["isUsernameChanged"]));
             }
-            set {
+            set
+            {
                 this["isUsernameChanged"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool isPasswordChanged {
-            get {
+        public bool isPasswordChanged
+        {
+            get
+            {
                 return ((bool)(this["isPasswordChanged"]));
             }
-            set {
+            set
+            {
                 this["isPasswordChanged"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool isNameChanged {
-            get {
+        public bool isNameChanged
+        {
+            get
+            {
                 return ((bool)(this["isNameChanged"]));
             }
-            set {
+            set
+            {
                 this["isNameChanged"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string currentSearch {
-            get {
+        public string currentSearch
+        {
+            get
+            {
                 return ((string)(this["currentSearch"]));
             }
-            set {
+            set
+            {
                 this["currentSearch"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string WindowState {
-            get {
+        public string WindowState
+        {
+            get
+            {
                 return ((string)(this["WindowState"]));
             }
-            set {
+            set
+            {
                 this["WindowState"] = value;
             }
         }
-        
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool taxesWdHelpNeeded
+        {
+            get
+            {
+                return ((bool)(this["taxesWdHelpNeeded"]));
+            }
+            set
+            {
+                this["taxesWdHelpNeeded"] = value;
+            }
+        }
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string monthForPrinting {
-            get {
+        public string monthForPrinting
+        {
+            get
+            {
                 return ((string)(this["monthForPrinting"]));
             }
-            set {
+            set
+            {
                 this["monthForPrinting"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string yearForPrinting {
-            get {
+        public string yearForPrinting
+        {
+            get
+            {
                 return ((string)(this["yearForPrinting"]));
             }
-            set {
+            set
+            {
                 this["yearForPrinting"] = value;
             }
         }
-        
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1.0.3")]
+        public string appVersion
+        {
+            get
+            {
+                return ((string)(this["appVersion"]));
+            }
+            set
+            {
+                this["appVersion"] = value;
+            }
+        }
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool isReportDone {
-            get {
+        public bool isReportDone
+        {
+            get
+            {
                 return ((bool)(this["isReportDone"]));
             }
-            set {
+            set
+            {
                 this["isReportDone"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool areThereAnyLastPayments {
-            get {
+        public bool areThereAnyLastPayments
+        {
+            get
+            {
                 return ((bool)(this["areThereAnyLastPayments"]));
             }
-            set {
+            set
+            {
                 this["areThereAnyLastPayments"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool updateDatabase
+        {
+            get
+            {
+                return ((bool)(this["updateDatabase"]));
+            }
+            set
+            {
+                this["updateDatabase"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool WhatsNewNeeded
+        {
+            get
+            {
+                return ((bool)(this["WhatsNewNeeded"]));
+            }
+            set
+            {
+                this["WhatsNewNeeded"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastReportDate
+        {
+            get
+            {
+                return ((string)(this["LastReportDate"]));
+            }
+            set
+            {
+                this["LastReportDate"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool isUpdated
+        {
+            get
+            {
+                return ((bool)(this["isUpdated"]));
+            }
+            set
+            {
+                this["isUpdated"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SavedPassword
+        {
+            get
+            {
+                return ((string)(this["SavedPassword"]));
+            }
+            set
+            {
+                this["SavedPassword"] = value;
             }
         }
     }

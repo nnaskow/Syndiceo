@@ -3,13 +3,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
-using Syndiceo.Models;
+using Syndiceo.Data.Models;
 using Syndiceo.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using static Syndiceo.Windows.ManagementWindow;
-using Syndiceo.Data.Models;
-using Syndiceo.Data;
+
 namespace Syndiceo.Windows
 {
     public partial class SummaryPriceWindow : Window

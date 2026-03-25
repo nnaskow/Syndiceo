@@ -1,16 +1,15 @@
-﻿using Syndiceo.Models;
+﻿using Syndiceo.Data.Models;
 using System;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Collections.Generic;
 using Syndiceo.Utilities;
-
+using Syndiceo.ViewModels;
 namespace Syndiceo.Windows
 {
     public partial class SaveAsTemplateWindow : Window
     {
-        // ✅ Добавяме полетата за данните
         public List<TransactionViewModel> Incomes { get; set; }
         public List<TransactionViewModel> Expenses { get; set; }
         public decimal Cashbox { get; set; }

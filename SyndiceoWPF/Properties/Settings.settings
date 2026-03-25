@@ -2,7 +2,7 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Syndiceo.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="appVersion" Type="System.String" Scope="Application">
+    <Setting Name="appVersion" Type="System.String" Scope="User">
       <Value Profile="(Default)">1.0.0</Value>
     </Setting>
     <Setting Name="AutoArchive" Type="System.Boolean" Scope="User">
