@@ -6,11 +6,10 @@
 <style>
     .user-row {
         transition: background-color 0.2s ease;
+        background: white;
         border-bottom: 1px solid #F1F5F9;
     }
-    .user-row:hover {
-        background-color: #F8FAFC;
-    }
+
     .avatar-placeholder {
         width: 38px;
         height: 38px;
@@ -21,53 +20,91 @@
         justify-content: center;
         border-radius: 10px;
         font-weight: bold;
+        flex-shrink: 0;
     }
+
     .search-card {
         border-radius: 16px;
         background: white;
         border: 1px solid #E2E8F0;
     }
+
     .status-badge {
-        font-size: 0.75rem;
-        padding: 0.4rem 0.8rem;
+        font-size: 0.7rem;
+        padding: 0.3rem 0.7rem;
         border-radius: 50px;
-        font-weight: 600;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    @@media (max-width: 767.98px) {
+        .manage-users-table thead {
+            display: none;
+        }
+
+        .manage-users-table tbody tr {
+            display: block;
+            margin-bottom: 1rem;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 18px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .manage-users-table td {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0 !important;
+            border: none !important;
+        }
+
+            .manage-users-table td:last-child {
+                border-top: 1px solid #F1F5F9 !important;
+                margin-top: 0.5rem;
+                padding-top: 1rem !important;
+            }
+
+        .manage-users-table .btn {
+            width: 100%;
+            padding: 8px !important;
+        }
     }
 </style>
 
-<div class="container py-5">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+<div class="container py-4 py-md-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-2">
-                    <li class="breadcrumb-item"><a asp-action="AdminDashboard">Табло</a></li>
+                <ol class="breadcrumb mb-2 small">
+                    <li class="breadcrumb-item"><a asp-action="AdminDashboard" class="text-decoration-none">Табло</a></li>
                     <li class="breadcrumb-item active">Потребители</li>
                 </ol>
             </nav>
-            <h2 class="fw-bold m-0" style="color: #2D3748;">👤 Управление на потребители</h2>
-            <p class="text-muted mb-0">Преглед, търсене и администрация на профили.</p>
+            <h2 class="fw-bold m-0" style="color: #2D3748;">👤 Потребители</h2>
         </div>
-        <div class="text-md-end">
-            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold">
-                Общо активни: @ViewBag.TotalActive
+        <div class="text-start">
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold border border-primary border-opacity-10">
+                Активни: @ViewBag.TotalActive
             </span>
         </div>
     </div>
 
-    <div class="search-card shadow-sm p-3 mb-4">
+    <div class="search-card shadow-sm p-2 p-md-3 mb-4">
         <form method="get" asp-action="ManageUsers" class="row g-2 align-items-center">
-            <div class="col-md-9">
-                <div class="input-group border-0">
+            <div class="col-12 col-md-9">
+                <div class="input-group border-0 bg-light rounded-3">
                     <span class="input-group-text bg-transparent border-0 pe-0">
                         <i class="bi bi-search text-muted"></i>
                     </span>
                     <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch"
-                           class="form-control border-0 shadow-none" 
-                           placeholder="Търсене по имейл адрес..." />
+                           class="form-control border-0 bg-transparent shadow-none py-2"
+                           placeholder="Имейл..." />
                 </div>
             </div>
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">Търси</button>
+            <div class="col-12 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1 fw-bold">Търси</button>
                 @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch))
                 {
                     <a asp-action="ManageUsers" class="btn btn-light border text-muted px-3">
@@ -78,14 +115,14 @@
         </form>
     </div>
 
-    <div class="card border-0 shadow-sm" style="border-radius: 20px; overflow: hidden;">
-        <div class="table-responsive">
-            <table class="table align-middle mb-0 table-borderless">
+    <div class="card border-0 shadow-sm p-2 p-md-0" style="border-radius: 24px; overflow: hidden;">
+        <div class="table-responsive border-0">
+            <table class="table align-middle mb-0 table-borderless manage-users-table">
                 <thead>
                     <tr class="text-muted small text-uppercase" style="letter-spacing: 1px; background-color: #F8FAFC; border-bottom: 1px solid #E2E8F0;">
-                        <th class="ps-4 py-3 fw-bold">Потребител</th>
-                        <th class="py-3 fw-bold">Статус на адрес</th>
-                        <th class="py-3 text-end pe-4 fw-bold">Действия</th>
+                        <th class="ps-4 py-3 fw-bold">Данни</th>
+                        <th class="py-3 fw-bold">Статус</th>
+                        <th class="py-3 text-end pe-4 fw-bold">Действие</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -93,22 +130,23 @@
                     {
                         <tr>
                             <td colspan="3" class="text-center py-5 text-muted">
-                                <div class="fs-2 mb-2">🔍</div>
-                                <p>Няма намерени потребители по този критерий.</p>
+                                <div class="fs-1 mb-2">🔍</div>
+                                <p>Няма намерени резултати.</p>
+                                <a asp-action="ManageUsers" class="btn btn-sm btn-outline-secondary rounded-pill px-4">Изчисти търсенето</a>
                             </td>
                         </tr>
                     }
                     @foreach (var user in Model)
                     {
                         <tr class="user-row">
-                            <td class="ps-4 py-3">
+                            <td class="ps-md-4 py-3">
                                 <div class="d-flex align-items-center">
                                     <div class="avatar-placeholder me-3">
                                         @user.Email.Substring(0, 1).ToUpper()
                                     </div>
-                                    <div>
+                                    <div class="text-truncate" style="max-width: 220px;">
                                         <div class="fw-bold text-dark">@user.Email</div>
-                                        <div class="text-muted small">ID: @user.Id.Substring(0, 8)...</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">ID: @user.Id.Substring(0, 8)...</div>
                                     </div>
                                 </div>
                             </td>
@@ -126,15 +164,24 @@
                                     </span>
                                 }
                             </td>
-                            <td class="text-end pe-4 py-3">
-                                <form asp-action="DeleteUser" method="post"
-                                      onsubmit="return confirm('ВНИМАНИЕ: Изтриването на @user.Email е окончателно! Продължавате ли?');">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="userId" value="@user.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill fw-bold">
-                                        <i class="bi bi-trash3 me-1"></i> Изтрий
-                                    </button>
-                                </form>
+                            <td class="text-md-end pe-md-4 py-3">
+                                @if (user.Email != "admin@syndiceo.net")
+                                {
+                                    <form asp-action="DeleteUser" method="post"
+                                          onsubmit="return confirm('Изтриване на @user.Email?');" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="userId" value="@user.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill fw-bold shadow-sm">
+                                            <i class="bi bi-trash3 me-1"></i> Изтрий
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill bg-light text-muted border small fw-bold">
+                                        <i class="bi bi-shield-lock-fill me-1 text-primary"></i> Системен админ
+                                    </div>
+                                }
                             </td>
                         </tr>
                     }
@@ -143,9 +190,9 @@
         </div>
     </div>
 
-    <div class="mt-4 text-start">
+    <div class="mt-4 text-center text-md-start">
         <a asp-action="AdminDashboard" class="text-decoration-none text-muted small fw-bold">
-            <i class="bi bi-arrow-left me-1"></i> Обратно към таблото
+            <i class="bi bi-arrow-left me-1"></i> Табло
         </a>
     </div>
 </div>

@@ -4,62 +4,112 @@
 }
 
 <style>
-    .verify-card {
+    .verify-card-row {
         transition: all 0.3s ease;
-        border: 1px solid #E2E8F0;
         background: white;
+        border-bottom: 8px solid #F8FAFC;
     }
-    .verify-card:hover {
-        border-color: #2C5282;
-        background-color: #F8FAFC;
-    }
+    .extra-small {
+    font-size: 0.75rem;
+}
+
+td .text-dark.small {
+    line-height: 1.2;
+    max-width: 250px; 
+    word-wrap: break-word;
+}
     .location-icon {
-        width: 45px;
-        height: 45px;
-        background: rgba(44, 82, 130, 0.1);
+        width: 40px;
+        height: 40px;
+        background: rgba(44, 82, 130, 0.08);
         color: #2C5282;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 12px;
-        font-size: 1.2rem;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        flex-shrink: 0;
     }
+
     .user-pill {
-        background: #EDF2F7;
-        padding: 4px 12px;
+        background: #F1F5F9;
+        padding: 4px 10px;
         border-radius: 50px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #4A5568;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #475569;
+        display: inline-block;
+        max-width: 180px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    @@media (max-width: 767.98px) {
+        .verify-table thead {
+            display: none;
+        }
+
+        .verify-table tbody tr {
+            display: block;
+            margin-bottom: 1rem;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 20px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .verify-table td {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0 !important;
+            border: none !important;
+        }
+
+            .verify-table td:last-child {
+                border-top: 1px solid #F1F5F9 !important;
+                margin-top: 0.5rem;
+                padding-top: 1rem !important;
+                text-align: center !important;
+            }
+
+        .verify-table .btn {
+            width: 100%;
+            padding: 10px !important;
+        }
+        
+        .user-pill {
+            max-width: 220px;
+        }
     }
 </style>
 
-<div class="container py-5">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+<div class="container py-4 py-md-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-2">
-                    <li class="breadcrumb-item"><a asp-action="AdminDashboard">Табло</a></li>
+                <ol class="breadcrumb mb-2 small">
+                    <li class="breadcrumb-item"><a asp-action="AdminDashboard" class="text-decoration-none">Табло</a></li>
                     <li class="breadcrumb-item active">Адреси</li>
                 </ol>
             </nav>
-            <h2 class="fw-bold m-0" style="color: #2D3748;">🏠 Потвърждение на местоживеене</h2>
-            <p class="text-muted mb-0">Преглед на заявки за достъп до обекти и апартаменти.</p>
+            <h2 class="fw-bold m-0" style="color: #2D3748;">🏠 Адреси</h2>
+            <p class="text-muted small mb-0 d-none d-sm-block">Потвърждаване на достъп до обекти.</p>
         </div>
-        <div class="text-md-end">
+        <div>
             <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-3 py-2 rounded-pill fw-bold">
-                ⚠️ @Model.Count() чакащи заявки
+                ⚠️ @Model.Count() чакащи
             </span>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm" style="border-radius: 20px; overflow: hidden;">
-        <div class="table-responsive">
-            <table class="table align-middle mb-0 table-borderless">
+    <div class="card border-0 shadow-sm p-2 p-md-0" style="border-radius: 24px; overflow: hidden;">
+        <div class="table-responsive border-0">
+            <table class="table align-middle mb-0 table-borderless verify-table">
                 <thead>
                     <tr class="text-muted small text-uppercase" style="letter-spacing: 1px; background-color: #F8FAFC; border-bottom: 1px solid #E2E8F0;">
                         <th class="ps-4 py-3 fw-bold">Потребител</th>
-                        <th class="py-3 fw-bold">Детайли за обекта</th>
+                        <th class="py-3 fw-bold">Обект</th>
                         <th class="py-3 text-end pe-4 fw-bold">Действие</th>
                     </tr>
                 </thead>
@@ -68,41 +118,53 @@
                     {
                         <tr>
                             <td colspan="3" class="text-center py-5">
-                                <div class="fs-1">✅</div>
-                                <h5 class="fw-bold mt-3">Няма чакащи заявки</h5>
-                                <p class="text-muted">Всички потребители са с потвърдени адреси.</p>
-                                <a asp-action="AdminDashboard" class="btn btn-primary mt-2">Към таблото</a>
+                                <div class="fs-1 mb-2">✅</div>
+                                <h5 class="fw-bold text-dark">Всички адреси са потвърдени</h5>
+                                <a asp-action="AdminDashboard" class="btn btn-primary btn-sm rounded-pill px-4 mt-2">Към таблото</a>
                             </td>
                         </tr>
                     }
                     @foreach (var item in Model)
                     {
-                        <tr class="verify-card">
-                            <td class="ps-4 py-4">
+                        <tr class="verify-card-row">
+                            <td class="ps-md-4 py-3">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar-placeholder me-3" style="width:40px; height:40px; background:#2C5282; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                                    <div class="me-3 d-none d-md-flex" style="width:38px; height:38px; background:#2C5282; color:white; border-radius:10px; align-items:center; justify-content:center; font-weight:bold; font-size: 0.9rem;">
                                         @item.User.Email.Substring(0, 1).ToUpper()
                                     </div>
                                     <div>
                                         <div class="user-pill mb-1">@item.User.Email</div>
-                                        <div class="text-muted small">Заявка от: @DateTime.Now.ToString("dd.MM.yyyy")</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">Заявка от днес</div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="py-4">
+                            <td class="py-3">
                                 <div class="d-flex align-items-center">
-                                    <div class="location-icon me-3">🏢</div>
+                                    <div class="location-icon me-2 me-md-3" style="font-size: 1.5rem;">🏢</div>
                                     <div>
-                                        <div class="fw-bold text-dark">Вход: @item.Entrance.EntranceName</div>
-                                        <div class="text-primary fw-bold">Апартамент № @item.ApartmentNumber</div>
+                                        <div class="fw-bold text-dark small">
+                                            @item.Entrance?.Block?.Address?.Street
+                                            @item.Entrance?.Block?.BlockName
+                                            @if (!string.IsNullOrEmpty(item.Entrance?.Block?.BlockName))
+                                            {
+                                                <span>, № @item.Entrance.Block.BlockName</span>
+                                            }
+                                        </div>
+            
+                                        <div class="text-primary fw-bold extra-small mt-1">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary border-0 px-2 py-1 rounded">
+                                                Вход @item.Entrance?.EntranceName
+                                            </span>
+                                            <span class="ms-2">Ап. № @item.ApartmentNumber</span>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="text-end pe-4 py-4">
-                                <form asp-action="ConfirmResidence" method="post" class="d-inline">
+                            <td class="text-md-end pe-md-4 py-3">
+                                <form asp-action="ConfirmResidence" method="post" class="m-0">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="apartmentId" value="@item.ApartmentId" />
-                                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill fw-bold shadow-sm">
+                                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill fw-bold shadow-sm btn-sm">
                                         <i class="bi bi-check-circle-fill me-1"></i> Потвърди
                                     </button>
                                 </form>
@@ -114,9 +176,9 @@
         </div>
     </div>
 
-    <div class="mt-4">
+    <div class="mt-4 text-center text-md-start">
         <a asp-action="AdminDashboard" class="text-decoration-none text-muted small fw-bold">
-            <i class="bi bi-arrow-left me-1"></i> Обратно към таблото
+            <i class="bi bi-arrow-left me-1"></i> Към таблото
         </a>
     </div>
 </div>

@@ -1,27 +1,90 @@
 ﻿@model IEnumerable<Syndiceo.Data.Models.Discussion>
 @{
-    ViewData["Title"] = "Дискусии";
+    ViewData["Title"] = "Съобщения";
     var selectedId = ViewBag.SelectedId as int?;
     var selectedDiscussion = Model.FirstOrDefault(d => d.Id == selectedId);
 }
 
-<div class="container py-4">
-    
+<style>
+    .avatar {
+        width: 32px;
+        height: 32px;
+        background: #2C5282;
+        color: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .line-clamp-title {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+    }
+
+    .main-discussion-title {
+        word-break: break-word;
+        white-space: normal;
+        line-height: 1.3;
+    }
+
+    @@media (max-width: 767.98px) {
+        .discussion-layout {
+            height: 82vh !important;
+            border-radius: 15px !important;
+        }
+        .discussion-list {
+            flex: 1 1 auto !important;
+        }
+        .header-container {
+            flex-wrap: wrap;
+        }
+    }
+
+    .discussion-list::-webkit-scrollbar { width: 4px; }
+    .discussion-list::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 10px; }
+
+    .discussion-list, .discussion-view {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-in-out;
+    }
+
+    .mobile-hidden {
+        transform: translateX(-100%);
+        display: none !important;
+    }
+
+    .mobile-slide-in {
+        animation: slideIn 0.3s forwards;
+    }
+
+    @@keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+</style>
+
+<div class="container py-4 px-2 px-md-4">
     @if (User.IsInRole("Admin"))
     {
-        <div class="card border-0 shadow-sm mb-4 p-4" style="border-radius: 20px; background: #f8fafc;">
+        <div class="card border-0 shadow-sm mb-4 p-3 p-md-4" style="border-radius: 20px; background: #f8fafc;">
             <h6 class="fw-bold mb-3"><i class="bi bi-megaphone-fill text-primary me-2"></i>Публикувай ново съобщение</h6>
             <form asp-action="Create" method="post" class="row g-2">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <input type="text" name="title" class="form-control border-0 shadow-sm" placeholder="Заглавие на темата..." required style="border-radius: 10px;">
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <select name="isClosed" class="form-select border-0 shadow-sm" style="border-radius: 10px;">
-                        <option value="false">🔓 Отворена за коментари</option>
+                        <option value="false">🔓 Отворена</option>
                         <option value="true">🔒 Само за четене</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm" style="border-radius: 10px;">Създай</button>
                 </div>
                 <div class="col-12 mt-2">
@@ -31,59 +94,68 @@
         </div>
     }
 
-    <div class="discussion-layout shadow-sm border" style="display: grid; grid-template-columns: 350px 1fr; height: 75vh; background: white; border-radius: 24px; overflow: hidden;">
+    <div class="discussion-layout shadow-sm border d-flex flex-column flex-md-row" style="height: 75vh; background: white; border-radius: 24px; overflow: hidden;">
         
-        <div class="discussion-list border-end bg-light overflow-auto">
+        <div class="discussion-list border-end bg-light overflow-auto @(selectedId != null ? "d-none d-md-block" : "w-100")" style="flex: 0 0 350px;">
             <div class="p-3 bg-white border-bottom sticky-top">
                 <h6 class="m-0 fw-bold text-muted">Всички съобщения</h6>
             </div>
-            @foreach (var item in Model)
-            {
-                <a asp-action="Index" asp-route-id="@item.Id"
-                       class="list-group-item list-group-item-action border-0 p-3 @(selectedId == item.Id ? "bg-white shadow-sm border-start border-4 border-primary" : "bg-transparent")">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="badge @(item.IsClosed ? "bg-secondary" : "bg-success") bg-opacity-10 @(item.IsClosed ? "text-secondary" : "text-success")" style="font-size: 0.6rem;">
-                            @(item.IsClosed ? "INFO" : "LIVE")
-                        </span>
-                        <small class="text-muted" style="font-size: 0.7rem;">@item.CreatedAt.ToString("dd.MM")</small>
-                    </div>
-                    <div class="fw-bold text-dark text-truncate">@item.Title</div>
-                </a>
-            }
+            <div class="list-group list-group-flush">
+                @foreach (var item in Model)
+                {
+                    <a asp-action="Index" asp-route-id="@item.Id"
+                           class="list-group-item list-group-item-action border-0 p-3 @(selectedId == item.Id ? "bg-white shadow-sm border-start border-4 border-primary" : "bg-transparent")">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="badge @(item.IsClosed ? "bg-secondary" : "bg-success") bg-opacity-10 @(item.IsClosed ? "text-secondary" : "text-success")" style="font-size: 0.6rem;">
+                                @(item.IsClosed ? "INFO" : "LIVE")
+                            </span>
+                            <small class="text-muted" style="font-size: 0.7rem;">@item.CreatedAt.ToString("dd.MM")</small>
+                        </div>
+                        @* Заглавие в списъка с ограничение до 2 реда за прегледност *@
+                        <div class="fw-bold text-dark line-clamp-title">@item.Title</div>
+                    </a>
+                }
+            </div>
         </div>
 
-        <div class="discussion-view d-flex flex-column bg-white">
+        <div class="discussion-view d-flex flex-column bg-white flex-grow-1 @(selectedId == null ? "d-none d-md-flex" : "w-100")">
             @if (selectedDiscussion != null)
             {
-                <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
-                    <div>
-                        <h4 class="fw-bold m-0">@selectedDiscussion.Title</h4>
-                        <small class="text-muted">Публикувано на @selectedDiscussion.CreatedAt.ToString("dd MMMM, HH:mm")</small>
+                <div class="p-3 p-md-4 border-bottom d-flex justify-content-between align-items-center gap-2 header-container">
+                    <div class="d-flex align-items-center gap-3">
+                        <button type="button" id="backToList" class="btn btn-sm btn-light d-md-none rounded-circle me-2">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+                        <div>
+                            @* Премахнато ограничение max-width и text-truncate *@
+                            <h5 class="fw-bold m-0 main-discussion-title">@selectedDiscussion.Title</h5>
+                            <small class="text-muted d-none d-sm-block">@selectedDiscussion.CreatedAt.ToString("dd MMMM, HH:mm")</small>
+                        </div>
                     </div>
+                    
                     @if (User.IsInRole("Admin"))
                     {
-                        <div class="d-flex gap-2">
+                        <div class="d-flex gap-1">
                             <form asp-action="ToggleStatus" method="post">
                                 <input type="hidden" name="id" value="@selectedDiscussion.Id" />
-                                <button type="submit" class="btn btn-sm @(selectedDiscussion.IsClosed ? "btn-outline-success" : "btn-outline-secondary") rounded-pill px-3">
+                                <button type="submit" class="btn btn-sm @(selectedDiscussion.IsClosed ? "btn-outline-success" : "btn-outline-secondary") rounded-pill px-2 px-md-3">
                                     <i class="bi @(selectedDiscussion.IsClosed ? "bi-unlock" : "bi-lock")"></i>
-                                    @(selectedDiscussion.IsClosed ? "Отвори" : "Затвори")
                                 </button>
                             </form>
 
-                            <form asp-action="Delete" method="post" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете тази дискусия и всички коментари към нея?');">
+                            <form asp-action="Delete" method="post" onsubmit="return confirm('Изтриване на дискусията?');">
                                 <input type="hidden" name="id" value="@selectedDiscussion.Id" />
-                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
-                                    <i class="bi bi-trash3"></i> Изтрий
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2 px-md-3">
+                                    <i class="bi bi-trash3"></i>
                                 </button>
                             </form>
                         </div>
                     }
                 </div>
 
-                <div class="p-4 flex-grow-1 overflow-auto" style="background: #f0f2f5;">
-                    <div class="bg-white p-4 rounded-4 shadow-sm mb-4 border-start border-primary border-4">
-                        <p class="m-0 fs-5">@selectedDiscussion.Content</p>
+                <div class="p-3 p-md-4 flex-grow-1 overflow-auto" style="background: #f0f2f5;">
+                    <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm mb-4 border-start border-primary border-4">
+                        <p class="m-0 fs-6 fs-md-5" style="word-break: break-word;">@selectedDiscussion.Content</p>
                     </div>
 
                     @foreach (var reply in selectedDiscussion.Replies.OrderBy(r => r.CreatedAt))
@@ -93,57 +165,54 @@
                                 @(!string.IsNullOrEmpty(reply.User?.FirstName) ? reply.User.FirstName.Substring(0, 1) : "U")
                             </div>
         
-                            <div class="bg-white p-3 rounded-4 shadow-sm border" style="max-width: 80%;">
-                                <div class="d-flex justify-content-between gap-4 mb-1">
-                                    <span class="fw-bold small">
+                            <div class="bg-white p-2 p-md-3 rounded-4 shadow-sm border" style="max-width: 85%;">
+                                <div class="d-flex justify-content-between gap-3 mb-1">
+                                    <span class="fw-bold small" style="font-size: 0.75rem;">
                                         @(reply.User?.FirstName ?? reply.User?.UserName ?? "Потребител")
                                     </span>
-                                    <span class="text-muted" style="font-size: 0.7rem;">@reply.CreatedAt.ToString("HH:mm")</span>
+                                    <span class="text-muted" style="font-size: 0.65rem;">@reply.CreatedAt.ToString("HH:mm")</span>
                                 </div>
-                                <div class="text-dark">@reply.Text</div>
+                                <div class="text-dark small" style="word-break: break-word;">@reply.Text</div>
                             </div>
                         </div>
                     }
                 </div>
 
-                <div class="p-3 border-top">
+                <div class="p-3 border-top bg-white">
                     @if (!selectedDiscussion.IsClosed)
                     {
-                        <form asp-action="Reply" method="post" class="input-group">
+                        <form asp-action="Reply" method="post" class="input-group shadow-sm" style="border-radius: 12px; overflow: hidden;">
                             <input type="hidden" name="discussionId" value="@selectedDiscussion.Id" />
-                            <input type="text" name="message" class="form-control border-0 bg-light p-3" placeholder="Напишете отговор..." required style="border-radius: 12px 0 0 12px;">
-                            <button class="btn btn-primary px-4" style="border-radius: 0 12px 12px 0;"><i class="bi bi-send-fill"></i></button>
+                            <input type="text" name="message" class="form-control border-0 bg-light p-3" placeholder="Съобщение..." required>
+                            <button class="btn btn-primary px-3 px-md-4"><i class="bi bi-send-fill"></i></button>
                         </form>
                     }
                     else
                     {
-                        <div class="text-center py-2 text-muted small"><i class="bi bi-lock-fill me-1"></i> Темата е затворена за коментари от администратор.</div>
+                        <div class="text-center py-2 text-muted small"><i class="bi bi-lock-fill me-1"></i> Темата е затворена.</div>
                     }
                 </div>
             }
             else
             {
-                <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted opacity-50">
-                    <i class="bi bi-chat-square-text" style="font-size: 4rem;"></i>
-                    <p class="mt-3">Изберете съобщение от списъка вляво.</p>
+                <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted opacity-50 px-4 text-center">
+                    <i class="bi bi-chat-square-text" style="font-size: 3.5rem;"></i>
+                    <p class="mt-3">Изберете съобщение от списъка.</p>
                 </div>
             }
         </div>
     </div>
 </div>
 
-<style>
-    .avatar {
-        width: 35px;
-        height: 35px;
-        background: #2C5282;
-        color: white;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 0.8rem;
-        flex-shrink: 0;
-    }
-</style>
+<script>
+    document.getElementById('backToList')?.addEventListener('click', function() {
+        const listPanel = document.querySelector('.discussion-list');
+        const viewPanel = document.querySelector('.discussion-view');
+
+        listPanel.classList.remove('d-none');
+        listPanel.classList.add('w-100');
+        
+        viewPanel.classList.add('d-none');
+        viewPanel.classList.remove('w-100');
+    });
+</script>

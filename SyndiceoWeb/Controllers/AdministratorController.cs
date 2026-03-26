@@ -22,15 +22,75 @@ namespace SyndiceoWeb.Controllers
             ViewBag.TotalApartments = _context.Apartments.Count();
             ViewBag.OccupiedApartments = _context.Apartments.Count(a => a.UserId != null);
             ViewBag.FreeApartments = _context.Apartments.Count(a => a.UserId == null);
-
             ViewBag.ActiveUsers = _context.Users.Count(u => u.IsApproved);
             ViewBag.PendingUsers = _context.Users.Count(u => !u.IsApproved);
             ViewBag.PendingResidences = _context.Apartments.Count(a => a.UserId != null && !a.IsConfirmed);
-
             ViewBag.NewSignals = _context.Reports.Count(r => !r.IsResolved);
             ViewBag.ResolvedSignals = _context.Reports.Count(r => r.IsResolved);
 
-            return View();
+
+            var pendingUsers = _context.Users
+                    .Where(u => !u.IsApproved)
+                    .OrderByDescending(u => u.Id)
+                    .Take(3)
+                    .ToList()
+                    .Select(u => new ActivityLogViewModel
+                    {
+                        Title = "Нова регистрация",
+                        Description = $"Потребител {u.Email} чака одобрение.",
+                        Icon = "bi-person-plus-fill",
+                        Color = "#805AD5",
+                        BgColor = "#F3E8FF",
+                        RawDate = DateTime.Now 
+                    });
+
+            var pendingResidences = _context.Apartments
+                .Include(a => a.User)
+                .Include(a => a.Entrance)
+                .ThenInclude(b=>b.Block)
+                .ThenInclude(e=>e.Address)
+                .Where(a => a.UserId != null && !a.IsConfirmed)
+                .OrderByDescending(a => a.ApartmentId)
+                .Take(3)
+                .ToList()
+               .Select(a => {
+                   var street = a.Entrance?.Block?.Address.Street;
+                   var block = a.Entrance?.Block?.BlockName != null ? $"{a.Entrance.Block.BlockName}" : "";
+                   var entrance = a.Entrance?.EntranceName != null ? $"вх. {a.Entrance.EntranceName}" : "";
+
+                   return new ActivityLogViewModel
+                   {
+                       Title = "Заявка за адрес",
+                       Description = $"ул. {street} № {block} {entrance}, ап. {a.ApartmentNumber}".Replace(" ,", "").Trim(new char[] { ' ', ',' }),
+                       Icon = "bi-geo-alt-fill",
+                       Color = "#DD6B20",
+                       BgColor = "#FFFAF0",
+                       RawDate = DateTime.Now
+                   };
+               });
+
+            var recentReports = _context.Reports
+                .OrderByDescending(r => r.CreatedAt)
+                .Take(3)
+                .ToList()
+                .Select(r => new ActivityLogViewModel
+                {
+                    Title = "Нов сигнал",
+                    Description = r.Title.Length > 40 ? r.Title.Substring(0, 40) + "..." : r.Title,
+                    Icon = "bi-exclamation-triangle-fill",
+                    Color = "#E53E3E", 
+                    BgColor = "#FFF5F5",
+                    RawDate = r.CreatedAt
+                });
+
+            var allActivities = pendingUsers
+                .Concat(pendingResidences)
+                .Concat(recentReports)
+                .OrderByDescending(a => a.RawDate)
+                .Take(6)
+                .ToList();
+
+            return View(allActivities);
         }
         public IActionResult ManageUsers(string searchTerm)
         {
@@ -60,7 +120,14 @@ namespace SyndiceoWeb.Controllers
         public async Task<IActionResult> DeleteUser(string userId)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
             if (user == null) return NotFound();
+
+            if (user.Email == "admin@syndiceo.net")
+            {
+                TempData["Error"] = "Системният администратор не може да бъде изтрит!";
+                return RedirectToAction(nameof(ManageUsers));
+            }
 
             var userApartments = await _context.Apartments
                 .Where(a => a.UserId == userId)
@@ -68,16 +135,14 @@ namespace SyndiceoWeb.Controllers
 
             foreach (var apt in userApartments)
             {
-                apt.UserId = null;       
-                apt.IsConfirmed = false; 
+                apt.UserId = null;
+                apt.IsConfirmed = false;
             }
-
-            await _context.SaveChangesAsync();
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Потребителят е изтрит, сигналите му са премахнати, а апартаментите – освободени.";
+            TempData["Success"] = "Потребителят е изтрит успешно.";
             return RedirectToAction(nameof(ManageUsers));
         }
         public IActionResult UserApproval()
@@ -156,6 +221,8 @@ namespace SyndiceoWeb.Controllers
             var pendingRequests = _context.Apartments
                 .Include(a => a.User) 
                 .Include(a => a.Entrance)
+                .ThenInclude(e => e.Block)
+                .ThenInclude(b => b.Address)
                 .Where(a => a.UserId != null && !a.IsConfirmed)
                 .ToList();
 
@@ -172,6 +239,28 @@ namespace SyndiceoWeb.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(ResidenceConfirmation));
+        }
+    }
+    public class ActivityLogViewModel
+    {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Time { get; set; }
+        public string Icon { get; set; }
+        public string Color { get; set; }
+        public string BgColor { get; set; }
+        public DateTime RawDate { get; set; }
+
+        public string GetTimeAgo()
+        {
+            var diff = DateTime.Now - RawDate;
+
+            if (diff.TotalSeconds < 60) return "сега";
+            if (diff.TotalMinutes < 60) return $"преди {Math.Floor(diff.TotalMinutes)} мин.";
+            if (diff.TotalHours < 24) return $"преди {Math.Floor(diff.TotalHours)} ч.";
+            if (diff.TotalDays < 7) return $"преди {Math.Floor(diff.TotalDays)} дни";
+
+            return RawDate.ToString("dd.MM.yyyy");
         }
     }
 }

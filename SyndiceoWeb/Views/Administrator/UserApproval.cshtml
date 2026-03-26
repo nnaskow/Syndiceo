@@ -5,63 +5,111 @@
 }
 
 <style>
-    .approval-card {
+    .approval-card-row {
         transition: all 0.25s ease;
-        border: 1px solid #E2E8F0;
         background: white;
-        border-radius: 16px;
+        border-bottom: 8px solid #F8FAFC;
     }
-    .approval-card:hover {
-        border-color: #2C5282;
-        background-color: #F8FAFC;
-        transform: scale(1.005);
-    }
+
     .user-icon-circle {
-        width: 48px;
-        height: 48px;
+        width: 44px;
+        height: 44px;
         background: linear-gradient(135deg, #2C5282, #4A5568);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 12px;
-        font-size: 1.2rem;
-        box-shadow: 0 4px 10px rgba(44, 82, 130, 0.2);
+        font-weight: bold;
+        box-shadow: 0 4px 10px rgba(44, 82, 130, 0.15);
+        flex-shrink: 0;
     }
-    .action-btn-group .btn {
+
+   @@media (max-width: 767.98px) {
+        .approval-table thead {
+            display: none;
+        }
+
+        .approval-table tbody tr {
+            display: block;
+            margin-bottom: 1rem;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 20px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .approval-table td {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0 !important;
+            border: none !important;
+            text-align: left !important;
+        }
+
+            .approval-table td:last-child {
+                border-top: 1px solid #F1F5F9 !important;
+                margin-top: 0.5rem;
+                padding-top: 1rem !important;
+            }
+
+        .action-btn-group {
+            width: 100%;
+        }
+
+            .action-btn-group form {
+                flex: 1;
+            }
+
+            .action-btn-group .btn {
+                width: 100%;
+                justify-content: center;
+            }
+    }
+
+    .btn-approve {
+        background: #38A169;
+        color: white;
+        border: none;
         border-radius: 10px;
         font-weight: 600;
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 1.25rem;
+        transition: transform 0.2s;
     }
+
+        .btn-approve:hover {
+            background: #2F855A;
+            color: white;
+            transform: translateY(-1px);
+        }
 </style>
 
-<div class="container py-5">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+<div class="container py-4 py-md-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-2">
-                    <li class="breadcrumb-item"><a asp-action="AdminDashboard">Табло</a></li>
+                <ol class="breadcrumb mb-2 small">
+                    <li class="breadcrumb-item"><a asp-action="AdminDashboard" class="text-decoration-none">Табло</a></li>
                     <li class="breadcrumb-item active">Одобряване</li>
                 </ol>
             </nav>
-            <h2 class="fw-bold m-0" style="color: #2D3748;">👤 Нови регистрации</h2>
-            <p class="text-muted mb-0">Преглед и активиране на нови потребителски акаунти.</p>
+            <h2 class="fw-bold m-0" style="color: #2D3748;">👤 Регистрации</h2>
         </div>
-        <div class="text-md-end">
+        <div>
             <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill fw-bold">
-                <i class="bi bi-person-plus-fill me-1"></i> @ViewBag.Pendings чакащи за активация
+                <i class="bi bi-person-plus-fill me-1"></i> @ViewBag.Pendings чакащи
             </span>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm p-4" style="border-radius: 20px;">
-        <div class="table-responsive">
-            <table class="table align-middle mb-0 table-borderless">
+    <div class="card border-0 shadow-sm p-2 p-md-4" style="border-radius: 24px;">
+        <div class="table-responsive border-0">
+            <table class="table align-middle mb-0 table-borderless approval-table">
                 <thead>
                     <tr class="text-muted small text-uppercase" style="letter-spacing: 1px; border-bottom: 2px solid #F1F5F9;">
-                        <th class="pb-3 fw-bold">Данни за потребителя</th>
-                        <th class="pb-3 fw-bold text-center">Системно ID</th>
-                        <th class="pb-3 text-end fw-bold">Действия по активиране</th>
+                        <th class="pb-3 fw-bold ps-3">Потребител</th>
+                        <th class="pb-3 fw-bold text-center">ID</th>
+                        <th class="pb-3 text-end fw-bold pe-3">Активиране</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -69,10 +117,10 @@
                     {
                         <tr>
                             <td colspan="3" class="text-center py-5">
-                                <div class="mb-3" style="font-size: 3rem;">🎉</div>
-                                <h5 class="fw-bold text-dark">Няма нови чакащи регистрации</h5>
-                                <p class="text-muted">Всички потребители са прегледани и одобрени.</p>
-                                <a asp-action="AdminDashboard" class="btn btn-outline-primary btn-sm rounded-pill px-4">Връщане към таблото</a>
+                                <div class="mb-3 fs-1">🎉</div>
+                                <h5 class="fw-bold text-dark">Всичко е чисто!</h5>
+                                <p class="text-muted small">Няма нови чакащи регистрации за преглед.</p>
+                                <a asp-action="AdminDashboard" class="btn btn-primary btn-sm rounded-pill px-4 mt-2">Към таблото</a>
                             </td>
                         </tr>
                     }
@@ -80,36 +128,37 @@
                     {
                         @foreach (var user in Model)
                         {
-                            <tr class="approval-card" style="border-bottom: 8px solid white;">
-                                <td class="py-4 ps-3">
+                            <tr class="approval-card-row">
+                                <td class="py-3 py-md-4 ps-3">
                                     <div class="d-flex align-items-center">
                                         <div class="user-icon-circle me-3">
                                             @user.Email.Substring(0, 1).ToUpper()
                                         </div>
-                                        <div>
-                                            <div class="fw-bold text-dark fs-5">@user.Email</div>
-                                            <div class="text-muted small">Дата на регистрация: @DateTime.Now.ToString("dd.MM.yyyy")</div>
+                                        <div class="text-truncate" style="max-width: 200px;">
+                                            <div class="fw-bold text-dark fs-6">@user.Email</div>
+                                            <div class="text-muted" style="font-size: 0.75rem;">Регистриран днес</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="text-center">
-                                    <code class="bg-light px-2 py-1 rounded text-primary small">@user.Id.Substring(0, 12)...</code>
+                                <td class="text-md-center">
+                                    <span class="d-md-none text-muted small me-1">ID:</span>
+                                    <code class="bg-light px-2 py-1 rounded text-primary small">@user.Id.Substring(0, 8)...</code>
                                 </td>
-                                <td class="text-end pe-3">
-                                    <div class="d-flex gap-2 justify-content-end action-btn-group">
-                                        <form asp-action="ApproveUserAccount" method="post" class="m-0">
+                                <td class="text-md-end pe-md-3">
+                                    <div class="d-flex gap-2 justify-content-md-end action-btn-group">
+                                        <form asp-action="ApproveUserAccount" method="post" class="m-0 flex-grow-1 flex-md-grow-0">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="userId" value="@user.Id" />
-                                            <button type="submit" class="btn btn-success shadow-sm">
+                                            <button type="submit" class="btn btn-approve btn-sm w-100">
                                                 <i class="bi bi-person-check-fill me-1"></i> Одобри
                                             </button>
                                         </form>
 
-                                        <form asp-action="RejectUser" method="post" onsubmit="return confirm('Сигурни ли сте, че искате да отхвърлите и изтриете този потребител?');" class="m-0">
+                                        <form asp-action="RejectUser" method="post" onsubmit="return confirm('Изтриване на този акаунт?');" class="m-0">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="userId" value="@user.Id" />
-                                            <button type="submit" class="btn btn-outline-danger">
-                                                <i class="bi bi-x-circle"></i>
+                                            <button type="submit" class="btn btn-outline-danger btn-sm px-3">
+                                                <i class="bi bi-trash3"></i>
                                             </button>
                                         </form>
                                     </div>

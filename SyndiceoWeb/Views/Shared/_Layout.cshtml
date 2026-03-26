@@ -3,19 +3,17 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Syndiceo</title>
+    <title>@ViewData["Title"]</title>
     <link rel="icon" type="image/png" href="~/images/logo.png" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     
-    @* АВТОМАТИЧЕН REDIRECT ЗА АДМИНА *@
     @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
     {
         var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
         var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
 
-        // Ако админът се опита да отвори началната страница (Home/Index), го пращаме в таблото
         if (currentController == "Home" && currentAction == "Index")
         {
             <script>window.location.href = '@Url.Action("AdminDashboard", "Administrator")';</script>
@@ -90,10 +88,16 @@
             </div>
 
             <div class="col-md-4 text-center text-md-end">
-                <span class="text-muted small">
-                    Изработено от <span class="fw-bold text-dark">NYXON</span>
-                </span>
-            </div>
+    <span class="text-muted small">
+        Изработено от 
+      <a href="https://nyxon.runasp.net" 
+   onclick="this.href = this.href.replace('https', 'http'); return true;" 
+   target="_blank" 
+   class="nyxon-link">
+   NYXON
+</a>
+    </span>
+</div>
         </div>
     </div>
 </footer>
@@ -137,20 +141,17 @@
         }
 
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        /* Прави футъра по-елегантен */
 .footer {
     position: relative;
     z-index: 10;
 }
 
-/* Ефект при посочване на линка за поверителност */
 .hover-primary:hover {
     color: #2C5282 !important;
     text-decoration: underline !important;
     transition: all 0.2s ease;
 }
 
-/* Гарантира, че ако съдържанието е малко, футърът пак ще е долу */
 body {
     display: flex;
     flex-direction: column;
