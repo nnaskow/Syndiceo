@@ -3,35 +3,43 @@
 @inject SignInManager<SyndiceoWebUser> SignInManager
 @inject UserManager<SyndiceoWebUser> UserManager
 
-<div class="auth-buttons d-flex align-items-center gap-3">
+<div class="auth-buttons d-flex align-items-center gap-2">
     @if (SignInManager.IsSignedIn(User))
     {
-        <a class="auth-link"
-           asp-area="Identity"
-           asp-page="/Account/Manage/Index">
-            Профил
-        </a>
+        <div class="dropdown">
+            <a class="btn auth-link dropdown-toggle d-flex align-items-center gap-2" 
+               href="#" role="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="avatar-sm">@User.Identity.Name.Substring(0, 1).ToUpper()</div>
+                <span>Моят профил</span>
+            </a>
 
-        <form asp-area="Identity"
-              asp-page="/Account/Logout"
-              asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button type="submit" class="auth-button">
-                Изход
-            </button>
-        </form>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userMenu" style="border-radius: 12px;">
+                <li><a class="dropdown-item py-2" asp-area="Identity" asp-page="/Account/Manage/Index">⚙️ Настройки</a></li>
+                @if (User.IsInRole("Admin"))
+                {
+                    <li><a class="dropdown-item py-2 fw-bold text-primary" asp-controller="Administrator" asp-action="AdminDashboard">📊 Админ Панел</a></li>
+                }
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                        <button type="submit" class="dropdown-item py-2 text-danger">🚪 Изход</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
     }
     else
     {
-        <a class="auth-button"
-           asp-area="Identity"
-           asp-page="/Account/Login">
-            Вход
-        </a>
-        <a class="auth-button"
-           asp-area="Identity"
-           asp-page="/Account/Register">
-            Регистрация
-        </a>
-
+        <a class="btn btn-link text-decoration-none text-dark fw-bold px-3" asp-area="Identity" asp-page="/Account/Login">Вход</a>
+        <a class="btn auth-button shadow-sm px-4" asp-area="Identity" asp-page="/Account/Register">Регистрация</a>
     }
 </div>
+
+<style>
+    .avatar-sm {
+        width: 32px; height: 32px; background: #2C5282; color: white; 
+        border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;
+    }
+    .auth-link { color: #2D3748; font-weight: 600; text-decoration: none; padding: 8px 16px; border-radius: 10px; transition: 0.2s; }
+    .auth-link:hover { background: #F1F5F9; }
+</style>

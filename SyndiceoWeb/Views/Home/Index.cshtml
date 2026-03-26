@@ -1,160 +1,168 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@{
     ViewData["Title"] = "Начална страница";
     var firstName = User.FindFirst("FirstName")?.Value ?? User.Identity?.Name;
 }
 
-<div class="container mt-5">
+<style>
+    .hero-section {
+        background: white;
+        border-radius: 24px;
+        padding: 4rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .feature-card {
+        transition: all 0.3s ease;
+        border: 1px solid #E2E8F0;
+        background: white;
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .feature-card:hover {
+        transform: translateY(-8px);
+        border-color: #2C5282;
+        box-shadow: 0 12px 24px rgba(44, 82, 130, 0.1) !important;
+    }
+    .icon-circle {
+        width: 60px;
+        height: 60px;
+        background: rgba(44, 82, 130, 0.05);
+        color: #2C5282;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 1.5rem;
+    }
+    .welcome-text {
+        color: #2D3748;
+        letter-spacing: -1px;
+    }
+</style>
 
-    <!-- HERO -->
-    <div class="bg-white p-5 rounded hero-shadow text-center mb-5">
-        <img src="~/images/logo.png" height="140" class="mb-4" />
+<div class="container py-5 pb-5"> @* Добавен pb-5 за разстояние от футъра *@
+
+    <div class="hero-section text-center mb-5 border-0 shadow-sm">
+        <div class="mb-4">
+            <img src="~/images/logo.png" height="120" style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));" />
+        </div>
 
         @if (!User.Identity.IsAuthenticated)
         {
-            <h1 class="display-5 fw-bold mb-3">Добре дошли в Syndiceo</h1>
-
-            <p class="lead mb-4">
-                Помощникът за управление на входни и апартаментни такси,
-                създаден специално за вас.
-            </p>
-            <p class="mb-4">
-                Влезте в профила си или се регистрирайте, за да получите достъп
-                до вашата информация.
-            </p>
-
-            <div class="d-flex justify-content-center gap-3">
-                <a class="btn btn-outline-primary btn-lg"
-                   asp-area="Identity"
-                   asp-page="/Account/Login">
-                    Вход
-                </a>
-
-                <a class="btn btn-primary btn-lg"
-                   asp-area="Identity"
-                   asp-page="/Account/Register">
-                    Регистрация
-                </a>
+            <h1 class="display-4 fw-bold welcome-text mb-3">Управлявайте дома си с лекота</h1>
+            <div class="col-lg-7 mx-auto">
+                <p class="lead text-muted mb-4 fs-5">
+                    <strong>Syndiceo</strong> е модерната платформа за прозрачно управление на такси, 
+                    сигнали и комуникация във вашия вход.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a class="btn btn-primary btn-lg px-5 py-3 shadow-sm" asp-area="Identity" asp-page="/Account/Register" style="border-radius: 12px;">Започнете сега</a>
+                    <a class="btn btn-outline-primary btn-lg px-5 py-3" asp-area="Identity" asp-page="/Account/Login" style="border-radius: 12px;">Вход</a>
+                </div>
             </div>
         }
         else
         {
-            <h1 class="display-5 fw-bold mb-3">
-                Добре дошли, @firstName 👋
+            <h1 class="display-4 fw-bold welcome-text mb-3">
+                Добре дошли отново, <span style="color: #2C5282;">@firstName</span>! 👋
             </h1>
-
-            <p class="fs-5 mb-2">
-                Радваме се да ви видим отново в <strong>Syndiceo</strong>!
-            </p>
-
-            <p class="text-muted mb-4">
-                Днес е чудесен ден да проверите текущите си такси, да видите статуса на апартамента ви
-                или да подадете бързо сигнал за какъвто и да е проблем.
-            </p>
-
-            <p class="text-muted">
-                Също така можете да прегледате историята си или просто да се уверите, че всичко е наред.
-                Syndiceo е тук, за да направи управлението на апартамента ви лесно и удобно.
-            </p>
+            <div class="col-lg-8 mx-auto">
+                <p class="fs-5 text-muted mb-4">Всичко важно за вашия имот е на един клик разстояние.</p>
+                <div class="d-inline-flex align-items-center p-2 px-3 bg-light rounded-pill border small text-muted">
+                    <i class="bi bi-calendar3 me-2 text-primary"></i> Днес е @DateTime.Now.ToString("dd MMMM yyyy")
+                </div>
+            </div>
         }
     </div>
 
-    @if (!User.Identity.IsAuthenticated)
-    {
-        <div class="row text-center mb-5">
-            <div class="col-md-8 mx-auto">
-                <h2 class="fw-bold mb-3">Какво представлява системата?</h2>
-                <p class="text-muted">
-                    Syndiceo е вашият помощник, който ви позволява лесно и прозрачно
-                    да следите входните и апартаментните си такси,
-                    както и да подавате сигнали при възникнали проблеми или нередности.
-                </p>
-            </div>
+    <div class="row text-center mb-4">
+        <div class="col-md-8 mx-auto">
+            <h2 class="fw-bold mb-2">@(User.Identity.IsAuthenticated ? "Вашите бързи връзки" : "Защо да изберете Syndiceo?")</h2>
+            <p class="text-muted small">Инструменти за прозрачност и лесна комуникация.</p>
         </div>
+    </div>
 
-        <div class="row text-center g-4 mb-5">
+    <div class="row g-4">
+        @if (!User.Identity.IsAuthenticated)
+        {
             <div class="col-md-4">
-                <div class="p-4 bg-light rounded h-100 shadow-sm">
-                    <h5 class="fw-bold mb-3">📊 Преглед на такси</h5>
-                    <p class="text-muted">
-                        Вижте начислените входни и апартаментни такси,
-                        текущото си състояние и историята на плащанията.
-                    </p>
+                <div class="feature-card p-5 text-center">
+                    <div class="icon-circle">📊</div>
+                    <h5 class="fw-bold mb-3">Пълна прозрачност</h5>
+                    <p class="text-muted small">Следете всяка стотинка от таксите в реално време.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card p-5 text-center">
+                    <div class="icon-circle">📢</div>
+                    <h5 class="fw-bold mb-3">Бързи сигнали</h5>
+                    <p class="text-muted small">Подайте сигнал за проблем през телефона си.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card p-5 text-center">
+                    <div class="icon-circle">🔒</div>
+                    <h5 class="fw-bold mb-3">Сигурен достъп</h5>
+                    <p class="text-muted small">Данните ви са защитени в лична зона.</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-md-6 col-xl-3">
+                <div class="feature-card p-4 shadow-sm border-0">
+                    <div class="icon-circle">💰</div>
+                    <h5 class="fw-bold mb-2 text-center">Финанси</h5>
+                    <p class="text-muted small text-center flex-grow-1">Проверете задълженията и историята на плащанията си.</p>
+                    <a class="btn btn-outline-primary w-100 mt-3 rounded-pill fw-bold" asp-controller="User" asp-action="ApartmentTaxes" asp-route-apartmentId="1">Към таксите</a>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="p-4 bg-light rounded h-100 shadow-sm">
-                    <h5 class="fw-bold mb-3">📝 Подаване на сигнали</h5>
-                    <p class="text-muted">
-                        Подайте сигнал при техническа неизправност
-                        или проблем в общите части на сградата.
-                    </p>
+            <div class="col-md-6 col-xl-3">
+                <div class="feature-card p-4 shadow-sm border-0">
+                    <div class="icon-circle">🏢</div>
+                    <h5 class="fw-bold mb-2 text-center">Моите имоти</h5>
+                    <p class="text-muted small text-center flex-grow-1">Вижте информацията за вашите регистрирани жилища.</p>
+                    <a class="btn btn-outline-primary w-100 mt-3 rounded-pill fw-bold" asp-controller="User" asp-action="Residences">Преглед</a>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="p-4 bg-light rounded h-100 shadow-sm">
-                    <h5 class="fw-bold mb-3">🔒 Сигурен достъп</h5>
-                    <p class="text-muted">
-                        Всеки потребител има защитен личен профил
-                        с достъп само до своята информация.
-                    </p>
+          <div class="col-md-6 col-xl-3">
+    <div class="feature-card p-4 shadow-sm border-0 position-relative">
+        
+        @* БАЛОНЧЕ - Показва се само при реално нови неща *@
+        @if (ViewBag.NewDiscussionsCount > 0)
+        {
+            <span class="position-absolute badge rounded-pill bg-danger shadow-sm" 
+                  style="top: -10px; right: 10px; padding: 0.5em 0.8em; border: 2px solid white; z-index: 10;">
+                @ViewBag.NewDiscussionsCount Нови
+            </span>
+        }
+
+        <div class="icon-circle">📢</div>
+        <h5 class="fw-bold mb-2 text-center">Съобщения</h5>
+        <p class="text-muted small text-center flex-grow-1">Важни съобщения и обсъждания със съседите.</p>
+        
+        @* Бутонът е точно като на Финанси и Имоти *@
+        <a class="btn btn-outline-primary w-100 mt-3 rounded-pill fw-bold" 
+           asp-controller="Discussions" asp-action="Index">
+            Към таблото
+        </a>
+    </div>
+</div>
+
+            <div class="col-md-6 col-xl-3">
+                <div class="feature-card p-4 shadow-sm border-0">
+                    <div class="icon-circle">🚨</div>
+                    <h5 class="fw-bold mb-2 text-center">Технически център</h5>
+                    <p class="text-muted small text-center flex-grow-1">Съобщете за повреда или следете прогреса по сигнали.</p>
+                    <a class="btn btn-outline-primary w-100 mt-3 rounded-pill fw-bold" asp-controller="User" asp-action="Reports">Подайте сигнал</a>
                 </div>
             </div>
-        </div>
-    }
-    else
-    {
-        <div class="row text-center mb-5">
-            <div class="col-md-8 mx-auto">
-                <h2 class="fw-bold mb-3">Вашият контролен панел</h2>
-                <p class="text-muted">
-                    Оттук можете да управлявате своята информация,
-                    да следите начислените такси и да подавате сигнали.
-                </p>
-            </div>
-        </div>
-
-        <div class="row text-center g-4 mb-5">
-
-            <div class="col-md-4">
-                <div class="p-4 bg-light rounded h-100 shadow-sm">
-                    <h5 class="fw-bold mb-3">💰 Моите такси</h5>
-                    <p class="text-muted">
-                        Проверете текущите си задължения и историята на плащанията.
-                    </p>
-                    <a class="btn btn-outline-primary" asp-controller="User" asp-action="ApartmentTaxes" asp-route-apartmentId="1">
-                        💰 Моите такси
-                    </a>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="p-4 bg-light rounded h-100 shadow-sm">
-                    <h5 class="fw-bold mb-3">🏢 Моите жилища</h5>
-                    <p class="text-muted">
-                        Вижте информацията за вашите жилища и статуса на заявката си.
-                    </p>
-                    <a class="btn btn-outline-primary" asp-controller="User" asp-action="Residences">
-                        🏢 Моите жилища
-                    </a>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="p-4 bg-light rounded h-100 shadow-sm">
-                    <h5 class="fw-bold mb-3">🚨 Сигнали</h5>
-                    <p class="text-muted">
-                        Съобщете за проблем или нередност директно към управителя.
-                    </p>
-                    <a class="btn btn-outline-primary mt-2"
-                       asp-controller="User"
-                       asp-action="Reports">
-                        📢 Моите сигнали
-                    </a>
-                </div>
-            </div>
-
-        </div>
-    }
+        }
+    </div>
 </div>

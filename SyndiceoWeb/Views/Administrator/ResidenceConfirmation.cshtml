@@ -1,30 +1,122 @@
-﻿
-@model IEnumerable<Syndiceo.Data.Models.Apartment>
+﻿@model IEnumerable<Syndiceo.Data.Models.Apartment>
 @{
     ViewData["Title"] = "Потвърждение на адреси";
 }
 
+<style>
+    .verify-card {
+        transition: all 0.3s ease;
+        border: 1px solid #E2E8F0;
+        background: white;
+    }
+    .verify-card:hover {
+        border-color: #2C5282;
+        background-color: #F8FAFC;
+    }
+    .location-icon {
+        width: 45px;
+        height: 45px;
+        background: rgba(44, 82, 130, 0.1);
+        color: #2C5282;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 1.2rem;
+    }
+    .user-pill {
+        background: #EDF2F7;
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #4A5568;
+    }
+</style>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Потребител</th>
-            <th>Вход / Апартамент</th>
-            <th>Действие</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model) {
-        <tr>
-            <td>@item.User.Email</td>
-            <td>Вход: @item.Entrance.EntranceName, Ап. @item.ApartmentNumber</td>
-            <td>
-                <form asp-action="ConfirmResidence" method="post">
-                    <input type="hidden" name="apartmentId" value="@item.ApartmentId" />
-                    <button class="btn btn-primary btn-sm">Потвърди адрес</button>
-                </form>
-            </td>
-        </tr>
-        }
-    </tbody>
-</table>
+<div class="container py-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a asp-action="AdminDashboard">Табло</a></li>
+                    <li class="breadcrumb-item active">Адреси</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold m-0" style="color: #2D3748;">🏠 Потвърждение на местоживеене</h2>
+            <p class="text-muted mb-0">Преглед на заявки за достъп до обекти и апартаменти.</p>
+        </div>
+        <div class="text-md-end">
+            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-3 py-2 rounded-pill fw-bold">
+                ⚠️ @Model.Count() чакащи заявки
+            </span>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm" style="border-radius: 20px; overflow: hidden;">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 table-borderless">
+                <thead>
+                    <tr class="text-muted small text-uppercase" style="letter-spacing: 1px; background-color: #F8FAFC; border-bottom: 1px solid #E2E8F0;">
+                        <th class="ps-4 py-3 fw-bold">Потребител</th>
+                        <th class="py-3 fw-bold">Детайли за обекта</th>
+                        <th class="py-3 text-end pe-4 fw-bold">Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center py-5">
+                                <div class="fs-1">✅</div>
+                                <h5 class="fw-bold mt-3">Няма чакащи заявки</h5>
+                                <p class="text-muted">Всички потребители са с потвърдени адреси.</p>
+                                <a asp-action="AdminDashboard" class="btn btn-primary mt-2">Към таблото</a>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr class="verify-card">
+                            <td class="ps-4 py-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-placeholder me-3" style="width:40px; height:40px; background:#2C5282; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                                        @item.User.Email.Substring(0, 1).ToUpper()
+                                    </div>
+                                    <div>
+                                        <div class="user-pill mb-1">@item.User.Email</div>
+                                        <div class="text-muted small">Заявка от: @DateTime.Now.ToString("dd.MM.yyyy")</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="location-icon me-3">🏢</div>
+                                    <div>
+                                        <div class="fw-bold text-dark">Вход: @item.Entrance.EntranceName</div>
+                                        <div class="text-primary fw-bold">Апартамент № @item.ApartmentNumber</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-end pe-4 py-4">
+                                <form asp-action="ConfirmResidence" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="apartmentId" value="@item.ApartmentId" />
+                                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill fw-bold shadow-sm">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Потвърди
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="AdminDashboard" class="text-decoration-none text-muted small fw-bold">
+            <i class="bi bi-arrow-left me-1"></i> Обратно към таблото
+        </a>
+    </div>
+</div>

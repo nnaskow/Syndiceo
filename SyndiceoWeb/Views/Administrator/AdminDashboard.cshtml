@@ -1,116 +1,214 @@
-﻿@{
-    ViewData["Title"] = "Администраторски панел";
+﻿@using System.Linq
+@{
+    ViewData["Title"] = "Администраторско Табло";
 }
 
-<div class="container py-5">
+<style>
+    .dashboard-container { max-width: 1200px; margin: 0 auto; }
+    
+    .nav-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 1.2rem;
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #E2E8F0;
+        text-decoration: none;
+        color: #2D3748;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+    }
 
-    <!-- Header -->
-    <div class="text-center mb-5">
-        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
-             style="width:90px;height:90px;background:linear-gradient(135deg,#2C5282,#2B6CB0);font-size:38px;color:white;">
-            🛠
+    .nav-card:hover {
+        transform: translateY(-5px);
+        border-color: #2C5282;
+        box-shadow: 0 10px 20px rgba(44, 82, 130, 0.1) !important;
+        color: #2C5282;
+        background: #F8FAFC;
+    }
+
+    .nav-icon {
+        width: 48px;
+        height: 48px;
+        background: #F1F5F9;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        transition: 0.3s;
+        flex-shrink: 0;
+    }
+
+    .nav-card:hover .nav-icon {
+        background: #2C5282;
+        color: white;
+    }
+
+    .stat-box {
+        color: white;
+        border-radius: 24px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        min-height: 120px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .stat-box h2 { font-size: 1.7rem; margin-top: 5px; }
+
+    @@media (min-width: 1200px) {
+        .col-xl-2-4 {
+            flex: 0 0 auto;
+            width: 20%;
+        }
+    }
+
+    .activity-log {
+        background: white;
+        border-radius: 24px;
+        border: 1px solid #E2E8F0;
+        padding: 2rem;
+    }
+
+    .log-item {
+        padding: 1.2rem 0;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .log-item:last-child { border-bottom: none; }
+    .extra-small { font-size: 0.85rem; }
+</style>
+
+<div class="container py-5 dashboard-container">
+    
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="fw-bold mb-1" style="letter-spacing: -1px;">Контролен панел</h1>
+            <p class="text-muted mb-0">Система за управление на етажна собственост</p>
         </div>
-        <h2 class="fw-bold">Административен панел</h2>
-        <p class="text-muted">
-            Управлявайте входове, потребители и сигнали.
-        </p>
+        <div class="d-none d-sm-block">
+            <span class="badge bg-white text-primary border p-2 px-3 rounded-pill shadow-sm">
+                <i class="bi bi-shield-check me-1"></i> Системен Администратор
+            </span>
+        </div>
     </div>
 
-    <!-- Stats Row -->
     <div class="row g-4 mb-5">
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-4">
-                <h3 class="fw-bold text-primary">@ViewBag.TotalEntrances</h3>
-                <p class="text-muted mb-0">Регистрирани входа</p>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-box" style="background: #2C5282;">
+                <small class="opacity-75 text-uppercase fw-bold small">Заетост</small>
+                <h2 class="fw-bold mb-0">@ViewBag.OccupiedApartments / @ViewBag.TotalApartments</h2>
+                <i class="bi bi-building position-absolute end-0 bottom-0 opacity-10 me-3 mb-2" style="font-size: 3.5rem;"></i>
             </div>
         </div>
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-4">
-                <h3 class="fw-bold text-success">@ViewBag.ActiveUsers</h3>
-                <p class="text-muted mb-0">Активни потребители</p>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-box" style="background: #38A169;">
+                <small class="opacity-75 text-uppercase fw-bold small">Входове</small>
+                <h2 class="fw-bold mb-0">@ViewBag.TotalEntrances</h2>
+                <i class="bi bi-door-open position-absolute end-0 bottom-0 opacity-10 me-3 mb-2" style="font-size: 3.5rem;"></i>
             </div>
         </div>
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-4">
-                <h3 class="fw-bold text-danger">@ViewBag.NewSignals</h3>
-                <p class="text-muted mb-0">Нови сигнали</p>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-box" style="background: #E53E3E;">
+                <small class="opacity-75 text-uppercase fw-bold small">Активни сигнали</small>
+                <h2 class="fw-bold mb-0">@ViewBag.NewSignals Нови</h2>
+                <i class="bi bi-exclamation-octagon position-absolute end-0 bottom-0 opacity-10 me-3 mb-2" style="font-size: 3.5rem;"></i>
             </div>
         </div>
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-4">
-                <h3 class="fw-bold text-warning">@ViewBag.AwaitingApproval</h3>
-                <p class="text-muted mb-0">Чакащи потвърждения</p>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-box" style="background: #D69E2E;">
+                <small class="opacity-75 text-uppercase fw-bold small">Чакащи одобрение</small>
+                <h2 class="fw-bold mb-0">@ViewBag.PendingUsers Акаунта</h2>
+                <i class="bi bi-person-plus position-absolute end-0 bottom-0 opacity-10 me-3 mb-2" style="font-size: 3.5rem;"></i>
             </div>
         </div>
-
     </div>
 
-    <!-- Quick Actions -->
-    <div class="row g-4">
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-lg p-4 text-center h-100">
-                <div class="mb-3" style="font-size:32px;">👤</div>
-                <h5 class="fw-semibold">Одобряване на потребители</h5>
-                <p class="text-muted small">
-                    Одобрявай потребители, желаещи да си направят регистрация.
-                </p>
-                <a asp-controller="Administrator"
-                       asp-action="UserApproval"
-                       class="btn btn-outline-primary btn-sm mt-2">
-                    Отвори
-                </a>
-            </div>
+    <h5 class="fw-bold mb-4">Бърза навигация</h5>
+    
+    <div class="row g-3 mb-5">
+        <div class="col-md-6 col-xl-2-4">
+            <a asp-action="UserApproval" class="nav-card shadow-sm">
+                <div class="nav-icon">👤</div>
+                <div>
+                    <div class="fw-bold small">Акаунти</div>
+                    <div class="text-muted extra-small">Одобрение</div>
+                </div>
+            </a>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-lg p-4 text-center h-100">
-                <div class="mb-3" style="font-size:32px;">📄</div>
-                <h5 class="fw-semibold">Преглед на сигнали</h5>
-                <p class="text-muted small">
-                    Виж всички подадени сигнали от потребители.
-                </p>
-                <a asp-controller="Administrator"
-                   asp-action="ManageReports"
-                   class="btn btn-outline-primary btn-sm mt-2">
-                    Отвори
-                </a>
-            </div>
+        <div class="col-md-6 col-xl-2-4">
+            <a asp-action="ResidenceConfirmation" class="nav-card shadow-sm">
+                <div class="nav-icon">🏠</div>
+                <div>
+                    <div class="fw-bold small">Адреси</div>
+                    <div class="text-muted extra-small">Имоти</div>
+                </div>
+            </a>
         </div>
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-lg p-4 text-center h-100">
-                <div class="mb-3" style="font-size:32px;">🏢</div>
-                <h5 class="fw-semibold">Потвърждение на адреси</h5>
-                <p class="text-muted small">
-                    Одобрявай заявки за вход и местоживеене.
-                </p>
-                <a asp-controller="Administrator"
-                   asp-action="ResidenceConfirmation"
-                   class="btn btn-outline-primary btn-sm mt-2">
-                    Отвори
-                </a>
-            </div>
+        <div class="col-md-6 col-xl-2-4">
+            <a asp-action="ManageReports" class="nav-card shadow-sm">
+                <div class="nav-icon">🚩</div>
+                <div>
+                    <div class="fw-bold small">Сигнали</div>
+                    <div class="text-muted extra-small">Проблеми</div>
+                </div>
+            </a>
         </div>
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-lg p-4 text-center h-100">
-                <div class="mb-3" style="font-size:32px;">⚙</div>
-                <h5 class="fw-semibold">Управление на потребители</h5>
-                <p class="text-muted small">
-                    Преглед и управление на потребители.
-                </p>
-                <a asp-controller="Administrator"
-                   asp-action="ManageUsers"
-                   class="btn btn-outline-primary btn-sm mt-2">
-                    Управление
-                </a>
-            </div>
+        <div class="col-md-6 col-xl-2-4">
+            <a asp-controller="Discussions" asp-action="Index" class="nav-card shadow-sm" style="border-left: 4px solid #2C5282;">
+                <div class="nav-icon">📢</div>
+                <div>
+                    <div class="fw-bold small">Дискусии</div>
+                    <div class="text-muted extra-small">Съобщения</div>
+                </div>
+            </a>
         </div>
-
+        <div class="col-md-6 col-xl-2-4">
+            <a asp-action="ManageUsers" class="nav-card shadow-sm">
+                <div class="nav-icon">⚙️</div>
+                <div>
+                    <div class="fw-bold small">Настройки</div>
+                    <div class="text-muted extra-small">Права</div>
+                </div>
+            </a>
+        </div>
     </div>
 
+    <div class="activity-log shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold mb-0 text-dark">Последни действия</h5>
+            <span class="badge bg-light text-muted fw-normal">Live Feed</span>
+        </div>
+
+        <div class="log-item">
+            <div class="d-flex align-items-center gap-3">
+                <div class="nav-icon" style="width: 38px; height: 38px; font-size: 1rem; background: #EBF8FF; color: #3182CE;">
+                    <i class="bi bi-person-check"></i>
+                </div>
+                <div>
+                    <div class="fw-bold small text-dark">Одобрен потребител</div>
+                    <div class="text-muted extra-small">Иван Иванов беше добавен към системата.</div>
+                </div>
+            </div>
+            <div class="text-muted small">20 мин.</div>
+        </div>
+
+        <div class="log-item">
+            <div class="d-flex align-items-center gap-3">
+                <div class="nav-icon" style="width: 38px; height: 38px; font-size: 1rem; background: #FFF5F5; color: #E53E3E;">
+                    <i class="bi bi-tools"></i>
+                </div>
+                <div>
+                    <div class="fw-bold small text-dark">Нов технически сигнал</div>
+                    <div class="text-muted extra-small">Вход А: Повредено осветление на 3-ти етаж.</div>
+                </div>
+            </div>
+            <div class="text-muted small">14:30</div>
+        </div>
+    </div>
 </div>

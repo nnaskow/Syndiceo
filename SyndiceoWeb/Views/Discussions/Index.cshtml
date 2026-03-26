@@ -1,0 +1,149 @@
+﻿@model IEnumerable<Syndiceo.Data.Models.Discussion>
+@{
+    ViewData["Title"] = "Дискусии";
+    var selectedId = ViewBag.SelectedId as int?;
+    var selectedDiscussion = Model.FirstOrDefault(d => d.Id == selectedId);
+}
+
+<div class="container py-4">
+    
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="card border-0 shadow-sm mb-4 p-4" style="border-radius: 20px; background: #f8fafc;">
+            <h6 class="fw-bold mb-3"><i class="bi bi-megaphone-fill text-primary me-2"></i>Публикувай ново съобщение</h6>
+            <form asp-action="Create" method="post" class="row g-2">
+                <div class="col-md-6">
+                    <input type="text" name="title" class="form-control border-0 shadow-sm" placeholder="Заглавие на темата..." required style="border-radius: 10px;">
+                </div>
+                <div class="col-md-3">
+                    <select name="isClosed" class="form-select border-0 shadow-sm" style="border-radius: 10px;">
+                        <option value="false">🔓 Отворена за коментари</option>
+                        <option value="true">🔒 Само за четене</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm" style="border-radius: 10px;">Създай</button>
+                </div>
+                <div class="col-12 mt-2">
+                    <textarea name="content" class="form-control border-0 shadow-sm" placeholder="Напишете детайли тук..." rows="2" required style="border-radius: 10px;"></textarea>
+                </div>
+            </form>
+        </div>
+    }
+
+    <div class="discussion-layout shadow-sm border" style="display: grid; grid-template-columns: 350px 1fr; height: 75vh; background: white; border-radius: 24px; overflow: hidden;">
+        
+        <div class="discussion-list border-end bg-light overflow-auto">
+            <div class="p-3 bg-white border-bottom sticky-top">
+                <h6 class="m-0 fw-bold text-muted">Всички съобщения</h6>
+            </div>
+            @foreach (var item in Model)
+            {
+                <a asp-action="Index" asp-route-id="@item.Id"
+                       class="list-group-item list-group-item-action border-0 p-3 @(selectedId == item.Id ? "bg-white shadow-sm border-start border-4 border-primary" : "bg-transparent")">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="badge @(item.IsClosed ? "bg-secondary" : "bg-success") bg-opacity-10 @(item.IsClosed ? "text-secondary" : "text-success")" style="font-size: 0.6rem;">
+                            @(item.IsClosed ? "INFO" : "LIVE")
+                        </span>
+                        <small class="text-muted" style="font-size: 0.7rem;">@item.CreatedAt.ToString("dd.MM")</small>
+                    </div>
+                    <div class="fw-bold text-dark text-truncate">@item.Title</div>
+                </a>
+            }
+        </div>
+
+        <div class="discussion-view d-flex flex-column bg-white">
+            @if (selectedDiscussion != null)
+            {
+                <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-bold m-0">@selectedDiscussion.Title</h4>
+                        <small class="text-muted">Публикувано на @selectedDiscussion.CreatedAt.ToString("dd MMMM, HH:mm")</small>
+                    </div>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <div class="d-flex gap-2">
+                            <form asp-action="ToggleStatus" method="post">
+                                <input type="hidden" name="id" value="@selectedDiscussion.Id" />
+                                <button type="submit" class="btn btn-sm @(selectedDiscussion.IsClosed ? "btn-outline-success" : "btn-outline-secondary") rounded-pill px-3">
+                                    <i class="bi @(selectedDiscussion.IsClosed ? "bi-unlock" : "bi-lock")"></i>
+                                    @(selectedDiscussion.IsClosed ? "Отвори" : "Затвори")
+                                </button>
+                            </form>
+
+                            <form asp-action="Delete" method="post" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете тази дискусия и всички коментари към нея?');">
+                                <input type="hidden" name="id" value="@selectedDiscussion.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                    <i class="bi bi-trash3"></i> Изтрий
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+
+                <div class="p-4 flex-grow-1 overflow-auto" style="background: #f0f2f5;">
+                    <div class="bg-white p-4 rounded-4 shadow-sm mb-4 border-start border-primary border-4">
+                        <p class="m-0 fs-5">@selectedDiscussion.Content</p>
+                    </div>
+
+                    @foreach (var reply in selectedDiscussion.Replies.OrderBy(r => r.CreatedAt))
+                    {
+                        <div class="d-flex gap-2 mb-3">
+                            <div class="avatar">
+                                @(!string.IsNullOrEmpty(reply.User?.FirstName) ? reply.User.FirstName.Substring(0, 1) : "U")
+                            </div>
+        
+                            <div class="bg-white p-3 rounded-4 shadow-sm border" style="max-width: 80%;">
+                                <div class="d-flex justify-content-between gap-4 mb-1">
+                                    <span class="fw-bold small">
+                                        @(reply.User?.FirstName ?? reply.User?.UserName ?? "Потребител")
+                                    </span>
+                                    <span class="text-muted" style="font-size: 0.7rem;">@reply.CreatedAt.ToString("HH:mm")</span>
+                                </div>
+                                <div class="text-dark">@reply.Text</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="p-3 border-top">
+                    @if (!selectedDiscussion.IsClosed)
+                    {
+                        <form asp-action="Reply" method="post" class="input-group">
+                            <input type="hidden" name="discussionId" value="@selectedDiscussion.Id" />
+                            <input type="text" name="message" class="form-control border-0 bg-light p-3" placeholder="Напишете отговор..." required style="border-radius: 12px 0 0 12px;">
+                            <button class="btn btn-primary px-4" style="border-radius: 0 12px 12px 0;"><i class="bi bi-send-fill"></i></button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="text-center py-2 text-muted small"><i class="bi bi-lock-fill me-1"></i> Темата е затворена за коментари от администратор.</div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted opacity-50">
+                    <i class="bi bi-chat-square-text" style="font-size: 4rem;"></i>
+                    <p class="mt-3">Изберете съобщение от списъка вляво.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar {
+        width: 35px;
+        height: 35px;
+        background: #2C5282;
+        color: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+    }
+</style>

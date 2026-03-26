@@ -3,88 +3,226 @@
     var apt = ViewBag.Apartment as Syndiceo.Data.Models.Apartment;
     var transactions = ViewBag.Transactions as IEnumerable<Syndiceo.Data.Models.ApartmentTransaction>;
     decimal totalRemaining = Model.Sum(d => d.RemainingSum ?? 0);
+    ViewData["Title"] = "Сметки и такси";
 }
 
-<div class="container py-4">
+<style>
+    /* ПРЕМИУМ СТИЛИЗАЦИЯ */
+    .gradient-header {
+        background: linear-gradient(135deg, #2C5282 0%, #1A365D 100%);
+        color: white;
+        padding: 2.5rem;
+        border-radius: 24px;
+        position: relative;
+        overflow: hidden; /* Важно за иконата в заден план */
+        min-height: 160px;
+        display: flex;
+        align-items: center;
+    }
+
+    .amount-badge {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 1rem 1.8rem;
+        border-radius: 18px;
+        display: inline-block;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .bg-icon-wallet {
+        position: absolute;
+        right: -20px;
+        bottom: -30px;
+        font-size: 9rem;
+        color: white;
+        opacity: 0.12;
+        transform: rotate(-15deg);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #E2E8F0;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .status-pill {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.4rem 0.9rem;
+        border-radius: 50px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .category-tag {
+        font-size: 0.7rem;
+        font-weight: 700;
+        background: #F1F5F9;
+        color: #475569;
+        padding: 4px 10px;
+        border-radius: 8px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .address-text {
+        font-size: 0.95rem;
+        opacity: 0.85;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+
+<div class="container py-5">
+    
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-0">Сметки и такси</h2>
-            <span class="text-muted">
-                ул. @apt.Entrance.Block.Address.Street № @apt.Entrance.Block.BlockName,
-                вх. @apt.Entrance.EntranceName, ап. @apt.ApartmentNumber
-            </span>
-        </div>
-        <a asp-action="Residences" class="btn btn-outline-secondary btn-sm">Назад към имоти</a>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small fw-bold">
+                <li class="breadcrumb-item"><a asp-action="Residences" class="text-decoration-none text-muted">Моите имоти</a></li>
+                <li class="breadcrumb-item active text-primary">Сметки и такси</li>
+            </ol>
+        </nav>
+        <a asp-action="Residences" class="btn btn-link btn-sm text-decoration-none fw-bold text-muted">
+            <i class="bi bi-arrow-left me-1"></i> Назад
+        </a>
     </div>
 
-    <div class="row g-4 mb-5">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm bg-primary text-white p-3">
-                <small class="opacity-75">Общо за плащане</small>
-                <h2 class="fw-bold mb-0">@totalRemaining.ToString("F2") лв.</h2>
-                <i class="bi bi-wallet2 position-absolute end-0 bottom-0 me-3 mb-2 opacity-25" style="font-size: 3rem;"></i>
+    <div class="gradient-header hero-shadow mb-5">
+        <div class="header-content">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="bg-white text-primary rounded-circle me-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; flex-shrink: 0;">
+                            <i class="bi bi-house-heart-fill fs-5"></i>
+                        </div>
+                        <h3 class="mb-0 fw-bold text-white">Апартамент @apt.ApartmentNumber, вход @apt.Entrance.EntranceName</h3>
+                    </div>
+                    <div class="address-text text-white ps-1">
+                        <i class="bi bi-geo-alt-fill me-2 small"></i>
+                         ул. @apt.Entrance.Block.Address.Street № @apt.Entrance.Block.BlockName
+                    </div>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                    <div class="amount-badge">
+                        <small class="d-block opacity-75 mb-1 text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">Общо дължимо</small>
+                        <h2 class="fw-bold mb-0">@totalRemaining.ToString("F2") лв.</h2>
+                    </div>
+                </div>
             </div>
         </div>
+        <i class="bi bi-wallet2 bg-icon-wallet"></i>
     </div>
 
-    <h4 class="fw-bold mb-3">📋 Задължения</h4>
-    <div class="card border-0 shadow-sm mb-5">
-        <table class="table align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Период / Описание</th>
-                    <th>Обща сума</th>
-                    <th>Платено</th>
-                    <th>Остава</th>
-                    <th class="text-end">Статус</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var debt in Model)
-                {
-                    <tr>
-                        <td><span class="fw-bold">Месечна такса</span></td>
-                        <td>@debt.TotalSum.ToString("F2") лв.</td>
-                        <td class="text-success">@debt.PaidSum.ToString("F2") лв.</td>
-                        <td class="fw-bold text-danger">@debt.RemainingSum?.ToString("F2") лв.</td>
-                        <td class="text-end">
-                            @if (debt.RemainingSum <= 0)
-                            {
-                                <span class="badge bg-success">Платено</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-warning text-dark">Дължимо</span>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    <div class="row g-5">
+        
+        <div class="col-lg-7">
+            <div class="d-flex align-items-center mb-4">
+                <div class="bg-primary bg-opacity-10 p-2 rounded-3 me-3 text-primary">
+                    <i class="bi bi-clipboard-data-fill fs-5"></i>
+                </div>
+                <h5 class="fw-bold mb-0 text-dark">Активни задължения</h5>
+            </div>
 
-    <h4 class="fw-bold mb-3">📜 Подробно</h4>
-    <div class="card border-0 shadow-sm">
-        <table class="table table-sm align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Дата</th>
-                    <th>Категория</th>
-                    <th>Описание</th>
-                    <th class="text-end">Сума</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var tr in transactions)
-                {
-                    <tr>
-                        <td class="text-muted">@DateTime.Now.ToShortDateString()</td> @* Тук сложи реална дата ако имаш в таблицата *@
-                        <td><span class="badge bg-info-subtle text-info border border-info">@tr.Category?.Name</span></td>
-                        <td>@tr.Description</td>
-                        <td class="text-end fw-bold">@tr.Amount.ToString("F2") лв.</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+            <div class="table-container shadow-sm p-2 overflow-hidden">
+                <table class="table align-middle mb-0">
+                    <thead class="bg-light bg-opacity-50 small text-muted">
+                        <tr>
+                            <th class="border-0 ps-3 py-3">Описание</th>
+                            <th class="border-0">Сума</th>
+                            <th class="border-0">Остава</th>
+                            <th class="border-0 text-end pe-3">Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">Няма текущи задължения.</td>
+                            </tr>
+                        }
+                        @foreach (var debt in Model)
+                        {
+                            <tr class="border-top">
+                                <td class="ps-3 py-4">
+                                    <div class="fw-bold text-dark">Месечна такса</div>
+                                    <div class="text-muted small">Поддръжка на общи части</div>
+                                </td>
+                                <td class="fw-semibold">@debt.TotalSum.ToString("F2") лв.</td>
+                                <td class="fw-bold @(debt.RemainingSum > 0 ? "text-danger" : "text-success")">
+                                    @debt.RemainingSum?.ToString("F2") лв.
+                                </td>
+                                <td class="text-end pe-3">
+                                    @if (debt.RemainingSum <= 0)
+                                    {
+                                        <span class="status-pill bg-success bg-opacity-10 text-success">
+                                            ● Платено
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-pill bg-danger bg-opacity-10 text-danger">
+                                            ● Дължимо
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="d-flex align-items-center mb-4">
+                <div class="bg-info bg-opacity-10 p-2 rounded-3 me-3 text-info">
+                    <i class="bi bi-receipt fs-5"></i>
+                </div>
+                <h5 class="fw-bold mb-0 text-dark">История на транзакции</h5>
+            </div>
+
+            <div class="table-container shadow-sm p-2">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="small text-muted">
+                        <tr>
+                            <th class="border-0 ps-3 py-3">Тип</th>
+                            <th class="border-0">Описание</th>
+                            <th class="border-0 text-end pe-3">Сума</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var tr in transactions)
+                        {
+                            <tr class="border-top" style="border-top-style: dashed !important; border-top-color: #E2E8F0 !important;">
+                                <td class="ps-3 py-3">
+                                    <span class="category-tag">@tr.Category?.Name</span>
+                                </td>
+                                <td>
+                                    <div class="small text-muted text-truncate" style="max-width: 140px;" title="@tr.Description">
+                                        @tr.Description
+                                    </div>
+                                </td>
+                                <td class="text-end pe-3 fw-bold text-dark">@tr.Amount.ToString("F2") лв.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 p-3 rounded-4 bg-light border border-dashed text-center">
+                <p class="text-muted mb-0" style="font-size: 0.75rem;">
+                    <i class="bi bi-shield-check me-1"></i> Данните се актуализират в реално време от домоуправителя.
+                </p>
+            </div>
+        </div>
     </div>
 </div>

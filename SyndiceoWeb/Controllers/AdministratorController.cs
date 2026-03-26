@@ -19,9 +19,16 @@ namespace SyndiceoWeb.Controllers
         public IActionResult AdminDashboard()
         {
             ViewBag.TotalEntrances = _context.Entrances.Count();
+            ViewBag.TotalApartments = _context.Apartments.Count();
+            ViewBag.OccupiedApartments = _context.Apartments.Count(a => a.UserId != null);
+            ViewBag.FreeApartments = _context.Apartments.Count(a => a.UserId == null);
+
             ViewBag.ActiveUsers = _context.Users.Count(u => u.IsApproved);
-            ViewBag.AwaitingApproval = _context.Users.Count(u => !u.IsApproved);
-            ViewBag.NewSignals = _context.Reports.Count(r=> !r.IsResolved);
+            ViewBag.PendingUsers = _context.Users.Count(u => !u.IsApproved);
+            ViewBag.PendingResidences = _context.Apartments.Count(a => a.UserId != null && !a.IsConfirmed);
+
+            ViewBag.NewSignals = _context.Reports.Count(r => !r.IsResolved);
+            ViewBag.ResolvedSignals = _context.Reports.Count(r => r.IsResolved);
 
             return View();
         }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Syndiceo.Data.Models;
 
@@ -11,9 +12,11 @@ using Syndiceo.Data.Models;
 namespace Syndiceo.Data.Migrations
 {
     [DbContext(typeof(SyndiceoDBContext))]
-    partial class SyndiceoDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260326160133_LastDiscussionViewMigration")]
+    partial class LastDiscussionViewMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -1,79 +1,138 @@
 ﻿@model IEnumerable<SyndiceoWeb.Areas.Identity.Data.SyndiceoWebUser>
 @{
-    ViewData["Title"] = "Активни потребители";
+    ViewData["Title"] = "Управление на потребители";
 }
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-dark mb-0">👥 Управление на активни потребители</h2>
-        <span class="badge bg-primary px-3 py-2">Общо: @ViewBag.TotalActive</span>
+<style>
+    .user-row {
+        transition: background-color 0.2s ease;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .user-row:hover {
+        background-color: #F8FAFC;
+    }
+    .avatar-placeholder {
+        width: 38px;
+        height: 38px;
+        background: #EDF2F7;
+        color: #2C5282;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        font-weight: bold;
+    }
+    .search-card {
+        border-radius: 16px;
+        background: white;
+        border: 1px solid #E2E8F0;
+    }
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a asp-action="AdminDashboard">Табло</a></li>
+                    <li class="breadcrumb-item active">Потребители</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold m-0" style="color: #2D3748;">👤 Управление на потребители</h2>
+            <p class="text-muted mb-0">Преглед, търсене и администрация на профили.</p>
+        </div>
+        <div class="text-md-end">
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold">
+                Общо активни: @ViewBag.TotalActive
+            </span>
+        </div>
     </div>
 
-    <div class="card border-0 shadow-sm p-3 mb-4 bg-white">
-        <form method="get" asp-action="ManageUsers" class="row g-2">
+    <div class="search-card shadow-sm p-3 mb-4">
+        <form method="get" asp-action="ManageUsers" class="row g-2 align-items-center">
             <div class="col-md-9">
-                <div class="input-group">
-                    <span class="input-group-text bg-transparent border-end-0">🔍</span>
+                <div class="input-group border-0">
+                    <span class="input-group-text bg-transparent border-0 pe-0">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
                     <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch"
-                           class="form-control border-start-0" placeholder="Търсене на потребител по имейл..." />
+                           class="form-control border-0 shadow-none" 
+                           placeholder="Търсене по имейл адрес..." />
                 </div>
             </div>
             <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary w-100">Търси</button>
+                <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">Търси</button>
                 @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch))
                 {
-                    <a asp-action="ManageUsers" class="btn btn-outline-secondary">❌</a>
+                    <a asp-action="ManageUsers" class="btn btn-light border text-muted px-3">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
                 }
             </div>
         </form>
     </div>
 
-    <div class="card border-0 shadow-sm">
+    <div class="card border-0 shadow-sm" style="border-radius: 20px; overflow: hidden;">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4">Имейл адрес</th>
-                        <th>Статус на адреса</th>
-                        <th class="text-end pe-4">Действие</th>
+            <table class="table align-middle mb-0 table-borderless">
+                <thead>
+                    <tr class="text-muted small text-uppercase" style="letter-spacing: 1px; background-color: #F8FAFC; border-bottom: 1px solid #E2E8F0;">
+                        <th class="ps-4 py-3 fw-bold">Потребител</th>
+                        <th class="py-3 fw-bold">Статус на адрес</th>
+                        <th class="py-3 text-end pe-4 fw-bold">Действия</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if (ViewBag.TotalActive == 0)
+                    @if (!Model.Any())
                     {
                         <tr>
                             <td colspan="3" class="text-center py-5 text-muted">
-                                Няма намерени активни потребители.
+                                <div class="fs-2 mb-2">🔍</div>
+                                <p>Няма намерени потребители по този критерий.</p>
                             </td>
                         </tr>
                     }
                     @foreach (var user in Model)
                     {
-                        <tr>
-                            <td class="ps-4">
-                                <span class="fw-semibold">@user.Email</span>
+                        <tr class="user-row">
+                            <td class="ps-4 py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-placeholder me-3">
+                                        @user.Email.Substring(0, 1).ToUpper()
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">@user.Email</div>
+                                        <div class="text-muted small">ID: @user.Id.Substring(0, 8)...</div>
+                                    </div>
+                                </div>
                             </td>
-                            <td>
+                            <td class="py-3">
                                 @if (((List<string>)ViewBag.ConfirmedUserIds).Contains(user.Id))
                                 {
-                                    <span class="badge bg-success-subtle text-success border border-success">
-                                        ● Потвърден адрес
+                                    <span class="status-badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                                        ● Потвърден
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-light text-muted border">
-                                        ○ Без потвърден адрес
+                                    <span class="status-badge bg-light text-muted border">
+                                        ○ Непотвърден
                                     </span>
                                 }
                             </td>
-                            <td class="text-end pe-4">
+                            <td class="text-end pe-4 py-3">
                                 <form asp-action="DeleteUser" method="post"
-                                      onsubmit="return confirm('ВНИМАНИЕ: Изтриването на @user.Email ще премахне достъпа му до системата! Всички негови сигнали ще бъдат изтрити, а апартаментите му ще бъдат освободени. Продължавате ли?');">
+                                      onsubmit="return confirm('ВНИМАНИЕ: Изтриването на @user.Email е окончателно! Продължавате ли?');">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="userId" value="@user.Id" />
-                                    <button type="submit" class="btn btn-sm btn-link text-danger text-decoration-none">
-                                        Изтрий акаунт
+                                    <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill fw-bold">
+                                        <i class="bi bi-trash3 me-1"></i> Изтрий
                                     </button>
                                 </form>
                             </td>
@@ -84,10 +143,9 @@
         </div>
     </div>
 
-    <div class="mt-4">
-        <a asp-action="AdminDashboard" class="text-decoration-none text-secondary">
-            ← Обратно към административното табло
+    <div class="mt-4 text-start">
+        <a asp-action="AdminDashboard" class="text-decoration-none text-muted small fw-bold">
+            <i class="bi bi-arrow-left me-1"></i> Обратно към таблото
         </a>
     </div>
 </div>
-

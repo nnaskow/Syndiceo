@@ -1,77 +1,139 @@
 ﻿@model IEnumerable<Syndiceo.Data.Models.Report>
+@{
+    ViewData["Title"] = "Управление на сигнали";
+}
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0">🛠️ Управление на сигнали</h2>
-        
-        <div class="btn-group shadow-sm">
+<style>
+    .report-card {
+        border-radius: 16px;
+        transition: all 0.2s ease;
+        border: 1px solid #E2E8F0;
+    }
+    .report-card:hover {
+        background-color: #F8FAFC;
+        border-color: #2C5282;
+    }
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+    .bg-pending { background-color: #E53E3E; box-shadow: 0 0 8px rgba(229, 62, 62, 0.4); }
+    .bg-resolved { background-color: #38A169; }
+    
+    .filter-pill {
+        border-radius: 50px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        border: 1px solid #E2E8F0;
+        color: #4A5568;
+        background: white;
+        text-decoration: none;
+    }
+    .filter-pill:hover { background: #EDF2F7; color: #2C5282; }
+    .filter-pill.active { 
+        background: #2C5282; 
+        color: white; 
+        border-color: #2C5282;
+        box-shadow: 0 4px 12px rgba(44, 82, 130, 0.2);
+    }
+</style>
+
+<div class="container py-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a asp-action="AdminDashboard">Табло</a></li>
+                    <li class="breadcrumb-item active">Сигнали</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold m-0" style="color: #2D3748;">🚩 Център за сигнали</h2>
+            <p class="text-muted mb-0">Преглед и обработка на технически проблеми и оплаквания.</p>
+        </div>
+
+        <div class="d-flex gap-2 bg-white p-1 rounded-pill shadow-sm border">
             <a asp-action="ManageReports" asp-route-statusFilter="" 
-               class="btn btn-outline-secondary @(ViewBag.CurrentFilter == null ? "active" : "")">Всички</a>
+               class="filter-pill @(ViewBag.CurrentFilter == null ? "active" : "")">Всички</a>
             <a asp-action="ManageReports" asp-route-statusFilter="pending" 
-               class="btn btn-outline-secondary @(ViewBag.CurrentFilter == "pending" ? "active" : "")">Отворени</a>
+               class="filter-pill @(ViewBag.CurrentFilter == "pending" ? "active" : "")">Отворени</a>
             <a asp-action="ManageReports" asp-route-statusFilter="resolved" 
-               class="btn btn-outline-secondary @(ViewBag.CurrentFilter == "resolved" ? "active" : "")">Решени</a>
+               class="filter-pill @(ViewBag.CurrentFilter == "resolved" ? "active" : "")">Решени</a>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm">
+    <div class="card border-0 shadow-sm p-4" style="border-radius: 20px;">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4">Дата / Потребител</th>
-                        <th>Вход</th>
-                        <th>Сигнал</th>
-                        <th>Статус</th>
-                        <th class="text-end pe-4">Действия</th>
+            <table class="table align-middle mb-0 table-borderless">
+                <thead>
+                    <tr class="text-muted small text-uppercase" style="letter-spacing: 1px; border-bottom: 2px solid #F1F5F9;">
+                        <th class="pb-3 fw-bold">Сигнал & Описание</th>
+                        <th class="pb-3 fw-bold">Локация / Автор</th>
+                        <th class="pb-3 fw-bold">Статус</th>
+                        <th class="pb-3 text-end fw-bold">Действие</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="before-border">
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">Няма намерени сигнали.</td>
+                            <td colspan="4" class="text-center py-5">
+                                <div class="fs-1">🍃</div>
+                                <p class="text-muted mt-2">Няма активни сигнали в тази категория.</p>
+                            </td>
                         </tr>
                     }
                     @foreach (var report in Model)
                     {
-                        <tr class="@(report.IsResolved ? "opacity-75" : "")">
-                            <td class="ps-4">
-                                <div class="small fw-bold">@report.CreatedAt.ToString("dd.MM.yyyy HH:mm")</div>
-                                <div class="text-muted small">@report.User?.Email</div>
+                        <tr class="report-card" style="border-bottom: 8px solid white;">
+                            <td class="py-4">
+                                <div class="fw-bold text-dark fs-5">@report.Title</div>
+                                <div class="text-muted small" style="max-width: 400px;">@report.Description</div>
+                                <div class="mt-2 text-primary fw-semibold small">
+                                    <i class="bi bi-clock"></i> @report.CreatedAt.ToString("dd MMM, HH:mm")
+                                </div>
                             </td>
                             <td>
-                                <span class="badge bg-secondary-subtle text-secondary border border-secondary">
-                                    Вход @report.Entrance?.EntranceName
-                                </span>
-                            </td>
-                            <td style="max-width: 300px;">
-                                <div class="fw-bold text-dark">@report.Title</div>
-                                <div class="small text-muted text-truncate">@report.Description</div>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-circle p-2 me-3">🏢</div>
+                                    <div>
+                                        <div class="fw-bold small">Вход @report.Entrance?.EntranceName</div>
+                                        <div class="text-muted x-small">@report.User?.Email</div>
+                                    </div>
+                                </div>
                             </td>
                             <td>
                                 @if (report.IsResolved)
                                 {
-                                    <span class="badge bg-success">Решен</span>
+                                    <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill bg-success bg-opacity-10 text-success fw-bold small">
+                                        <span class="status-indicator bg-resolved"></span> Решен
+                                    </div>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-danger pulse-animation">Отворен</span>
+                                    <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill bg-danger bg-opacity-10 text-danger fw-bold small">
+                                        <span class="status-indicator bg-pending pulse-animation"></span> Отворен
+                                    </div>
                                 }
                             </td>
-                            <td class="text-end pe-4">
-                                <div class="d-flex justify-content-end gap-2">
-                                    <form asp-action="ToggleReportStatus" method="post">
+                            <td class="text-end">
+                                <div class="btn-group shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                                    <form asp-action="ToggleReportStatus" method="post" class="m-0">
                                         <input type="hidden" name="reportId" value="@report.Id" />
-                                        <button type="submit" class="btn btn-sm @(report.IsResolved ? "btn-outline-warning" : "btn-outline-success")">
-                                            @(report.IsResolved ? "Отложи" : "Маркирай като решен")
+                                        <button type="submit" class="btn btn-white border-end btn-sm fw-bold px-3 py-2" 
+                                                title="@(report.IsResolved ? "Върни за работа" : "Маркирай като готов")">
+                                            @(report.IsResolved ? "🔄 Отложи" : "✅ Реши")
                                         </button>
                                     </form>
                                     
-                                    <form asp-action="DeleteReport" method="post" onsubmit="return confirm('Изтриване на сигнала?');">
+                                    <form asp-action="DeleteReport" method="post" onsubmit="return confirm('Сигурни ли сте?');" class="m-0">
                                         <input type="hidden" name="reportId" value="@report.Id" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="bi bi-trash"></i>
+                                        <button type="submit" class="btn btn-white text-danger btn-sm px-3 py-2">
+                                            🗑️
                                         </button>
                                     </form>
                                 </div>
@@ -85,12 +147,15 @@
 </div>
 
 <style>
+    .x-small { font-size: 0.75rem; }
     .pulse-animation {
         animation: pulse 2s infinite;
     }
     @@keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.6; }
-        100% { opacity: 1; }
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.2); opacity: 0.7; }
+        100% { transform: scale(1); opacity: 1; }
     }
+    .btn-white { background: white; color: #4A5568; border: 1px solid #E2E8F0; }
+    .btn-white:hover { background: #F8FAFC; color: #2C5282; }
 </style>

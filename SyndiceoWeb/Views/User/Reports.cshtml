@@ -1,16 +1,67 @@
 ﻿@model IEnumerable<Syndiceo.Data.Models.Report>
+@{
+    ViewData["Title"] = "Моите сигнали";
+}
 
-<div class="container py-4">
-    <div class="row g-4">
+<style>
+    .report-form-card {
+        border-radius: 20px;
+        position: sticky;
+        top: 100px;
+    }
+    .status-pill-user {
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        text-transform: uppercase;
+    }
+    .report-item {
+        border-radius: 16px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid #E2E8F0;
+    }
+    .report-item:hover {
+        transform: translateX(5px);
+        border-color: #2C5282;
+    }
+    .step-number {
+        width: 24px;
+        height: 24px;
+        background: #2C5282;
+        color: white;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        margin-right: 8px;
+    }
+</style>
+
+<div class="container py-5">
+    
+    <div class="mb-5">
+        <h2 class="fw-bold mb-1" style="color: #2D3748;">🚩 Технически сигнали</h2>
+        <p class="text-muted">Съобщете за проблем в общите части или проследете вашите подадени заявки.</p>
+    </div>
+
+    <div class="row g-5">
         <div class="col-lg-5">
-            <div class="card border-0 shadow-sm p-4">
-                <h4 class="fw-bold mb-3">📢 Подай сигнал</h4>
-                <p class="text-muted small">Опишете проблема, който сте забелязали в общите части на сградата.</p>
+            <div class="card report-form-card border-0 shadow-sm p-4 bg-white">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3 text-primary">
+                        <i class="bi bi-megaphone-fill fs-4"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0">Нов сигнал</h4>
+                </div>
                 
                 <form asp-action="SubmitReport" method="post">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">За кой вход се отнася?</label>
-                        <select name="entranceId" class="form-select" required>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase opacity-75">
+                            <span class="step-number">1</span> Изберете локация
+                        </label>
+                        <select name="entranceId" class="form-select form-control shadow-none" required>
                             @foreach (var ent in ViewBag.MyEntrances)
                             {
                                 <option value="@ent.EntranceId">Вход @ent.EntranceName</option>
@@ -18,50 +69,78 @@
                         </select>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Тема</label>
-                        <input type="text" name="title" class="form-control" placeholder="напр. Изгоряла крушка" required />
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase opacity-75">
+                            <span class="step-number">2</span> Тема на проблема
+                        </label>
+                        <input type="text" name="title" class="form-control shadow-none" 
+                               placeholder="напр. Неработещо осветление" required />
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Описание</label>
-                        <textarea name="description" class="form-control" rows="4" placeholder="Опишете детайлно проблема..." required></textarea>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase opacity-75">
+                            <span class="step-number">3</span> Детайлно описание
+                        </label>
+                        <textarea name="description" class="form-control shadow-none" rows="4" 
+                                  placeholder="Опишете проблема колкото се може по-точно..." required></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-danger w-100 py-2 shadow-sm">
-                        Изпрати сигнал
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" style="border-radius: 12px;">
+                        <i class="bi bi-send-fill me-2"></i> Изпрати сигнала
                     </button>
                 </form>
             </div>
         </div>
 
         <div class="col-lg-7">
-            <h4 class="fw-bold mb-3">📜 Моите сигнали</h4>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0">Активност и история</h5>
+                <span class="badge bg-light text-muted border px-3 py-2 rounded-pill">
+                    Всички: @Model.Count()
+                </span>
+            </div>
             
             @if (!Model.Any())
             {
-                <div class="text-center py-5 bg-white rounded shadow-sm">
-                    <span class="text-muted">Все още не сте подавали сигнали.</span>
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm border border-dashed">
+                    <div class="display-1 text-light mb-3">🍃</div>
+                    <h5 class="text-muted">Все още нямате подадени сигнали.</h5>
+                    <p class="small text-muted px-4">Когато подадете сигнал, той ще се появи тук с текущия си статус.</p>
                 </div>
             }
             
             @foreach (var report in Model)
             {
-                <div class="card border-0 shadow-sm mb-3">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <h5 class="fw-bold mb-1">@report.Title</h5>
+                <div class="card report-item shadow-sm mb-3 bg-white border-0">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-1 text-dark">@report.Title</h5>
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="text-muted small">
+                                        <i class="bi bi-calendar3 me-1"></i> @report.CreatedAt.ToString("dd MMM yyyy")
+                                    </span>
+                                    <span class="text-muted small">
+                                        <i class="bi bi-geo-alt-fill me-1"></i> Вход @report.Entrance.EntranceName
+                                    </span>
+                                </div>
+                            </div>
                             @if (report.IsResolved)
                             {
-                                <span class="badge bg-success-subtle text-success border border-success">Решен</span>
+                                <span class="status-pill-user bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                                    ● Решен
+                                </span>
                             }
                             else
                             {
-                                <span class="badge bg-warning-subtle text-warning border border-warning">В процес</span>
+                                <span class="status-pill-user bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">
+                                    ● В процес
+                                </span>
                             }
                         </div>
-                        <p class="text-muted small mb-2">Изпратен на: @report.CreatedAt.ToString("dd.MM.yyyy HH:mm") | Вход: @report.Entrance.EntranceName</p>
-                        <p class="mb-0 card-text">@report.Description</p>
+                        <div class="p-3 bg-light rounded-3 text-muted small">
+                            @report.Description
+                        </div>
                     </div>
                 </div>
             }

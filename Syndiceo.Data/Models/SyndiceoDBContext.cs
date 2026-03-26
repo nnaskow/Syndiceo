@@ -49,6 +49,10 @@ public partial class SyndiceoDBContext :  IdentityDbContext<SyndiceoWebUser>
 
     public virtual DbSet<Report> Reports { get; set; }
 
+    public DbSet<Discussion> Discussions { get; set; }
+
+    public DbSet<DiscussionReply> DiscussionReplies { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=db45189.public.databaseasp.net; Database=db45189; User Id=db45189; Password=qJ!5@f8Sd9H_; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;");
@@ -289,6 +293,25 @@ public partial class SyndiceoDBContext :  IdentityDbContext<SyndiceoWebUser>
                 .WithMany()
                 .HasForeignKey(d => d.EntranceId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<Discussion>(entity =>
+        {
+            entity.HasMany(d => d.Replies)
+                  .WithOne(r => r.Discussion)
+                  .HasForeignKey(r => r.DiscussionId)
+                  .OnDelete(DeleteBehavior.Cascade); 
+            entity.Property(d => d.Title).IsRequired().HasMaxLength(200);
+            entity.Property(d => d.Content).IsRequired();
+        });
+
+        modelBuilder.Entity<DiscussionReply>(entity =>
+        {
+            entity.Property(r => r.Text).IsRequired().HasMaxLength(1000);
+
+            entity.HasOne(r => r.User)       
+                  .WithMany()                  
+                  .HasForeignKey(r => r.UserId) 
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         OnModelCreatingPartial(modelBuilder);

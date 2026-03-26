@@ -15,6 +15,7 @@ public class SyndiceoWebUser : IdentityUser
 
     public bool IsApproved { get; set; } = false;
 
+    public DateTime LastDiscussionsView { get; set; } = DateTime.Now;
 
 }
 
