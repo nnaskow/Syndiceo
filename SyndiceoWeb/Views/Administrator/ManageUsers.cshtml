@@ -1,4 +1,5 @@
-﻿@{
+﻿@model IEnumerable<SyndiceoWeb.Areas.Identity.Data.SyndiceoWebUser>
+@{
     ViewData["Title"] = "Активни потребители";
 }
 
@@ -9,12 +10,10 @@
     </div>
 
     <div class="card border-0 shadow-sm p-3 mb-4 bg-white">
-        <form method="get" asp-action="UsersList" class="row g-2">
+        <form method="get" asp-action="ManageUsers" class="row g-2">
             <div class="col-md-9">
                 <div class="input-group">
-                    <span class="input-group-text bg-transparent border-end-0">
-                        🔍
-                    </span>
+                    <span class="input-group-text bg-transparent border-end-0">🔍</span>
                     <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch"
                            class="form-control border-start-0" placeholder="Търсене на потребител по имейл..." />
                 </div>
@@ -23,7 +22,7 @@
                 <button type="submit" class="btn btn-primary w-100">Търси</button>
                 @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch))
                 {
-                    <a asp-action="UsersList" class="btn btn-outline-secondary">❌</a>
+                    <a asp-action="ManageUsers" class="btn btn-outline-secondary">❌</a>
                 }
             </div>
         </form>
@@ -55,24 +54,23 @@
                                 <span class="fw-semibold">@user.Email</span>
                             </td>
                             <td>
-                                <td>
-                                    @if (((List<string>)ViewBag.ConfirmedUserIds).Contains(user.Id))
-                                    {
-                                        <span class="badge bg-success-subtle text-success border border-success">
-                                            ● Потвърден адрес
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-light text-muted border">
-                                            ○ Без потвърден адрес
-                                        </span>
-                                    }
-                                </td>
+                                @if (((List<string>)ViewBag.ConfirmedUserIds).Contains(user.Id))
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success">
+                                        ● Потвърден адрес
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-muted border">
+                                        ○ Без потвърден адрес
+                                    </span>
+                                }
                             </td>
                             <td class="text-end pe-4">
                                 <form asp-action="DeleteUser" method="post"
-                                      onsubmit="return confirm('ВНИМАНИЕ: Изтриването на @user.Email ще премахне достъпа му до системата! Продължавате ли?');">
+                                      onsubmit="return confirm('ВНИМАНИЕ: Изтриването на @user.Email ще премахне достъпа му до системата! Всички негови сигнали ще бъдат изтрити, а апартаментите му ще бъдат освободени. Продължавате ли?');">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="userId" value="@user.Id" />
                                     <button type="submit" class="btn btn-sm btn-link text-danger text-decoration-none">
                                         Изтрий акаунт
@@ -92,3 +90,4 @@
         </a>
     </div>
 </div>
+

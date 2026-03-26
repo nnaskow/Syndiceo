@@ -3,14 +3,16 @@
     var apt = ViewBag.Apartment as Syndiceo.Data.Models.Apartment;
     var transactions = ViewBag.Transactions as IEnumerable<Syndiceo.Data.Models.ApartmentTransaction>;
     decimal totalRemaining = Model.Sum(d => d.RemainingSum ?? 0);
-    var address = ViewBag.Addres as Syndiceo.Data.Models.Address;
 }
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold mb-0">Сметки и такси</h2>
-            <span class="text-muted">ул. @address.Street @apt.ApartmentNumber, Вход @apt.Entrance.EntranceName</span>
+            <span class="text-muted">
+                ул. @apt.Entrance.Block.Address.Street № @apt.Entrance.Block.BlockName,
+                вх. @apt.Entrance.EntranceName, ап. @apt.ApartmentNumber
+            </span>
         </div>
         <a asp-action="Residences" class="btn btn-outline-secondary btn-sm">Назад към имоти</a>
     </div>

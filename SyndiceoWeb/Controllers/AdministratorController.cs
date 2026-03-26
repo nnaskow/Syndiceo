@@ -27,7 +27,14 @@ namespace SyndiceoWeb.Controllers
         }
         public IActionResult ManageUsers(string searchTerm)
         {
-            var users = _context.Users.Where(u => u.IsApproved).ToList();
+            var usersQuery = _context.Users.Where(u => u.IsApproved).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                usersQuery = usersQuery.Where(u => u.Email.Contains(searchTerm));
+            }
+
+            var users = usersQuery.ToList();
 
             var confirmedUserIds = _context.Apartments
                 .Where(a => a.IsConfirmed && a.UserId != null)
@@ -35,10 +42,36 @@ namespace SyndiceoWeb.Controllers
                 .Distinct()
                 .ToList();
 
-            ViewBag.ConfirmedUserIds = confirmedUserIds; 
+            ViewBag.ConfirmedUserIds = confirmedUserIds;
             ViewBag.TotalActive = users.Count;
+            ViewBag.CurrentSearch = searchTerm;
 
             return View(users);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteUser(string userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null) return NotFound();
+
+            var userApartments = await _context.Apartments
+                .Where(a => a.UserId == userId)
+                .ToListAsync();
+
+            foreach (var apt in userApartments)
+            {
+                apt.UserId = null;       
+                apt.IsConfirmed = false; 
+            }
+
+            await _context.SaveChangesAsync();
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Потребителят е изтрит, сигналите му са премахнати, а апартаментите – освободени.";
+            return RedirectToAction(nameof(ManageUsers));
         }
         public IActionResult UserApproval()
         {

@@ -37,9 +37,8 @@
                                         }
                                     </div>
                                     <p class="text-muted small mb-1">
-                                        📍 @apt.Entrance?.Block?.Address?.Street,
-                                        Блок: @apt.Entrance?.Block?.BlockName,
-                                        Вход: @apt.Entrance?.EntranceName
+                                        📍 ул. @apt.Entrance?.Block?.Address?.Street № @apt.Entrance?.Block?.BlockName,
+                                        вх. @apt.Entrance?.EntranceName, ап. @apt.ApartmentNumber
                                     </p>
                                     
                                     @if (apt.IsConfirmed)

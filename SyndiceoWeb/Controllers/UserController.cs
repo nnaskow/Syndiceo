@@ -30,12 +30,14 @@ namespace SyndiceoWeb.Controllers
                 .ToList();
 
             ViewBag.AvailableApartments = _context.Apartments
-                .Include(a => a.Entrance)
-                .Where(a => a.UserId == null)
-                .Select(a => new {
-                    Id = a.ApartmentId,
-                    Text = $"Вход: {a.Entrance.EntranceName}, Ап. {a.ApartmentNumber}"
-                }).ToList();
+           .Include(a => a.Entrance)
+               .ThenInclude(e => e.Block)
+                   .ThenInclude(b => b.Address)
+           .Where(a => a.UserId == null)
+           .Select(a => new {
+               Id = a.ApartmentId,
+               Text = $"ул. {a.Entrance.Block.Address.Street} № {a.Entrance.Block.BlockName}, вх. {a.Entrance.EntranceName}, ап. {a.ApartmentNumber}"
+           }).ToList();
 
             return View(myApartments);
         }
@@ -71,8 +73,10 @@ namespace SyndiceoWeb.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var apartment = await _context.Apartments
-                .Include(a => a.Entrance)
-                .FirstOrDefaultAsync(a => a.ApartmentId == apartmentId && a.UserId == userId);
+                 .Include(a => a.Entrance)
+                     .ThenInclude(e => e.Block)
+                         .ThenInclude(b => b.Address) 
+                 .FirstOrDefaultAsync(a => a.ApartmentId == apartmentId && a.UserId == userId);
 
             if (apartment == null || !apartment.IsConfirmed)
             {
