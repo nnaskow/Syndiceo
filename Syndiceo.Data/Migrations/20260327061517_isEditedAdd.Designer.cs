@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Syndiceo.Data.Models;
 
@@ -11,9 +12,11 @@ using Syndiceo.Data.Models;
 namespace Syndiceo.Data.Migrations
 {
     [DbContext(typeof(SyndiceoDBContext))]
-    partial class SyndiceoDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260327061517_isEditedAdd")]
+    partial class isEditedAdd
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -638,9 +641,7 @@ namespace Syndiceo.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<bool>("IsResolved")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -652,9 +653,7 @@ namespace Syndiceo.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("isEdited")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 

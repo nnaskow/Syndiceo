@@ -283,7 +283,12 @@ public partial class SyndiceoDBContext :  IdentityDbContext<SyndiceoWebUser>
             entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Description).IsRequired();
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
-
+            entity.Property(e => e.IsResolved)
+          .IsRequired()
+          .HasDefaultValue(false);
+            entity.Property(e => e.isEdited)
+          .IsRequired()
+          .HasDefaultValue(false);
             entity.HasOne(d => d.User)
                 .WithMany() 
                 .HasForeignKey(d => d.UserId)

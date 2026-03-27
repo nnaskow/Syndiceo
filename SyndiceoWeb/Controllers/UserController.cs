@@ -140,6 +140,29 @@ namespace SyndiceoWeb.Controllers
             TempData["Success"] = "Сигналът е изпратен успешно!";
             return RedirectToAction(nameof(Reports));
         }
+        [HttpPost]
+        public async Task<IActionResult> EditReport(int reportId, string title, string description, int entranceId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var report = await _context.Reports
+                .FirstOrDefaultAsync(r => r.Id == reportId && r.UserId == userId);
+
+            if (report == null || report.IsResolved)
+            {
+                return RedirectToAction(nameof(Reports));
+            }
+
+            report.Title = title;
+            report.Description = description;
+            report.EntranceId = entranceId;
+
+            report.isEdited = true;
+            report.CreatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Сигналът беше актуализиран!";
+            return RedirectToAction(nameof(Reports));
+        }
 
     }
 }

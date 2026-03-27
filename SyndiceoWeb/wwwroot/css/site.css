@@ -263,4 +263,19 @@ footer {
         .nyxon-link:active {
             transform: scale(0.95);
         }
+    /* Принуждаваме модала да е над всичко */
+    #editReportModal {
+        z-index: 1060 !important;
+    }
+
+    /* Принуждаваме сивия слой да е под модала */
+    .modal-backdrop {
+        z-index: 1050 !important;
+    }
+
+    /* Ако все още е сиво, това ще премахне блокирането на кликовете */
+    .modal-open {
+        overflow: auto !important;
+        padding-right: 0 !important;
+    }
 }

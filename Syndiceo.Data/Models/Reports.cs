@@ -16,6 +16,7 @@ namespace Syndiceo.Data.Models
         public string Description { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool IsResolved { get; set; } = false;
+        public bool isEdited { get; set; } = false;
 
         public virtual SyndiceoWebUser User { get; set; }
         public virtual Entrance Entrance { get; set; }
