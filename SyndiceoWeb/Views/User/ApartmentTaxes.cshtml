@@ -152,7 +152,7 @@
                 <div class="bg-primary bg-opacity-10 p-2 rounded-3 me-2 text-primary">
                     <i class="bi bi-clipboard-data-fill"></i>
                 </div>
-                <h5 class="fw-bold mb-0 text-dark">Активни такси</h5>
+                <h5 class="fw-bold mb-0 text-dark">Такси на апартамента</h5>
             </div>
 
             <div class="table-container shadow-sm p-1">
@@ -172,7 +172,7 @@
                                 <tr class="border-top">
                                     <td class="ps-3 py-3">
                                         <div class="fw-bold text-dark">Такса</div>
-                                        <div class="text-muted" style="font-size: 0.7rem;">Общи части</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">Общо за апартамента</div>
                                     </td>
                                     <td class="small">@debt.TotalSum.ToString("F2")</td>
                                     <td class="fw-bold @(debt.RemainingSum > 0 ? "text-danger" : "text-success")">
@@ -196,7 +196,7 @@
                 <div class="bg-info bg-opacity-10 p-2 rounded-3 me-2 text-info">
                     <i class="bi bi-receipt"></i>
                 </div>
-                <h5 class="fw-bold mb-0 text-dark">История</h5>
+                <h5 class="fw-bold mb-0 text-dark">Детайли по таксите</h5>
             </div>
 
             <div class="table-container shadow-sm p-1">
@@ -222,6 +222,65 @@
                             }
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 24px; background: #fdfdfd; border: 1px solid #eee !important;">
+                <div class="card-header bg-white border-0 p-4 pb-0">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                        <div>
+                            <h5 class="fw-bold mb-1"><i class="bi bi-building text-primary me-2"></i>Такси на входа</h5>
+                            <p class="text-muted small mb-0">Последни общи разходи за етажната собственост</p>
+                        </div>
+                        <div class="text-md-end">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="small text-uppercase text-muted opacity-75" style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                                <tr>
+                                    <th class="border-0">Дата</th>
+                                    <th class="border-0">Категория</th>
+                                    <th class="border-0">Описание</th>
+                                    <th class="border-0 text-end">Сума</th>
+                                </tr>
+                            </thead>
+<tbody>
+    @foreach (var tr in ViewBag.EntranceTransactions)
+    {
+        var isIncome = tr.Category?.Kind == "Приход";
+        
+        <tr class="border-top-0">
+            @* Дата *@
+            <td class="text-muted small border-light">@tr.TransDate.ToString("dd.MM.yyyy")</td>
+            
+            @* ТИП (Приход/Разход) *@
+            <td class="border-light">
+                <span class="status-pill @(isIncome ? "bg-success bg-opacity-10 text-success" : "bg-danger bg-opacity-10 text-danger")">
+                    @(tr.Category?.Kind ?? "Неизвестно")
+                </span>
+            </td>
+            
+            @* КАТЕГОРИЯ *@
+            <td class="border-light">
+                <span class="badge rounded-pill fw-normal border text-dark bg-white shadow-sm" style="font-size: 0.7rem; padding: 0.4rem 0.7rem;">
+                    @tr.Category?.Name
+                </span>
+            </td>
+                        
+            @* СУМА *@
+            <td class="text-end fw-bold @(isIncome ? "text-success" : "text-danger") border-light">
+                @(isIncome ? "+" : "-")€@tr.Amount.ToString("F2")
+            </td>
+        </tr>
+    }
+</tbody>                        </table>
+                    </div>
                 </div>
             </div>
         </div>

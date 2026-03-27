@@ -41,6 +41,16 @@ namespace SyndiceoWeb.Controllers
 
             return View(myApartments);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddResidence(string apartmentNumber, int floor)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Residences));
+        }
         [HttpPost]
         public async Task<IActionResult> RequestApartment(int apartmentId)
         {
@@ -57,15 +67,6 @@ namespace SyndiceoWeb.Controllers
             }
 
             return RedirectToAction("Residences");
-        }
-        [HttpPost]
-        public async Task<IActionResult> AddResidence(string apartmentNumber, int floor)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Residences));
         }
 
         public async Task<IActionResult> ApartmentTaxes(int apartmentId)
@@ -94,6 +95,23 @@ namespace SyndiceoWeb.Controllers
                 .OrderByDescending(t => t.Id)
                 .ToListAsync();
 
+            var entranceTransactions = await _context.EntranceTransactions
+          .Include(t => t.Category) // Зареждаме категорията
+          .Where(t => t.EntranceId == apartment.EntranceId)
+          .OrderByDescending(t => t.TransDate)
+          .ToListAsync();
+
+            decimal balance = 0;
+            foreach (var t in entranceTransactions)
+            {
+                if (t.Category?.Kind == "Приход")
+                    balance += t.Amount;
+                else if (t.Category?.Kind == "Разход")
+                    balance -= t.Amount;
+            }
+
+            ViewBag.EntranceBalance = balance;
+            ViewBag.EntranceTransactions = entranceTransactions;
             ViewBag.Apartment = apartment;
             ViewBag.Transactions = transactions;
 

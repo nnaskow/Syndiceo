@@ -47,7 +47,6 @@
     </div>
 
     <div class="row g-5">
-        @* ЛЯВА КОЛОНА: ФОРМА *@
         <div class="col-lg-5">
             <div class="card report-form-card border-0 shadow-sm p-4 bg-white">
                 <div class="d-flex align-items-center mb-4">
@@ -93,7 +92,6 @@
             </div>
         </div>
 
-        @* ДЯСНА КОЛОНА: ИСТОРИЯ *@
         <div class="col-lg-7">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="fw-bold mb-0">Активност и история</h5>
@@ -167,6 +165,7 @@
                     </div>
                 </div>
             }
+       
         </div>
     </div>
 </div>
@@ -208,17 +207,15 @@
 @section Scripts {
     <script>
         function openEditModal(id, title, description, entranceId) {
-            // Попълваме данните
             document.getElementById('editReportId').value = id;
             document.getElementById('editTitle').value = title;
             document.getElementById('editDescription').value = description;
             document.getElementById('editEntranceId').value = entranceId;
 
-            // Показваме нашия модал
             const modal = document.getElementById('customEditModal');
             modal.style.display = 'flex';
             
-            // Спираме скрола на страницата отдолу
+
             document.body.style.overflow = 'hidden';
         }
 
