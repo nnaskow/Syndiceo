@@ -1,0 +1,168 @@
+﻿@model IEnumerable<Syndiceo.Data.Models.ApartmentTransaction>
+@{
+    var apt = ViewBag.Apartment as Syndiceo.Data.Models.Apartment;
+    ViewData["Title"] = "История на плащанията";
+    decimal totalHistory = Model.Sum(t => t.Amount);
+}
+
+<style>
+    .gradient-header {
+        background: linear-gradient(135deg, #2D3748 0%, #1A202C 100%); /* Тъмен градиент за история */
+        color: white;
+        padding: 2rem;
+        border-radius: 24px;
+        position: relative;
+        overflow: hidden;
+        min-height: 140px;
+        display: flex;
+        align-items: center;
+    }
+
+    .amount-badge {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 1rem;
+        border-radius: 18px;
+    }
+
+    .bg-icon-history {
+        position: absolute;
+        right: -10px;
+        bottom: -20px;
+        font-size: 7rem;
+        color: white;
+        opacity: 0.07;
+        transform: rotate(-10deg);
+        pointer-events: none;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #E2E8F0;
+        overflow: hidden;
+    }
+
+    .category-tag {
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .tag-uncollected { background: #FFF5F5; color: #C53030; border: 1px solid #FEB2B2; }
+    .tag-payment { background: #F0FFF4; color: #2F855A; border: 1px solid #9AE6B4; }
+    .tag-default { background: #F7FAFC; color: #4A5568; border: 1px solid #E2E8F0; }
+
+    .timeline-date {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #2D3748;
+    }
+
+    .timeline-year {
+        font-size: 0.7rem;
+        color: #A0AEC0;
+        text-transform: uppercase;
+    }
+</style>
+
+<div class="container py-4 py-md-5">
+    <div class="mb-4">
+    </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small fw-bold">
+                <li class="breadcrumb-item"><a asp-action="Residences" class="text-decoration-none text-muted">Имоти</a></li>
+                <li class="breadcrumb-item active text-dark">Пълна история</li>
+            </ol>
+        </nav>
+               <a asp-action="Residences" class="btn btn-link btn-sm text-decoration-none fw-bold text-muted p-0">
+            <i class="bi bi-arrow-left me-1"></i> Назад
+        </a>
+    </div>
+
+    <div class="gradient-header shadow-sm mb-5">
+        <div class="header-content w-100">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center justify-content-center justify-content-lg-start mb-2">
+                        <div class="bg-white text-dark rounded-circle me-3 d-none d-md-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <h4 class="mb-0 fw-bold text-white">Хронология на плащанията</h4>
+                    </div>
+                    <div class="text-white opacity-75 ps-lg-1 small">
+                        Обхват: Всички записи за <strong>Ап. @apt.ApartmentNumber</strong>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center text-lg-end">
+                    <div class="amount-badge mt-3 mt-lg-0">
+                        <small class="d-block opacity-75 mb-1 text-uppercase fw-bold" style="font-size: 0.6rem;">Оборот по история</small>
+                        <h3 class="fw-bold mb-0">€@totalHistory.ToString("F2")</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <i class="bi bi-calendar4-event bg-icon-history"></i>
+    </div>
+
+    <div class="table-container shadow-sm p-1">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="bg-light bg-opacity-50">
+                    <tr class="small text-muted text-uppercase" style="letter-spacing: 1px;">
+                        <th class="border-0 ps-4 py-3">Период / Дата</th>
+                        <th class="border-0 py-3">Категория и Описание</th>
+                        <th class="border-0 py-3 text-end pe-4">Сума</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var tr in Model)
+                        {
+                            var isDebt = tr.Category?.Name == "Несъбрана такса";
+                            <tr class="border-top">
+                                <td class="ps-4 py-3">
+                                    <div class="timeline-date">@tr.TransDate.ToString("dd MMM")</div>
+                                    <div class="timeline-year">@tr.TransDate.Year</div>
+                                </td>
+                                <td>
+                                    <span class="category-tag @(isDebt ? "tag-uncollected" : "tag-payment")">
+                                        @tr.Category?.Name
+                                    </span>
+                                    <div class="text-muted mt-1 small">
+                                        @tr.Description
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <span class="fw-bold fs-5 @(isDebt ? "text-danger" : "text-success")">
+                                        @(isDebt ? "-" : "+")€@Math.Abs(tr.Amount).ToString("F2")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center py-5">
+                                <i class="bi bi-cloud-slash text-muted fs-1"></i>
+                                <p class="text-muted mt-2">Няма открити записи в архива.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="text-center mt-4 text-muted small">
+        <i class="bi bi-info-circle me-1"></i> Тази справка съдържа само финализирани месечни отчети и директни плащания.
+    </div>
+</div>

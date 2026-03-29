@@ -11,6 +11,8 @@ public class SyndiceoWebUser : IdentityUser
 {
     [PersonalData]
     public string FirstName { get; set; }
+
+    [PersonalData]
     public string LastName { get; set; }
 
     public bool IsApproved { get; set; } = false;

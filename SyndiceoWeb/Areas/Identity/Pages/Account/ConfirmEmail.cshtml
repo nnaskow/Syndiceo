@@ -1,0 +1,100 @@
+﻿@page
+@model ConfirmEmailModel
+@{
+    ViewData["Title"] = "Потвърждение на имейл";
+}
+
+<style>
+    .confirm-card {
+        background: white;
+        border-radius: 24px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        max-width: 500px;
+        margin: 2rem auto;
+    }
+
+    .confirm-header {
+        background: linear-gradient(135deg, #2C5282 0%, #1A365D 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .btn-syndiceo {
+        background: #2C5282;
+        color: white;
+        border-radius: 12px;
+        padding: 0.8rem 2rem;
+        font-weight: 700;
+        border: none;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn-syndiceo:hover {
+            background: #1A365D;
+            transform: translateY(-1px);
+            color: white;
+        }
+
+    .status-icon {
+        width: 80px;
+        height: 80px;
+        background: white;
+        color: #2F855A;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2.5rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+</style>
+
+<div class="container">
+    <div class="confirm-card">
+        <div class="confirm-header">
+            <div class="status-icon">
+                <i class="bi bi-check-all"></i>
+            </div>
+            <h3 class="fw-bold mb-0">@ViewData["Title"]</h3>
+        </div>
+
+        <div class="p-5 text-center">
+            <partial name="_StatusMessage" model="Model.StatusMessage" />
+
+            <div class="mt-4">
+                @if (Model.StatusMessage?.Contains("Error") == true || Model.StatusMessage?.Contains("Грешка") == true)
+                {
+                    <p class="text-danger mb-4">
+                        Възникна проблем с потвърждението. Моля, свържете се с поддръжката или опитайте отново.
+                    </p>
+                }
+                else
+                {
+                    <div class="alert alert-warning border-0 shadow-sm mb-4" style="background-color: #FFFBEB; border-radius: 12px;">
+                        <i class="bi bi-clock-history d-block mb-2" style="font-size: 1.5rem; color: #D97706;"></i>
+                        <h5 class="fw-bold" style="color: #92400E;">Предстои одобрение</h5>
+                        <p class="small mb-0" style="color: #B45309;">
+                            Имейлът ви е потвърден успешно! Вашата регистрация сега трябва да бъде
+                            <strong>прегледана и одобрена от вашия домоуправител</strong>.
+                            Ще получите достъп до системата веднага след неговото потвърждение.
+                        </p>
+                    </div>
+
+                    <p class="text-muted mb-4 small">
+                        Благодарим ви за търпението. Можете да се върнете към началната страница или да проверите по-късно.
+                    </p>
+                }
+
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-syndiceo w-100 shadow-sm">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Към вход в системата
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

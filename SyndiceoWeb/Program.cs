@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using SyndiceoWeb.Areas.Identity.Data;
 using Syndiceo.Data.Models;
+using SyndiceoWeb.Areas.Identity.Data;
+using SyndiceoWeb.Services;
 using SyndiceoDBContext = Syndiceo.Data.Models.SyndiceoDBContext;
 
 namespace SyndiceoWeb
@@ -18,7 +20,7 @@ namespace SyndiceoWeb
             builder.Services.AddDbContext<SyndiceoDBContext>(options =>
                 options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Syndiceo.Data")));
 
-            builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+                builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddIdentity<SyndiceoWebUser, IdentityRole>(options =>
             {
@@ -33,6 +35,8 @@ namespace SyndiceoWeb
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
 
+            builder.Services.AddTransient<IEmailSender, EmailSender>();
+            
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())

@@ -4,13 +4,26 @@
 @{
     ViewData["Title"] = "Вход";
 }
+<style>
+    .input-group:focus-within .form-control,
+    .input-group:focus-within .btn {
+        border-color: #86b7fe !important; 
+    }
 
+    .toggle-password:hover {
+        color: #2C5282 !important;
+        background-color: transparent !important;
+    }
+
+    .toggle-password:focus {
+        box-shadow: none !important;
+    }
+</style>
 <div class="container d-flex align-items-center justify-content-center" style="min-height:85vh;">
     <div class="col-lg-5 col-md-7">
 
         <div class="card border-0 shadow-lg p-4 p-md-5 text-center">
 
-            <!-- Emoji Icon -->
             <div class="mb-4">
                 <div class="d-inline-flex align-items-center justify-content-center rounded-circle"
                      style="width:80px;height:80px;background:linear-gradient(135deg,#2C5282,#2B6CB0);font-size:36px;">
@@ -42,13 +55,20 @@
 
                 <div class="mb-3">
                     <label asp-for="Input.Password" class="form-label fw-semibold">Парола</label>
-                    <input asp-for="Input.Password"
-                           type="password"
-                           class="form-control form-control-lg"
-                           autocomplete="current-password"
-                           placeholder="••••••••" />
-                    <span asp-validation-for="Input.Password"
-                          class="text-danger small"></span>
+                    <div class="input-group">
+                        <input asp-for="Input.Password"
+                               type="password"
+                               class="form-control form-control-lg password-input"
+                               autocomplete="current-password"
+                               placeholder="••••••••"
+                               style="border-right: none;" />
+                        <button class="btn btn-outline-secondary toggle-password"
+                                type="button"
+                                style="border-left: none; background: #fff; border-color: #dee2e6;">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Input.Password" class="text-danger small"></span>
                 </div>
 
                 <div class="form-check mb-4">
@@ -84,14 +104,6 @@
                         </a>
                     </div>
 
-                    <div>
-                        <a id="resend-confirmation"
-                           asp-page="./ResendEmailConfirmation"
-                           class="text-decoration-none">
-                            Препрати имейл за потвърждение
-                        </a>
-                    </div>
-
                 </div>
 
             </form>
@@ -103,4 +115,21 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.querySelector('.toggle-password').addEventListener('click', function (e) {
+            const passwordInput = this.parentElement.querySelector('.password-input');
+            const icon = this.querySelector('i');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        });
+    </script>
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.EntityFrameworkCore;
 using Syndiceo.Data.Models;
 using System;
@@ -96,7 +97,7 @@ namespace SyndiceoWeb.Controllers
                 .ToListAsync();
 
             var entranceTransactions = await _context.EntranceTransactions
-          .Include(t => t.Category) // Зареждаме категорията
+          .Include(t => t.Category)
           .Where(t => t.EntranceId == apartment.EntranceId)
           .OrderByDescending(t => t.TransDate)
           .ToListAsync();
@@ -117,7 +118,31 @@ namespace SyndiceoWeb.Controllers
 
             return View(debts);
         }
+        public async Task<IActionResult> ApartmentHistory(int apartmentId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            var apartment = await _context.Apartments
+                 .Include(a => a.Entrance)
+                     .ThenInclude(e => e.Block)
+                         .ThenInclude(b => b.Address)
+                 .FirstOrDefaultAsync(a => a.ApartmentId == apartmentId && a.UserId == userId);
+
+            if (apartment == null || !apartment.IsConfirmed)
+            {
+                return RedirectToAction("Residences");
+            }
+
+            var transactions = await _context.ApartmentTransactions
+                .Include(t => t.Category)
+                .Where(t => t.ApartmentId == apartmentId)
+                .OrderByDescending(t => t.TransDate)
+                .ThenByDescending(t => t.Id)
+                .ToListAsync();
+
+            ViewBag.Apartment = apartment;
+            return View(transactions);
+        }
         public IActionResult Reports()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

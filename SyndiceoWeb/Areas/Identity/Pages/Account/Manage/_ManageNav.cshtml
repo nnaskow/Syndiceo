@@ -1,57 +1,75 @@
 ﻿@inject SignInManager<SyndiceoWebUser> SignInManager
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+    
+    string IsActive(string navClass) =>
+            (navClass?.Contains("active", StringComparison.OrdinalIgnoreCase) ?? false)
+            ? "active-nav"
+            : "inactive-nav";
 }
 
-<div class="d-flex flex-column" style="gap:0.5rem;">
-    <a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)"
-       asp-page="./Index"
-       style="padding:0.75rem 1rem; border-radius:0.5rem;
-              background:@(ManageNavPages.IndexNavClass(ViewContext) == "active" ? "linear-gradient(135deg,#2C5282,#2B6CB0)" : "#2B6CB0");
-              color:white; font-weight:500; text-align:center; transition: all 0.2s;">
-        Профил
+<style>
+    .nav-container {
+        gap: 0.75rem;
+        padding-right: 1rem;
+    }
+
+    .custom-nav-link {
+        padding: 0.8rem 1.2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid transparent;
+    }
+
+    .active-nav {
+        background: linear-gradient(135deg, #2C5282 0%, #1A365D 100%);
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(44, 82, 130, 0.2);
+    }
+
+    .inactive-nav {
+        background: #F8FAFC;
+        color: #64748B !important;
+        border: 1px solid #E2E8F0;
+    }
+
+        .inactive-nav:hover {
+            background: #EDF2F7;
+            color: #2C5282 !important;
+            transform: translateX(5px); 
+        }
+
+    .nav-icon {
+        font-size: 1.1rem;
+    }
+</style>
+
+<div class="d-flex flex-column nav-container">
+    <a class="custom-nav-link @IsActive(ManageNavPages.IndexNavClass(ViewContext))"
+           id="profile" asp-page="./Index">
+        <i class="bi bi-person-circle nav-icon"></i> Профил
     </a>
 
-    <a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)"
-       asp-page="./Email"
-       style="padding:0.75rem 1rem; border-radius:0.5rem;
-              background:@(ManageNavPages.EmailNavClass(ViewContext) == "active" ? "linear-gradient(135deg,#2C5282,#2B6CB0)" : "#2B6CB0");
-              color:white; font-weight:500; text-align:center; transition: all 0.2s;">
-        Имейл
+    <a class="custom-nav-link @IsActive(ManageNavPages.EmailNavClass(ViewContext))"
+           id="email" asp-page="./Email">
+        <i class="bi bi-envelope-at nav-icon"></i> Имейл
     </a>
 
-    <a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)"
-       asp-page="./ChangePassword"
-       style="padding:0.75rem 1rem; border-radius:0.5rem;
-              background:@(ManageNavPages.ChangePasswordNavClass(ViewContext) == "active" ? "linear-gradient(135deg,#2C5282,#2B6CB0)" : "#2B6CB0");
-              color:white; font-weight:500; text-align:center; transition: all 0.2s;">
-        Парола
+    <a class="custom-nav-link @IsActive(ManageNavPages.ChangePasswordNavClass(ViewContext))"
+           id="change-password" asp-page="./ChangePassword">
+        <i class="bi bi-shield-lock nav-icon"></i> Парола
     </a>
 
     @if (hasExternalLogins)
     {
-        <a class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)"
-           asp-page="./ExternalLogins"
-           style="padding:0.75rem 1rem; border-radius:0.5rem;
-                      background:@(ManageNavPages.ExternalLoginsNavClass(ViewContext) == "active" ? "linear-gradient(135deg,#2C5282,#2B6CB0)" : "#2B6CB0");
-                      color:white; font-weight:500; text-align:center; transition: all 0.2s;">
-            Външни логини
+        <a class="custom-nav-link @IsActive(ManageNavPages.ExternalLoginsNavClass(ViewContext))"
+               id="external-login" asp-page="./ExternalLogins">
+            <i class="bi bi-google nav-icon"></i> Външни входове
         </a>
     }
-
-    <a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)"
-       asp-page="./PersonalData"
-       style="padding:0.75rem 1rem; border-radius:0.5rem;
-              background:@(ManageNavPages.PersonalDataNavClass(ViewContext) == "active" ? "linear-gradient(135deg,#2C5282,#2B6CB0)" : "#2B6CB0");
-              color:white; font-weight:500; text-align:center; transition: all 0.2s;">
-        Лични данни
-    </a>
 </div>
-
-<style>
-    .nav-link:hover {
-        background: linear-gradient(135deg,#2B6CB0,#2C5282);
-        text-decoration: none;
-        color: white;
-    }
-</style>

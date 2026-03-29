@@ -154,9 +154,51 @@ namespace SyndiceoWeb.Areas.Identity.Pages.Account
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
 
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    string subject = "Потвърдете вашата регистрация в Syndiceo";
 
+                    string htmlMessage = $@"
+<div style='background-color: #f9fafb; padding: 40px 10px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, Helvetica, Arial, sans-serif;'>
+    <div style='max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); border: 1px solid #e5e7eb;'>
+        
+        <div style='background: linear-gradient(135deg, #2C5282 0%, #1A365D 100%); padding: 30px; text-align: center;'>
+            <h1 style='color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;'>Syndiceo</h1>
+        </div>
+
+        <div style='padding: 40px;'>
+            <h2 style='color: #1a202c; margin-top: 0; font-size: 22px; font-weight: 700;'>Добре дошли, {Input.FirstName}!</h2>
+            
+            <p style='color: #4a5568; font-size: 16px; line-height: 1.6;'>
+                Радваме се, че избрахте <strong>Syndiceo</strong> за управлението на вашата етажна собственост. За да активирате профила си, е необходимо да направите две малки стъпки:
+            </p>
+
+            <div style='margin: 30px 0; text-align: center;'>
+                <a href='{HtmlEncoder.Default.Encode(callbackUrl)}' 
+                   style='background-color: #2b6cb0; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 10px rgba(43, 108, 176, 0.3);'>
+                   Потвърди моя имейл
+                </a>
+            </div>
+
+            <div style='background-color: #fffaf0; border-left: 4px solid #ed8936; padding: 20px; border-radius: 8px; margin-top: 30px;'>
+                <p style='margin: 0; color: #7b341e; font-size: 14px; line-height: 1.5;'>
+                    <strong><span style='font-size: 18px;'>⏳</span> Предстои одобрение:</strong><br>
+                    След като потвърдите имейла си, вашият <strong>домоуправител</strong> ще получи известие, за да одобри достъпа ви. Това е мярка за сигурност, която гарантира, че само реални обитатели имат достъп до данните на входа.
+                </p>
+            </div>
+
+            <p style='color: #718096; font-size: 13px; margin-top: 40px; text-align: center; border-top: 1px solid #edf2f7; padding-top: 20px;'>
+                Ако бутонът не работи, копирайте този линк в браузъра си:<br>
+                <span style='color: #2b6cb0;'>{callbackUrl}</span>
+            </p>
+        </div>
+
+        <div style='background-color: #f7fafc; padding: 20px; text-align: center; border-top: 1px solid #edf2f7;'>
+            <p style='color: #a0aec0; font-size: 12px; margin: 0;'>
+                &copy; {DateTime.Now.Year} Syndiceo. Всички права запазени.
+            </p>
+        </div>
+    </div>
+</div>";
+                    await _emailSender.SendEmailAsync(Input.Email, subject, htmlMessage);
                     return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                 }
 

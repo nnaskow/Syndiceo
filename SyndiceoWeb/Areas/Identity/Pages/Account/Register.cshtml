@@ -4,6 +4,21 @@
     ViewData["Title"] = "Създаване на акаунт";
 }
 
+<style>
+    .input-group .btn-outline-secondary {
+        border-color: #dee2e6; /* Същият цвят като на полето */
+        background: white;
+    }
+    
+    /* Премахваме синия контур на бутона, за да изглежда по-добре */
+    .toggle-password:focus {
+        box-shadow: none;
+    }
+
+    .form-control-lg {
+        border-right: none; /* За да се слее с бутона */
+    }
+</style>
 <div class="container d-flex align-items-center justify-content-center" style="min-height:85vh;">
     <div class="col-lg-5 col-md-7">
 
@@ -63,28 +78,35 @@
 
                 <div class="mb-3">
                     <label asp-for="Input.Password" class="form-label fw-semibold">Парола</label>
-                    <input asp-for="Input.Password"
-                           type="password"
-                           class="form-control form-control-lg"
-                           autocomplete="new-password"
-                           placeholder="••••••••" />
-                    <span asp-validation-for="Input.Password"
-                          class="text-danger small"></span>
+                    <div class="input-group">
+                        <input asp-for="Input.Password"
+                               type="password"
+                               class="form-control form-control-lg password-input"
+                               autocomplete="new-password"
+                               placeholder="••••••••" />
+                        <button class="btn btn-outline-secondary toggle-password" type="button">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Input.Password" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-4">
                     <label asp-for="Input.ConfirmPassword" class="form-label fw-semibold">
                         Потвърдете паролата
                     </label>
-                    <input asp-for="Input.ConfirmPassword"
-                           type="password"
-                           class="form-control form-control-lg"
-                           autocomplete="new-password"
-                           placeholder="••••••••" />
-                    <span asp-validation-for="Input.ConfirmPassword"
-                          class="text-danger small"></span>
+                    <div class="input-group">
+                        <input asp-for="Input.ConfirmPassword"
+                               type="password"
+                               class="form-control form-control-lg password-input"
+                               autocomplete="new-password"
+                               placeholder="••••••••" />
+                        <button class="btn btn-outline-secondary toggle-password" type="button">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
                 </div>
-
                 <button id="registerSubmit"
                         type="submit"
                         class="btn btn-primary btn-lg w-100 mb-3">
@@ -109,4 +131,23 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('.password-input');
+                const icon = this.querySelector('i');
+                
+                if (input.type === "password") {
+                    input.type = "text";
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                } else {
+                    input.type = "password";
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+            });
+        });
+    </script>
 }

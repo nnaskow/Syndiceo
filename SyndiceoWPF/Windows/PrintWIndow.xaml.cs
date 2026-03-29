@@ -73,7 +73,6 @@ namespace Syndiceo.Windows
 
             if (!isMaintenanceReport)
             {
-                // ПРОВЕРКА: Вече приключен ли е този месец?
                 if (Properties.Settings.Default.LastReportDate == currentPeriod)
                 {
                     var recomputeResult = MessageBox.Show(
@@ -85,14 +84,11 @@ namespace Syndiceo.Windows
 
                     if (recomputeResult == MessageBoxResult.Yes)
                     {
-                        // Само генерираме документа и излизаме
                         GenerateReport(selectedTemplate);
                         return;
                     }
-                    // Ако потребителят избере 'No', кодът продължава към преизчисляване
                 }
 
-                // Стандартно потвърждение за първоначално генериране
                 var msgbox = MessageBox.Show("Сигурни ли сте, че желаете да приключите месеца и да генерирате отчета?\n(Препоръчваме ви да прегледате таксите отново.)",
                     "Потвърждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
@@ -106,13 +102,10 @@ namespace Syndiceo.Windows
                 }
             }
 
-            // 1. Генериране на документа
             GenerateReport(selectedTemplate);
 
-            // 2. Спираме тук, ако е само за ремонти
             if (isMaintenanceReport) return;
 
-            // 3. Изпълнение на тежката логика по архивиране
             ArchiveMonthData(currentPeriod);
         }
 
@@ -120,7 +113,6 @@ namespace Syndiceo.Windows
         {
             using var db = new SyndiceoDBContext();
 
-            // 1. Вземаме входа с всички нужни данни за апартаменти, дългове и транзакции
             var entrance = db.Entrances
                 .Include(e => e.Cashboxes)
                 .Include(e => e.Apartments)
@@ -134,7 +126,6 @@ namespace Syndiceo.Windows
 
             if (entrance == null) return;
 
-            // --- 2. ЛОГИКА ЗА КАТЕГОРИЯ "НЕСЪБРАНА ТАКСА" ---
             var remainingCategory = db.Categories.FirstOrDefault(c => c.Name == "Несъбрана такса");
             if (remainingCategory == null)
             {
@@ -145,73 +136,62 @@ namespace Syndiceo.Windows
                     Appliance = "apartments"
                 };
                 db.Categories.Add(remainingCategory);
-                db.SaveChanges(); // Записваме, за да получим ID
+                db.SaveChanges();
             }
 
-            // --- 3. ИЗЧИСТВАНЕ НА СТАРИТЕ ЗАПИСИ "НЕСЪБРАНА ТАКСА" ---
-            // Това гарантира, че ако някой вече е платил, старият му запис изчезва от DataGrid-а
-            var oldUncollectedTransactions = db.ApartmentTransactions
-                .Where(at => at.Apartment.EntranceId == EntranceId && at.CategoryId == remainingCategory.Id)
-                .ToList();
-
-            if (oldUncollectedTransactions.Any())
-            {
-                db.ApartmentTransactions.RemoveRange(oldUncollectedTransactions);
-                db.SaveChanges(); // Изтриваме ги физически, преди да генерираме новите за месеца
-            }
-
-            // --- 4. ГЕНЕРИРАНЕ НА ДИНАМИЧНИ ТРАНЗАКЦИИ (БЕЗ ПРОМЯНА НА ДЪЛГА) ---
             foreach (var apartment in entrance.Apartments)
             {
                 var debt = apartment.Debts.FirstOrDefault();
                 if (debt == null) continue;
 
-                // Изчисляваме колко "липсва" за текущия отчет
                 decimal totalToCollect = debt.TotalSum;
                 decimal alreadyPaid = debt.PaidSum;
                 decimal actualMissing = totalToCollect - alreadyPaid;
 
-                // Ако има неплатена сума (пълна или частична), създаваме транзакция
                 if (actualMissing > 0)
                 {
-                    var tr = new ApartmentTransaction
+                    bool alreadyArchived = db.ApartmentTransactions.Any(at =>
+                        at.ApartmentId == apartment.ApartmentId &&
+                        at.CategoryId == remainingCategory.Id &&
+                        at.TransDate.Month == DateTime.Now.Month &&
+                        at.TransDate.Year == DateTime.Now.Year);
+
+                    if (!alreadyArchived)
                     {
-                        ApartmentId = apartment.ApartmentId,
-                        CategoryId = remainingCategory.Id,
-                        Amount = actualMissing, // Това е сумата, която ще влезе в DataGrid-а
-                        Description = $"Несъбрана такса за {DateTime.Now:MMMM yyyy}",
-                    };
-                    db.ApartmentTransactions.Add(tr);
+                        var tr = new ApartmentTransaction
+                        {
+                            ApartmentId = apartment.ApartmentId,
+                            CategoryId = remainingCategory.Id,
+                            Amount = actualMissing,
+                            TransDate = DateOnly.FromDateTime(DateTime.Now),
+                            Description = $"Несъбрана такса за {DateTime.Now:MMMM yyyy}",
+                        };
+                        db.ApartmentTransactions.Add(tr);
+                    }
                 }
 
                 debt.PaidSum = 0;
-                debt.RemainingSum = debt.TotalSum; // Остава си оригиналният дълг
+                debt.RemainingSum = debt.TotalSum;
                 apartment.IsMarked = false;
             }
 
-            // --- 5. АКТУАЛИЗИРАНЕ НА CASHBOX (Касата) ---
             var cashbox = entrance.Cashboxes.FirstOrDefault() ?? new Cashbox { EntranceId = EntranceId, CurrentBalance = 0 };
             if (cashbox.Id == 0) db.Cashboxes.Add(cashbox);
 
-            // Реални приходи за входа (без несъбраните)
             decimal totalIncomes = entrance.EntranceTransactions
                 .Where(et => et.Amount > 0 && et.Category?.Kind == "Приход" && et.Category?.Appliance == "entrances")
                 .Sum(et => et.Amount);
 
-            // Реални разходи (без виртуалната категория "Несъбрана такса")
             decimal totalExpenses = entrance.EntranceTransactions
                 .Where(et => et.Amount > 0 && et.Category?.Kind == "Разход" && et.Category?.Name != "Несъбрана такса" && et.Category?.Appliance == "entrances")
                 .Sum(et => Math.Abs(et.Amount));
 
-            // Сумата на всички нови "Несъбрани такси", които току-що добавихме в паметта (Local)
             decimal currentMonthUncollected = db.ApartmentTransactions.Local
                 .Where(at => at.CategoryId == remainingCategory.Id)
                 .Sum(at => at.Amount);
 
-            // Обновяваме баланса: (Текущ + Приходи) - Разходи - Липсващи пари
             cashbox.CurrentBalance = (cashbox.CurrentBalance + totalIncomes) - totalExpenses - currentMonthUncollected;
 
-            // --- 6. НУЛИРАНЕ НА СЪБРАНИТЕ ТАКСИ ЗА ВХОДА ---
             var collectedCategory = db.Categories.FirstOrDefault(c => c.Name == "Събрани такси" && c.Kind == "Приход");
             if (collectedCategory != null)
             {
@@ -222,14 +202,11 @@ namespace Syndiceo.Windows
                 foreach (var et in entranceTransactions) { et.Amount = 0; }
             }
 
-            // --- 7. ФИНАЛНО ЗАПАЗВАНЕ И ОБНОВЯВАНЕ НА НАСТРОЙКИ ---
             db.SaveChanges();
 
-            // Записваме датата на последния отчет
             Properties.Settings.Default.LastReportDate = currentPeriod;
             Properties.Settings.Default.Save();
 
-            // Почистваме сесията и опресняваме UI
             SessionData.LastPayments.Clear();
         }
         private void GenerateReport(ListBoxItem selectedTemplate)
@@ -260,7 +237,6 @@ namespace Syndiceo.Windows
             decimal finalBalance = 0;
             if (!isMaintenanceReport)
             {
-                // Изчисляване на баланс само за месечен отчет
                 var currentCashbox = db.Cashboxes.FirstOrDefault(c => c.EntranceId == EntranceId);
                 decimal totalIncomes = db.EntranceTransactions.Where(et => et.EntranceId == EntranceId && et.Amount > 0 && et.Category.Kind == "Приход").Sum(et => et.Amount);
                 decimal totalExpenses = db.EntranceTransactions.Where(et => et.EntranceId == EntranceId && et.Amount > 0 && et.Category.Kind == "Разход" && et.Category.Name != "Несъбрана такса").Sum(et => Math.Abs(et.Amount));
@@ -282,22 +258,18 @@ namespace Syndiceo.Windows
                 mainPart.Document = new DocumentFormat.OpenXml.Wordprocessing.Document();
                 Body body = mainPart.Document.AppendChild(new Body());
 
-                // HEADER - Добавен параметър isMaintenanceReport
                 AddHeader(mainPart, isMaintenanceReport ? "ОТЧЕТ НА ИЗВЪРШЕНИТЕ РЕМОНТНИ ДЕЙНОСТИ" : "МЕСЕЧЕН ОТЧЕТ", isMaintenanceReport);
 
-                // ДАТА
                 body.Append(new Paragraph(
                     new ParagraphProperties(new Justification { Val = JustificationValues.Center }),
                     new Run(new RunProperties(new FontSize { Val = "28" }, new Bold()),
                     new Text(isMaintenanceReport ? $"за {year} година" : monthYear))));
 
-                // АДРЕС
                 body.Append(new Paragraph(
                     new ParagraphProperties(new Justification { Val = JustificationValues.Center }),
                     new Run(new RunProperties(new FontSize { Val = "24" }, new Italic()),
                     new Text(entranceAddress))));
 
-                // ДОБАВЯНЕ НА ПРАЗНО ПРОСТРАНСТВО ПРЕДИ ТАБЛИЦАТА (важно за визията)
                 body.Append(new Paragraph(new Run(new Break())));
 
                 if (isMaintenanceReport)
