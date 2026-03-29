@@ -168,12 +168,12 @@
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button x:Name="clearFieldsButton" Content="🔄 ИЗЧИСТИ" 
-                                    Style="{StaticResource MainButtonStyle}" Background="#475569" Foreground="White" FontWeight="Bold"
+                                    Style="{StaticResource ClearButtonStyle}" FontWeight="Bold"
                                     Width="138" Height="45" Margin="0,0,12,0"
                                     Click="clearFieldsButton_Click"/>
 
                             <Button x:Name="SaveButton" Content="💾 ЗАПИШИ ТАКСИТЕ" 
-                                    Style="{StaticResource MainButtonStyle}" Background="#2563EB"
+                                    Style="{StaticResource SaveButtonStyle}"
                                     Width="220" Height="45" FontWeight="Bold"
                                     Click="SaveButton_Click"/>
                         </StackPanel>

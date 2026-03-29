@@ -30,14 +30,12 @@ namespace Syndiceo.Windows
             int currentYear = DateTime.Now.Year;
             int currentMonth = DateTime.Now.Month;
 
-            // Добавяме години
             for (int i = currentYear - 5; i <= currentYear + 1; i++)
             {
                 YearComboBox.Items.Add(i);
             }
 
-            // Списък с месеци като Key = число, Value = име
-            var months = new List<KeyValuePair<int, string>>()
+            var allMonths = new List<KeyValuePair<int, string>>()
     {
         new KeyValuePair<int, string>(1, "Януари"),
         new KeyValuePair<int, string>(2, "Февруари"),
@@ -52,15 +50,27 @@ namespace Syndiceo.Windows
         new KeyValuePair<int, string>(11, "Ноември"),
         new KeyValuePair<int, string>(12, "Декември")
     };
+            var filteredMonths = new List<KeyValuePair<int, string>>();
+            for (int i = -3; i <= 3; i++)
+            {
+                int targetMonth = currentMonth + i;
 
-            MonthComboBox.ItemsSource = months;
-            MonthComboBox.DisplayMemberPath = "Value"; // какво да се показва
-            MonthComboBox.SelectedValuePath = "Key";   // какво да се взима като value
+                if (targetMonth < 1) targetMonth += 12;
+                if (targetMonth > 12) targetMonth -= 12;
 
-            // Избираме текущия месец по ключ
+                var m = allMonths.First(x => x.Key == targetMonth);
+                if (!filteredMonths.Any(x => x.Key == m.Key))
+                {
+                    filteredMonths.Add(m);
+                }
+            }
+
+            MonthComboBox.ItemsSource = filteredMonths;
+            MonthComboBox.DisplayMemberPath = "Value"; 
+            MonthComboBox.SelectedValuePath = "Key";  
+
             MonthComboBox.SelectedValue = currentMonth;
 
-            // Избираме текущата година
             YearComboBox.SelectedItem = currentYear;
         }
 

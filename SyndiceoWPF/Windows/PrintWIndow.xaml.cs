@@ -1,16 +1,17 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.EntityFrameworkCore;
+using Syndiceo.Data.Models;
+using Syndiceo.Utilities;
+using Syndiceo.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Wordprocessing;
-using Syndiceo.Data.Models;
-using Microsoft.EntityFrameworkCore;
-using Syndiceo.Utilities;
-using Syndiceo.ViewModels;
 
 namespace Syndiceo.Windows
 {
@@ -60,6 +61,8 @@ namespace Syndiceo.Windows
 
         private void PrintBtn_Click(object sender, RoutedEventArgs e)
         {
+            var db = new SyndiceoDBContext();
+
             var selectedTemplate = FilesListBox.SelectedItem as ListBoxItem;
             if (selectedTemplate == null)
             {
@@ -68,12 +71,28 @@ namespace Syndiceo.Windows
             }
 
             bool isMaintenanceReport = selectedTemplate.Tag?.ToString().Contains("remontni", StringComparison.OrdinalIgnoreCase) ?? false;
+            var chooseDateWindow = new ChooseDateWindow { Owner = this };
+            if (chooseDateWindow.ShowDialog() != true)
+            {
+                return;
+            }
 
-            string currentPeriod = $"{Properties.Settings.Default.monthForPrinting}-{Properties.Settings.Default.yearForPrinting}";
+            string monthStr = Properties.Settings.Default.monthForPrinting;
+            string yearStr = Properties.Settings.Default.yearForPrinting;
+            string currentPeriod = $"{monthStr}-{yearStr}";
+
+            if (!int.TryParse(monthStr, out int month)) month = DateTime.Now.Month;
+            if (!int.TryParse(yearStr, out int year)) year = DateTime.Now.Year;
 
             if (!isMaintenanceReport)
             {
-                if (Properties.Settings.Default.LastReportDate == currentPeriod)
+                bool alreadyArchivedForThisEntrance = db.ApartmentTransactions.Any(at =>
+                    at.Apartment.EntranceId == EntranceId &&
+                    at.Category.Name == "Несъбрана такса" &&
+                    at.TransDate.Month == month &&
+                    at.TransDate.Year == year);
+
+                if (Properties.Settings.Default.LastReportDate == currentPeriod || alreadyArchivedForThisEntrance)
                 {
                     var recomputeResult = MessageBox.Show(
                         $"За периода {currentPeriod} данните вече са архивирани и таксите са нулирани.\n\n" +
@@ -89,26 +108,22 @@ namespace Syndiceo.Windows
                     }
                 }
 
-                var msgbox = MessageBox.Show("Сигурни ли сте, че желаете да приключите месеца и да генерирате отчета?\n(Препоръчваме ви да прегледате таксите отново.)",
+                var msgbox = MessageBox.Show(
+                    $"Сигурни ли сте, че желаете да приключите месеца ({currentPeriod}) и да генерирате отчета?\n" +
+                    "(Това ще прехвърли неплатените суми като дълг и ще нулира текущите плащания.)",
                     "Потвърждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
                 if (msgbox != MessageBoxResult.Yes) return;
-
-                var chooseDateWindow = new ChooseDateWindow { Owner = this };
-                if (chooseDateWindow.ShowDialog() != true)
-                {
-                    MessageBox.Show("Отчетът не беше генериран, защото не е избрана дата.", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
             }
 
             GenerateReport(selectedTemplate);
 
-            if (isMaintenanceReport) return;
-
-            ArchiveMonthData(currentPeriod);
+            if (!isMaintenanceReport)
+            {
+                ArchiveMonthData(currentPeriod);
+                MessageBox.Show($"Месецът ({currentPeriod}) беше приключен успешно!", "Готово", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
-
         private void ArchiveMonthData(string currentPeriod)
         {
             using var db = new SyndiceoDBContext();
@@ -495,25 +510,19 @@ namespace Syndiceo.Windows
             var cashbox = entrance.Cashboxes.FirstOrDefault();
             if (cashbox == null) return;
 
-            // 1. Приходи (само тези, които са маркирани за входа)
             decimal totalIncomes = entrance.EntranceTransactions
                 .Where(et => et.Amount > 0 && et.Category?.Kind == "Приход" && et.Category?.Appliance == "entrances")
                 .Sum(et => et.Amount);
 
-            // 2. Реални разходи (плащания към доставчици и т.н.)
             decimal totalExpenses = entrance.EntranceTransactions
                 .Where(et => et.Amount > 0 && et.Category?.Kind == "Разход" && et.Category?.Name != "Несъбрана такса" && et.Category?.Appliance == "entrances")
                 .Sum(et => Math.Abs(et.Amount));
 
-            // 3. Несъбрани суми (виртуални разходи - парите, които липсват)
             decimal totalUncollected = entrance.Apartments
                 .SelectMany(a => a.ApartmentTransactions)
                 .Where(at => at.Category?.Name == "Несъбрана такса")
                 .Sum(at => Math.Abs(at.Amount));
 
-            // Важно: Тук логиката ти предполага, че "Старият баланс" вече е включвал сумите до момента.
-            // Ако искаш "чист" баланс само за текущия месец, ползвай горните променливи.
-            // Ако актуализираш трайно касата:
             cashbox.CurrentBalance = (cashbox.CurrentBalance + totalIncomes) - totalExpenses - totalUncollected;
 
             db.SaveChanges();
