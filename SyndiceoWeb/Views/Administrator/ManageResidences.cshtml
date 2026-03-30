@@ -1,0 +1,150 @@
+﻿@model IEnumerable<Syndiceo.Data.Models.Apartment>
+@{
+    ViewData["Title"] = "Управление на местоживеене";
+}
+
+<style>
+    .residence-card-row {
+        transition: all 0.2s ease;
+        border-bottom: 8px solid white;
+        background: #fff;
+    }
+    .residence-card-row:hover { background: #F8FAFC; }
+
+    .user-badge {
+        background: #EDF2F7;
+        color: #2D3748;
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .status-confirmed { color: #38A169; }
+    .status-unconfirmed { color: #DD6B20; }
+    .status-vacant { color: #A0AEC0; font-style: italic; }
+
+    .btn-white { background: white; color: #4A5568; border: 1px solid #E2E8F0; }
+    .btn-white:hover { background: #FFF5F5; color: #E53E3E; border-color: #FED7D7; }
+
+    @@media (max-width: 767.98px) {
+        .admin-res-table thead { display: none; }
+        .admin-res-table tbody tr {
+            display: block;
+            margin-bottom: 1.5rem;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 15px;
+            padding: 1rem;
+        }
+        .admin-res-table td {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0 !important;
+            border: none !important;
+        }
+    }
+</style>
+
+<div class="container py-4 py-md-5">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2 small">
+                    <li class="breadcrumb-item"><a asp-action="AdminDashboard" class="text-decoration-none">Табло</a></li>
+                    <li class="breadcrumb-item active">Адреси</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold m-0" style="color: #2D3748;">🏠 Управление на адреси</h2>
+        </div>
+
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch" 
+                   class="form-control rounded-pill border-0 shadow-sm px-4" 
+                   placeholder="Търси по име или адрес..." style="min-width: 280px;">
+            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 shadow-sm rounded-4 mb-4">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm p-2 p-md-4" style="border-radius: 20px;">
+        <div class="table-responsive border-0">
+            <table class="table align-middle mb-0 table-borderless admin-res-table">
+                <thead>
+                    <tr class="text-muted small text-uppercase" style="letter-spacing: 1px; border-bottom: 2px solid #F1F5F9;">
+                        <th class="pb-3 fw-bold">Адрес и Апартамент</th>
+                        <th class="pb-3 fw-bold">Обитател</th>
+                        <th class="pb-3 fw-bold">Статус</th>
+                        <th class="pb-3 text-end fw-bold">Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var apt in Model)
+                    {
+                        <tr class="residence-card-row">
+                            <td class="py-md-4">
+                                <div class="fw-bold text-dark">
+                                    ул. @apt.Entrance?.Block?.Address?.Street @apt.Entrance?.Block?.BlockName
+                                </div>
+                                <div class="text-muted small">
+                                    Вход @apt.Entrance?.EntranceName, <strong>Ап. @apt.ApartmentNumber</strong>
+                                </div>
+                            </td>
+                            <td>
+                                @if (apt.User != null)
+                                {
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-2">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                        <div class="fw-semibold small">@apt.User.Email</div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="status-vacant small"><i class="bi bi-dash-circle"></i> Свободен</span>
+                                }
+                            </td>
+                            <td>
+                                @if (apt.UserId != null)
+                                {
+                                    @if (apt.IsConfirmed)
+                                    {
+                                        <span class="status-confirmed small fw-bold">
+                                            <i class="bi bi-patch-check-fill"></i> Потвърден
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-unconfirmed small fw-bold">
+                                            <i class="bi bi-clock-history"></i> Чака потвърждение
+                                        </span>
+                                    }
+                                }
+                            </td>
+                            <td class="text-md-end">
+                                @if (apt.UserId != null)
+                                {
+                                    <form asp-action="RemoveUserFromResidence" method="post" 
+                                          onsubmit="return confirm('Сигурни ли сте, че искате да премахнете потребителя от този адрес?');">
+                                        <input type="hidden" name="apartmentId" value="@apt.ApartmentId" />
+                                        <button type="submit" class="btn btn-white btn-sm fw-bold px-3 py-2 rounded-3">
+                                            <i class="bi bi-person-x-fill me-1"></i> Премахни
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -55,7 +55,11 @@
                         else
                         {
                             <li><a href="/" class="nav-link-custom active">Начало</a></li>
-                            <li><a href="#features" class="nav-link-custom text-muted">Възможности</a></li>
+                            <li>
+                                <a asp-controller="Home" asp-action="Capabilities" class="nav-link-custom text-muted">
+                                    Възможности
+                                </a>
+                            </li>                        
                         }
                     </ul>
                 </nav>

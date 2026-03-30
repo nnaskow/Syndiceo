@@ -240,6 +240,46 @@ namespace SyndiceoWeb.Controllers
             }
             return RedirectToAction(nameof(ResidenceConfirmation));
         }
+        public IActionResult ManageResidences(string searchTerm)
+        {
+            var apartmentsQuery = _context.Apartments
+                .Include(a => a.User)
+                .Include(a => a.Entrance)
+                    .ThenInclude(e => e.Block)
+                        .ThenInclude(b => b.Address)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                apartmentsQuery = apartmentsQuery.Where(a =>
+                    a.User.Email.Contains(searchTerm) ||
+                    a.Entrance.Block.Address.Street.Contains(searchTerm) ||
+                    a.ApartmentNumber.ToString() == searchTerm);
+            }
+
+            var residences = apartmentsQuery
+                .OrderBy(a => a.Entrance.Block.Address.Street)
+                .ThenBy(a => a.Entrance.Block.BlockName)
+                .ThenBy(a => a.ApartmentNumber)
+                .ToList();
+
+            ViewBag.CurrentSearch = searchTerm;
+            return View(residences);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveUserFromResidence(int apartmentId)
+        {
+            var apartment = await _context.Apartments.FindAsync(apartmentId);
+            if (apartment != null)
+            {
+                apartment.UserId = null;
+                apartment.IsConfirmed = false;
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Потребителят е премахнат от адреса.";
+            }
+            return RedirectToAction(nameof(ManageResidences));
+        }
     }
     public class ActivityLogViewModel
     {

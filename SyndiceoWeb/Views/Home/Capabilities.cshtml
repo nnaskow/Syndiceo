@@ -1,0 +1,120 @@
+﻿@{
+    ViewData["Title"] = "Syndiceo – Твоят дом под контрол";
+}
+
+<style>
+    :root {
+        --primary-soft: #ebf4ff;
+        --accent-blue: #3182ce;
+        --success-soft: #f0fff4;
+        --success-dark: #2f855a;
+    }
+
+    .hero-gradient {
+        background: linear-gradient(135deg, #2D3748 0%, #1A365D 100%);
+        border-radius: 0 0 50px 50px;
+        padding: 80px 0;
+        color: white;
+    }
+
+    .benefit-card {
+        border: none;
+        border-radius: 20px;
+        background: #ffffff;
+        padding: 30px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        position: relative;
+    }
+
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+
+    .icon-circle {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 50px;
+        background: var(--success-soft);
+        color: var(--success-dark);
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+</style>
+
+<header class="hero-gradient mb-5">
+    <div class="container text-center">
+        <span class="status-badge shadow-sm">Личен портал за всеки собственик</span>
+        <h1 class="display-3 fw-bold mb-4">Твоят апартамент в дигиталната ера</h1>
+        <p class="lead opacity-75 mx-auto mb-0" style="max-width: 800px;">
+            Край на неяснотата. Проверявай таксите си, съобщавай за повреди и обсъждай важните теми с твоите съседи през единна и сигурна платформа.
+        </p>
+    </div>
+</header>
+
+<div class="container pb-5">
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="benefit-card h-100">
+                <div class="icon-circle shadow-sm" style="background: #F0FFF4; color: #38A169;">💰</div>
+                <h4 class="fw-bold">Финансова история</h4>
+                <p class="text-muted">Разглеждай текущите си задължения и пълна история на предишни платени такси за твоя апартамент. Всичко е прозрачно и подредено.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="benefit-card h-100">
+                <div class="icon-circle shadow-sm" style="background: #FFF5F5; color: #E53E3E;">🚩</div>
+                <h4 class="fw-bold">Директни сигнали</h4>
+                <p class="text-muted">Има проблем във входа? Подай сигнал за повреда директно през твоя профил. Следи статуса и разбери веднага, когато проблемът е решен.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="benefit-card h-100">
+                <div class="icon-circle shadow-sm" style="background: #EBF8FF; color: #3182ce;">📢</div>
+                <h4 class="fw-bold">Активни дискусии</h4>
+                <p class="text-muted">Участвай в живота на твоя вход. Коментирай предложения и води важни дискусии със съседите си онлайн, без да чакаш следващото събрание.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row align-items-center py-5">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <div class="p-5 bg-white rounded-5 shadow-sm border">
+                <h3 class="fw-bold mb-4">Сигурност и достъп</h3>
+                <p class="text-muted fs-5">
+                    Достъпът до информацията за твоя имот е защитен. Всеки адрес се потвърждава от администратор, за да сме сигурни, че данните стигат само до правилните хора.
+                </p>
+                <div class="mt-4">
+                    <div class="d-flex mb-3 align-items-center">
+                        <i class="bi bi-shield-check text-success fs-4 me-3"></i>
+                        <span class="fw-bold text-dark">Защита на личните данни</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-phone-vibrate text-primary fs-4 me-3"></i>
+                        <span class="fw-bold text-dark">Оптимизирано за всяко устройство</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 text-center">
+            <div class="display-1 mb-3">🏢✨</div>
+            <h2 class="fw-bold">Готов ли си да влезеш?</h2>
+            <p class="text-muted px-lg-5">Ако твоят вход вече използва Syndiceo, просто се регистрирай и заяви своя апартамент.</p>
+        </div>
+    </div>
+</div>

@@ -133,55 +133,67 @@
 
     <h5 class="fw-bold mb-4">Бърза навигация</h5>
     
-    <div class="row g-3 mb-5">
-        <div class="col-md-6 col-xl-2-4">
-            <a asp-action="UserApproval" class="nav-card shadow-sm">
-                <div class="nav-icon">👤</div>
-                <div>
-                    <div class="fw-bold small">Акаунти</div>
-                    <div class="text-muted extra-small">Одобрение</div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-6 col-xl-2-4">
-            <a asp-action="ResidenceConfirmation" class="nav-card shadow-sm">
-                <div class="nav-icon">🏠</div>
-                <div>
-                    <div class="fw-bold small">Адреси</div>
-                    <div class="text-muted extra-small">Имоти</div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-6 col-xl-2-4">
-            <a asp-action="ManageReports" class="nav-card shadow-sm">
-                <div class="nav-icon">🚩</div>
-                <div>
-                    <div class="fw-bold small">Сигнали</div>
-                    <div class="text-muted extra-small">Проблеми</div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-6 col-xl-2-4">
-            <a asp-controller="Discussions" asp-action="Index" class="nav-card shadow-sm" style="border-left: 4px solid #2C5282;">
-                <div class="nav-icon">📢</div>
-                <div>
-                    <div class="fw-bold small">Дискусии</div>
-                    <div class="text-muted extra-small">Съобщения</div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-6 col-xl-2-4">
-            <a asp-action="ManageUsers" class="nav-card shadow-sm">
-                <div class="nav-icon">⚙️</div>
-                <div>
-                    <div class="fw-bold small">Потребители</div>
-                    <div class="text-muted extra-small">Управление</div>
-                </div>
-            </a>
-        </div>
+<div class="row g-3 mb-5">
+    <div class="col-md-6 col-xl-2">
+        <a asp-action="UserApproval" class="nav-card shadow-sm" style="border-left: 4px solid #4299E1;">
+            <div class="nav-icon">👤</div>
+            <div>
+                <div class="fw-bold small">Акаунти</div>
+                <div class="text-muted extra-small">Одобрение</div>
+            </div>
+        </a>
     </div>
 
-<div class="activity-log shadow-sm p-4 bg-white" style="border-radius: 24px; border: 1px solid #E2E8F0;">
+    <div class="col-md-6 col-xl-2">
+        <a asp-action="ResidenceConfirmation" class="nav-card shadow-sm" style="border-left: 4px solid #ED8936;">
+            <div class="nav-icon">📩</div>
+            <div>
+               <div class="fw-bold small">Заявки за имоти</div>
+               <div class="text-muted extra-small">Нови регистрации</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-xl-2">
+        <a asp-action="ManageResidences" class="nav-card shadow-sm" style="border-left: 4px solid #48BB78;">
+            <div class="nav-icon">🏠</div>
+            <div>
+               <div class="fw-bold small">Управление на адреси</div>
+               <div class="text-muted extra-small">Всички обитатели</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-xl-2">
+        <a asp-action="ManageReports" class="nav-card shadow-sm" style="border-left: 4px solid #F56565;">
+            <div class="nav-icon">🚩</div>
+            <div>
+                <div class="fw-bold small">Сигнали</div>
+                <div class="text-muted extra-small">Проблеми</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-xl-2">
+        <a asp-controller="Discussions" asp-action="Index" class="nav-card shadow-sm" style="border-left: 4px solid #667EEA;">
+            <div class="nav-icon">📢</div>
+            <div>
+                <div class="fw-bold small">Дискусии</div>
+                <div class="text-muted extra-small">Съобщения</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-xl-2">
+        <a asp-action="ManageUsers" class="nav-card shadow-sm" style="border-left: 4px solid #718096;">
+            <div class="nav-icon">⚙️</div>
+            <div>
+                <div class="fw-bold small">Потребители</div>
+                <div class="text-muted extra-small">Управление</div>
+            </div>
+        </a>
+    </div>
+</div><div class="activity-log shadow-sm p-4 bg-white" style="border-radius: 24px; border: 1px solid #E2E8F0;">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="fw-bold mb-0 text-dark">Последни действия</h5>
