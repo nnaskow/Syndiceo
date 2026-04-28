@@ -141,12 +141,12 @@
                         <tr class="user-row">
                             <td class="ps-md-4 py-3">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar-placeholder me-3">
-                                        @user.Email.Substring(0, 1).ToUpper()
+                                    <div class="avatar-circle me-3">
+                                        @user.FirstName.Substring(0, 1).ToUpper()@user.LastName.Substring(0, 1).ToUpper()
                                     </div>
-                                    <div class="text-truncate" style="max-width: 220px;">
-                                        <div class="fw-bold text-dark">@user.Email</div>
-                                        <div class="text-muted" style="font-size: 0.7rem;">ID: @user.Id.Substring(0, 8)...</div>
+                                    <div class="text-truncate">
+                                        <div class="fw-800 text-dark fs-6 mb-0">@user.FirstName @user.LastName</div>
+                                        <div class="text-muted extra-small">@user.Email</div>
                                     </div>
                                 </div>
                             </td>

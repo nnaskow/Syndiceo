@@ -41,6 +41,35 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+        <Style x:Key="ModernCheckBox" TargetType="CheckBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <BulletDecorator Background="Transparent">
+                            <BulletDecorator.Bullet>
+                                <Border x:Name="Border" Width="18" Height="18" CornerRadius="5" 
+                                Background="White" BorderBrush="#CBD5E1" BorderThickness="1.5">
+                                    <Path x:Name="CheckMark" Data="M 2,5 L 5,8 L 10,2" 
+                                  Stroke="#2563EB" StrokeThickness="2" 
+                                  Visibility="Collapsed" Stretch="Uniform" Margin="3"/>
+                                </Border>
+                            </BulletDecorator.Bullet>
+                            <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </BulletDecorator>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#EFF6FF"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#2563EB"/>
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="MainButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="Background" Value="{StaticResource PrimaryColor}"/>
             <Setter Property="Foreground" Value="White"/>
@@ -159,7 +188,6 @@
                                 <ColumnDefinition MaxWidth="18"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Editable TextBox -->
                             <TextBox Name="PART_EditableTextBox"
                              Style="{StaticResource ComboBoxTextBoxStyle}"
                              Padding="0"
@@ -167,7 +195,6 @@
                              HorizontalContentAlignment="Center"
                              Height="{TemplateBinding Height}"/>
 
-                            <!-- DropDown ToggleButton -->
                             <ToggleButton Grid.Column="1"
                                   Margin="0"
                                   Height="{TemplateBinding Height}"
@@ -181,7 +208,6 @@
                               Fill="#011b2d" />
                             </ToggleButton>
 
-                            <!-- ContentPresenter за не-editable -->
                             <ContentPresenter Name="ContentSite"
                                       Content="{TemplateBinding SelectionBoxItem}"
                                       ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
@@ -190,7 +216,6 @@
                                       HorizontalAlignment="Center"
                                       Margin="0"/>
 
-                            <!-- DropDown Popup -->
                             <Popup Name="Popup"
                            Placement="Bottom"
                            IsOpen="{TemplateBinding IsDropDownOpen}"

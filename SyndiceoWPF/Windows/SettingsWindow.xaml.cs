@@ -1,8 +1,11 @@
-﻿using Syndiceo.Data.Models;
+﻿using Microsoft.SqlServer.Dac;
 using Microsoft.Win32;
+using Syndiceo.Data.Models;
+using Syndiceo.Windows;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +17,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Xml;
 using MessageBox = System.Windows.MessageBox;
 
 namespace Syndiceo.Windows
@@ -42,44 +46,7 @@ namespace Syndiceo.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
-            using (var context = new SyndiceoDBContext())
-            {
-                var user = context.Logins.FirstOrDefault(); // взема единствения запис
-
-                if (user != null)
-                {
-                    usernameLabel.Text = user.Username ?? "Няма зададено потребителско име";
-                    nameLabel.Text = user.PersonName ?? "Няма зададено име";
-                    emailLabel.Text = user.Email ?? "Няма зададен имейл";
-
-                    RememberUsernameCheckBox.IsEnabled = true;
-                    RememberPasswordCheckBox.IsEnabled = true;
-                    AutoSaveCheckBox.IsEnabled = true;
-
-                    RememberUsernameCheckBox.Opacity = 1;
-                    RememberPasswordCheckBox.Opacity = 1;
-                    AutoSaveCheckBox.Opacity = 1;
-
-                    RememberUsernameCheckBox.IsChecked = Properties.Settings.Default.RememberUsername;
-                    RememberPasswordCheckBox.IsChecked = Properties.Settings.Default.RememberPassword;
-                    AutoSaveCheckBox.IsChecked = Properties.Settings.Default.AutoArchive;
-                }
-                else
-                {
-                    RememberUsernameCheckBox.IsChecked = false;
-                    RememberPasswordCheckBox.IsChecked = false;
-                    AutoSaveCheckBox.IsChecked = false;
-
-                    RememberUsernameCheckBox.IsEnabled = false;
-                    RememberPasswordCheckBox.IsEnabled = false;
-                    AutoSaveCheckBox.IsEnabled = false;
-
-                    RememberUsernameCheckBox.Opacity = 0.375;
-                    RememberPasswordCheckBox.Opacity = 0.375;
-                    AutoSaveCheckBox.Opacity = 0.375;
-                }
-            }
+            LoadUserData();
             DatabasePathTextBox.Text = Properties.Settings.Default.LastBackupPath;
             Properties.Settings.Default.isNameChanged = false;
             Properties.Settings.Default.isPasswordChanged = false;
@@ -147,7 +114,8 @@ namespace Syndiceo.Windows
             Properties.Settings.Default.ChangeEmail = true;
             Properties.Settings.Default.Save();
             ChangeUserDataWindow c = new ChangeUserDataWindow();
-            c.Show();
+            c.ShowDialog();
+            LoadUserData();
         }
 
         private void passwordButton_Click(object sender, RoutedEventArgs e)
@@ -168,17 +136,18 @@ namespace Syndiceo.Windows
         {
             var openFileDialog = new Microsoft.Win32.OpenFileDialog
             {
-                Title = "Изберете архив на базата данни",
-                Filter = "Backup files (*.bak)|*.bak|All files (*.*)|*.*"
+                Title = "Изберете облачен архив (.bacpac)",
+                Filter = "Cloud Backup files (*.bacpac)|*.bacpac|All files (*.*)|*.*"
             };
 
             if (openFileDialog.ShowDialog() != true)
                 return;
 
-            string backupFile = openFileDialog.FileName;
+            string bacpacFile = openFileDialog.FileName;
 
             var result = MessageBox.Show(
-                "Сигурни ли сте, че искате да възстановите базата от този архив? Всички текущи данни ще бъдат презаписани!",
+                "ВНИМАНИЕ: Облачният импорт ще се опита да създаде базата наново. " +
+                "Ако базата вече съществува, операцията може да се провали. Продължавате ли?",
                 "Потвърждение",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning
@@ -187,34 +156,64 @@ namespace Syndiceo.Windows
             if (result != MessageBoxResult.Yes)
                 return;
 
+            string connectionString = "Server=db45189.public.databaseasp.net; Database=db45189; User Id=db45189; Password=qJ!5@f8Sd9H_; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;";
+
+            RestoreCloudDatabase(connectionString, bacpacFile);
+        }
+        public void RestoreCloudDatabase(string connectionString, string bacpacFilePath)
+        {
             try
             {
-                string connectionString = @"Server=(localdb)\MSSQLLocalDB;Database=master;Trusted_Connection=True;";
+                string dbName = "db45189"; 
 
-                using (var connection = new System.Data.SqlClient.SqlConnection(connectionString))
+                if (!File.Exists(bacpacFilePath))
                 {
-                    connection.Open();
-
-                    string restoreSql = $@"
-                ALTER DATABASE [SyndiceoDB] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-                RESTORE DATABASE [SyndiceoDB] FROM DISK = N'{backupFile}' WITH REPLACE;
-                ALTER DATABASE [SyndiceoDB] SET MULTI_USER;
-            ";
-
-                    using (var command = new System.Data.SqlClient.SqlCommand(restoreSql, connection))
-                    {
-                        command.ExecuteNonQuery();
-                    }
+                    MessageBox.Show("Файлът не е намерен!");
+                    return;
                 }
 
-                MessageBox.Show("Базата беше успешно възстановена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Започва възстановяване... Това може да отнеме няколко минути, моля изчакайте.");
+
+                DacServices services = new DacServices(connectionString);
+
+                using (BacPackage package = BacPackage.Load(bacpacFilePath))
+                {
+                    services.ImportBacpac(package, dbName);
+                }
+
+                MessageBox.Show("Базата данни е възстановена успешно от облачния архив!");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Грешка при възстановяване: {ex.Message}", "Грешка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Грешка при зареждането: {ex.Message}\n\n" +
+                                "Забележка: Понякога трябва ръчно да изтриете старата база в облака, преди да импортирате нова върху нея.");
+            }
+        }
+        private void LoadUserData()
+        {
+            using (var context = new SyndiceoDBContext())
+            {
+                var user = context.Logins.FirstOrDefault();
+
+                if (user != null)
+                {
+                    usernameLabel.Text = user.Username ?? "Няма зададено потребителско име";
+                    nameLabel.Text = user.PersonName ?? "Няма зададено име";
+                    emailLabel.Text = user.Email ?? "Няма зададен имейл";
+
+                    RememberUsernameCheckBox.IsEnabled = true;
+                    RememberPasswordCheckBox.IsEnabled = true;
+                    AutoSaveCheckBox.IsEnabled = true;
+                    RememberUsernameCheckBox.Opacity = 1;
+                    RememberPasswordCheckBox.Opacity = 1;
+                    AutoSaveCheckBox.Opacity = 1;
+
+                    RememberUsernameCheckBox.IsChecked = Properties.Settings.Default.RememberUsername;
+                    RememberPasswordCheckBox.IsChecked = Properties.Settings.Default.RememberPassword;
+                    AutoSaveCheckBox.IsChecked = Properties.Settings.Default.AutoArchive;
+                }
             }
         }
 
-       
     }
 }

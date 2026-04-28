@@ -30,10 +30,8 @@ namespace Syndiceo.Windows
                 WindowStartupLocation = WindowStartupLocation.CenterScreen
             };
 
-            // не се затваря автоматично — стои, докато приложението приключи
             msgBox.Show();
 
-            // когато приложението спре, затвори прозореца, за да не виси
             Application.Current.Exit += (s, e) =>
             {
                 if (msgBox.IsVisible)

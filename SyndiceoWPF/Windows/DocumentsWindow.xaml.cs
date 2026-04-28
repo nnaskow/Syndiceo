@@ -20,7 +20,7 @@ namespace Syndiceo.Windows
         public DocumentsWindow()
         {
             InitializeComponent();
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            OfficeOpenXml.ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
         }
 
         public void LoadAllDocuments()

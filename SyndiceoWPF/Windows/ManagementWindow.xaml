@@ -232,7 +232,7 @@
                                     <Button x:Name="ArchiveButton" Content="💾" ToolTip="Архив" Height="38" Style="{StaticResource CleanIconButton}" Click="ArchiveButton_Click"/>
                                     <Button x:Name="SettingsButton" Content="⚙️" ToolTip="Настройки" Height="38" Style="{StaticResource CleanIconButton}" Click="SettingsButton_Click"/>
                                     <Button x:Name="UpdateButton" Content="🔄" ToolTip="Обновяване" Height="38" Style="{StaticResource CleanIconButton}" Click="UpdateButton_Click"/>
-                                    <Button x:Name="websiteButton" Content="🌐" ToolTip="Сайт за живущи" Height="38" Style="{StaticResource CleanIconButton}" Click="websiteButton_Click"/>
+                                    <Button x:Name="websiteButton" Content="🌐" ToolTip="Сайт за живущи" Height="38" Style="{StaticResource CleanIconButton}" Click="OpenWebsite_Click"/>
                                     <Button x:Name="aboutButton" Content="❓" ToolTip="Помощ" Height="38" Style="{StaticResource CleanIconButton}" Click="aboutButton_Click"/>
                                 </UniformGrid>
                             </Border>
@@ -254,15 +254,15 @@
                    FontSize="13" 
                    Margin="0,0,15,0" 
                    FontWeight="SemiBold"/>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="Адреси" Name="BreadcrumbAddresses" Click="BreadcrumbAddresses_Click" Foreground="#3498DB" Cursor="Hand" Background="Transparent" BorderThickness="0" FontWeight="SemiBold"/>
-                            <TextBlock x:Name="arr1" Text=" › " VerticalAlignment="Center" Foreground="#ABB2B9" FontSize="16"/>
-                            <Button Content="Блокове" Name="BreadcrumbBlocks" Click="BreadcrumbBlocks_Click" Foreground="#3498DB" Background="Transparent" BorderThickness="0"/>
-                            <TextBlock x:Name="arr2" Text=" › " VerticalAlignment="Center" Foreground="#ABB2B9" FontSize="16"/>
-                            <Button Content="Входове" Name="BreadcrumbEntrances" Click="BreadcrumbEntrances_Click" Foreground="#3498DB" Background="Transparent" BorderThickness="0"/>
-                            <TextBlock x:Name="arr3" Text=" › " VerticalAlignment="Center" Foreground="#ABB2B9" FontSize="16"/>
-                            <Button Content="Апартаменти" Name="BreadcrumbApartments" Click="BreadcrumbApartments_Click" Foreground="#3498DB" Background="Transparent" BorderThickness="0"/>
-                        </StackPanel>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="Адреси" Name="BreadcrumbAddresses" Click="BreadcrumbAddresses_Click" Foreground="#3498DB" Cursor="Hand" Background="Transparent" BorderThickness="0" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="arr1" Text=" › " VerticalAlignment="Center" Foreground="#ABB2B9" FontSize="16"/>
+                                <Button Content="Блокове" Name="BreadcrumbBlocks" Click="BreadcrumbBlocks_Click" Foreground="#3498DB" Background="Transparent" BorderThickness="0"/>
+                                <TextBlock x:Name="arr2" Text=" › " VerticalAlignment="Center" Foreground="#ABB2B9" FontSize="16"/>
+                                <Button Content="Входове" Name="BreadcrumbEntrances" Click="BreadcrumbEntrances_Click" Foreground="#3498DB" Background="Transparent" BorderThickness="0"/>
+                                <TextBlock x:Name="arr3" Text=" › " VerticalAlignment="Center" Foreground="#ABB2B9" FontSize="16"/>
+                                <Button Content="Апартаменти" Name="BreadcrumbApartments" Click="BreadcrumbApartments_Click" Foreground="#3498DB" Background="Transparent" BorderThickness="0"/>
+                            </StackPanel>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,5,0">
@@ -270,9 +270,9 @@
                                 <StackPanel Orientation="Horizontal">
 
                                     <Button x:Name="MarkInGreenButton" 
-                    Content="✓"  
+                    Content="💰"  
                     Style="{StaticResource SmallButtonStyle}" 
-                    ToolTip="Маркирай" 
+                    ToolTip="Маркиране на плащане" 
                     Width="26" Height="26" 
                     Background="#27AE60" 
                     Foreground="White" 
@@ -291,8 +291,8 @@
 
                                     <Button x:Name="UnmarkButton" 
                     Style="{StaticResource SmallButtonStyle}" 
-                    Content="✕" 
-                    ToolTip="Изчисти" 
+                    Content="↩️" 
+                    ToolTip="Изчистване на плащане" 
                     Width="26" Height="26" 
                     Background="#E74C3C" 
                     Foreground="White" 

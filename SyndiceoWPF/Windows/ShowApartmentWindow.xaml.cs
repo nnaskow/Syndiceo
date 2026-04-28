@@ -29,7 +29,6 @@ namespace Syndiceo.Windows
 
             using var context = new SyndiceoDBContext();
 
-            // Зареждаме апартамента с навигацията към адрес/блок/вход
             var apartmentEntity = context.Apartments
                 .Include(a => a.Entrance)
                     .ThenInclude(e => e.Block)
@@ -43,10 +42,7 @@ namespace Syndiceo.Windows
                 return;
             }
 
-            // Зареждаме собственика отделно
             var owner = context.Owners.FirstOrDefault(o => o.ApartmentId == apartmentEntity.ApartmentId);
-
-            // Map към полетата
             var entrance = apartmentEntity.Entrance;
             var block = entrance?.Block;
             var address = block?.Address;

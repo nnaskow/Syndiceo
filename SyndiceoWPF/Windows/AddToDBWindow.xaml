@@ -10,14 +10,6 @@
         Loaded="Window_Loaded" Background="#F8FAFC">
 
     <Grid Margin="0">
-        <Image Source="/Resources/logo.png"
-               Opacity="0.03"
-               Stretch="Uniform"
-               Width="200"
-               HorizontalAlignment="Right"
-               VerticalAlignment="Bottom"
-               Margin="0,0,20,60"
-               Panel.ZIndex="0"/>
 
         <Grid Margin="25">
             <Grid.RowDefinitions>

@@ -17,7 +17,6 @@ namespace SyndiceoWeb.Views.Administrator
 
         public void OnGet()
         {
-            // Примерни чакащи заявки
             PendingRequests = new List<ResidenceRequest>
             {
                 new ResidenceRequest

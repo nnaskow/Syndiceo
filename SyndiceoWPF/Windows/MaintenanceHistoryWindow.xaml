@@ -14,6 +14,15 @@
         Loaded="Window_Loaded" Background="#F8FAFC">
 
     <Grid Margin="0">
+        <Image Source="/Resources/logo.png"
+               Opacity="0.03"
+               Stretch="Uniform"
+               Width="200"
+               HorizontalAlignment="Right"
+               VerticalAlignment="Bottom"
+               Margin="0,0,20,20"
+               Panel.ZIndex="0"/>
+
         <Grid Margin="25" Panel.ZIndex="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="320"/>
@@ -109,25 +118,65 @@
                     <Separator DockPanel.Dock="Top" Margin="0,0,0,15" Background="#F1F5F9" Height="1"/>
 
                     <DataGrid x:Name="MaintenanceDataGrid" 
-                              AutoGenerateColumns="False" 
-                              CanUserAddRows="False" 
-                              IsReadOnly="True"
-                              RowHeaderWidth="0"
-                              GridLinesVisibility="None"
-                              Background="Transparent"
-                              BorderThickness="0"
-                              FontSize="13">
+          AutoGenerateColumns="False" 
+          CanUserAddRows="False" 
+         CellEditEnding="MaintenanceDataGrid_CellEditEnding"
+          IsReadOnly="True"
+          RowHeaderWidth="0"
+          GridLinesVisibility="None"
+          Background="Transparent"
+          BorderThickness="0"
+          FontSize="13"
+          RowHeight="40">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="*">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="TextWrapping" Value="Wrap"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
                                         <Setter Property="Padding" Value="5"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Header="Сума" Binding="{Binding Price, StringFormat={}{0:N2} лв.}" Width="100"/>
-                            <DataGridTextColumn Header="Дата" Binding="{Binding DateOfMaintenance, StringFormat=d}" Width="110"/>
+
+                            <DataGridTextColumn Header="Сума" Binding="{Binding Price, StringFormat={}{0:N2} €}" Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="Foreground" Value="#1E293B"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Дата" Binding="{Binding DateOfMaintenance, StringFormat=dd.MM.yyyy}" Width="110">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="Foreground" Value="#64748B"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTemplateColumn Header="Действия" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Button x:Name="EditBtn" Click="EditButton_Click" 
+                                ToolTip="Редактиране"
+                                Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,5,0">
+                                                <TextBlock Text="✏️" FontSize="14"/>
+                                            </Button>
+
+                                            <Button x:Name="DeleteButton" Click="DeleteButton_Click" 
+                                ToolTip="Изтриване"
+                                Background="Transparent" BorderThickness="0" Cursor="Hand">
+                                                <TextBlock Text="🗑️" FontSize="14"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>

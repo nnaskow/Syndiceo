@@ -1,5 +1,4 @@
 ﻿using Syndiceo.Data.Models;
-using Syndiceo.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,59 +30,56 @@ namespace Syndiceo.Windows
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(DescriptionTextBox.Text) ||
-                    string.IsNullOrWhiteSpace(AmountTextBox.Text) ||
-                    !DatePicker.SelectedDate.HasValue)
+                !decimal.TryParse(AmountTextBox.Text, out decimal price))
             {
-                MessageBox.Show("Моля попълнете всички полета.", "Грешка",
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Моля, въведете валидни данни.");
                 return;
             }
-
-            if (!int.TryParse(AmountTextBox.Text, out int amount))
-            {
-                MessageBox.Show("Сумата трябва да е число.", "Грешка",
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var maintenance = new Maintenance
-            {
-                Description = DescriptionTextBox.Text,
-                Price = amount,
-                DateOfMaintenance = DatePicker.SelectedDate.Value,
-                EntranceId = _selectedEntrance.EntranceId
-            };
 
             try
             {
                 using (var context = new SyndiceoDBContext())
                 {
-                    context.Maintenances.Add(maintenance);
+                    if (_editingMaintenanceId == 0)
+                    {
+                        var newMaintenance = new Maintenance
+                        {
+                            Description = DescriptionTextBox.Text,
+                            Price = (int)price,
+                            DateOfMaintenance = DatePicker.SelectedDate ?? DateTime.Now,
+                            EntranceId = _selectedEntrance.EntranceId
+                        };
+                        context.Maintenances.Add(newMaintenance);
+                    }
+                    else
+                    {
+                        var existing = context.Maintenances.Find(_editingMaintenanceId);
+                        if (existing != null)
+                        {
+                            existing.Description = DescriptionTextBox.Text;
+                            existing.Price = (int)price;
+                            existing.DateOfMaintenance = DatePicker.SelectedDate ?? DateTime.Now;
+                        }
+                    }
+
                     context.SaveChanges();
-
-                    MaintenanceDataGrid.ItemsSource = context.Maintenances
-                                                             .OrderByDescending(m => m.DateOfMaintenance)
-                                                             .ToList();
                 }
-                LoadMaintenanceData();
 
-                MessageBox.Show("Ремонтната дейност е добавена успешно!",
-                                "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-
+                _editingMaintenanceId = 0;
                 DescriptionTextBox.Clear();
                 AmountTextBox.Clear();
                 DatePicker.SelectedDate = DateTime.Today;
+
+                LoadMaintenanceData();
+
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Възникна грешка: " + ex.Message,
-                                "Грешка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Грешка: " + ex.Message);
             }
         }
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
             LoadMaintenanceData();
         }
         private void LoadMaintenanceData()
@@ -99,5 +95,64 @@ namespace Syndiceo.Windows
             }
         }
 
+        private int _editingMaintenanceId = 0;
+
+        private void EditButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is Maintenance m)
+            {
+                DescriptionTextBox.Text = m.Description;
+                AmountTextBox.Text = m.Price.ToString();
+                DatePicker.SelectedDate = m.DateOfMaintenance;
+
+                _editingMaintenanceId = m.MaintenanceId;
+
+            }
+        }
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is Maintenance m)
+            {
+                if (MessageBox.Show("Изтриване на записа?", "Потвърждение", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    using (var context = new SyndiceoDBContext())
+                    {
+                        var dbItem = context.Maintenances.Find(m.MaintenanceId);
+                        if (dbItem != null)
+                        {
+                            context.Maintenances.Remove(dbItem);
+                            context.SaveChanges();
+                        }
+                    }
+                    LoadMaintenanceData();
+                }
+            }
+        }
+        private void MaintenanceDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (e.EditAction == DataGridEditAction.Commit)
+            {
+                var maintenance = e.Row.Item as Maintenance;
+                if (maintenance != null)
+                {
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try
+                        {
+                            using (var context = new SyndiceoDBContext())
+                            {
+                                context.Maintenances.Update(maintenance);
+                                context.SaveChanges();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Грешка при автоматичен запис: " + ex.Message);
+                            LoadMaintenanceData();
+                        }
+                    }), System.Windows.Threading.DispatcherPriority.Background);
+                }
+            }
+        }
     }
 }

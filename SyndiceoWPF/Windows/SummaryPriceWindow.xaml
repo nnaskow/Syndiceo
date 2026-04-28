@@ -1,111 +1,119 @@
 ﻿<Window x:Class="Syndiceo.Windows.SummaryPriceWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Syndiceo"
-        Icon="pack://application:,,,/Resources/Ico/logo256.ico"
-        mc:Ignorable="d"
-        Title="Плащане"
+        Title="Payment"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        WindowStyle="ToolWindow"
-        Height="539"
-        Width="500"
-        Topmost="True"
-        ShowInTaskbar="False"
-        Background="#F1F5F9"
-        Closing="Window_Closing"
-        Loaded="Window_Loaded">
+        WindowStyle="None" 
+        AllowsTransparency="True"
+        Height="520" Width="420"
+        Background="Transparent">
 
-    <Grid>
+    <Border Background="#FFFFFF" CornerRadius="24" BorderBrush="#E2E8F0" BorderThickness="1" Margin="15">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="25" Opacity="0.12" ShadowDepth="8" Color="#000000"/>
+        </Border.Effect>
 
-        <Border Margin="20" Background="White" CornerRadius="15" BorderBrush="#E2E8F0" BorderThickness="1">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="15" Opacity="0.1" ShadowDepth="2" Color="#64748B"/>
-            </Border.Effect>
+        <Grid Margin="25,20,25,25">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-            <StackPanel Margin="20" VerticalAlignment="Center">
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+                <TextBlock Text="ПЛАЩАНЕ" FontSize="11" FontWeight="Black" Foreground="#94A3B8" VerticalAlignment="Center" />
+                <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" 
+                        Foreground="#CBD5E1" FontSize="18" Cursor="Hand" Click="CloseButton_Click"/>
+            </Grid>
 
-                <TextBlock Text="ДЕТАЙЛИ ЗА ПЛАЩАНЕ" 
-                           FontSize="12" FontWeight="Bold" Foreground="#64748B" 
-                           HorizontalAlignment="Center" Margin="0,0,0,15" />
-
-                <Border Background="#F8FAFD" CornerRadius="10" Padding="15" Margin="0,0,0,20">
+            <StackPanel Grid.Row="1">
+                <Border Background="#F8FAFC" CornerRadius="16" Padding="20" Margin="0,0,0,20">
                     <StackPanel>
-                        <TextBlock Text="Обща дължима сума" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="TotalAmountTextBlock"
-                                   Text="0.00"
-                                   FontSize="32"
-                                   FontWeight="Bold"
-                                   Foreground="#1E293B"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,5,0,0"/>
+                        <TextBlock Text="ОБЩА СУМА ЗА ПОКРИВАНЕ" FontSize="10" FontWeight="Bold" Foreground="#64748B" HorizontalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8">
+                            <TextBlock Text="€" FontSize="20" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,5,5,0"/>
+                            <TextBlock x:Name="TotalAmountTextBlock" Text="124.50" FontSize="42" FontWeight="Bold" Foreground="#0F172A"/>
+                        </StackPanel>
+                        <ProgressBar x:Name="PaymentProgressBar" Value="30" Height="6" Foreground="#10B981" Background="#E2E8F0" BorderThickness="0" Margin="0,10,0,0"/>
                     </StackPanel>
                 </Border>
 
-                <Grid Margin="0,0,0,20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                        <TextBlock Text="Платено" FontSize="12" Foreground="#64748B" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="CurrentPaidTextBlock" Text="0.00" FontSize="16" FontWeight="Bold" Foreground="#16A34A" Margin="0,4,0,0"/>
+                <Grid Margin="5,0,5,30">
+                    <StackPanel HorizontalAlignment="Left">
+                        <TextBlock Text="ВНЕСЕНО" FontSize="9" FontWeight="Black" Foreground="#94A3B8" Margin="0,0,0,4"/>
+                        <TextBlock x:Name="CurrentPaidTextBlock" Text="€ 40.00" FontSize="16" FontWeight="Bold" Foreground="#10B981"/>
                     </StackPanel>
-
-                    <Separator Grid.Column="1" Width="1" Height="30" Background="#E2E8F0" Margin="15,0"/>
-
-                    <StackPanel Grid.Column="2" HorizontalAlignment="Center">
-                        <TextBlock Text="Остава" FontSize="12" Foreground="#64748B" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="RemainingSum" Text="0.00" FontSize="16" FontWeight="Bold" Foreground="#DC2626" Margin="0,4,0,0"/>
+                    <StackPanel HorizontalAlignment="Right">
+                        <TextBlock Text="ОСТАВА" FontSize="9" FontWeight="Black" Foreground="#94A3B8" HorizontalAlignment="Right" Margin="0,0,0,4"/>
+                        <TextBlock x:Name="RemainingSum" Text="€ 84.50" FontSize="16" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Right"/>
                     </StackPanel>
                 </Grid>
 
-                <Separator Background="#F1F5F9" Margin="0,0,0,20"/>
+                <TextBlock Text="Сума за внасяне" FontSize="13" FontWeight="SemiBold" Foreground="#475569" Margin="5,0,0,10"/>
+                <Grid Height="56">
+                    <TextBox x:Name="PaidAmountTextBox" 
+                             FontSize="24" FontWeight="Bold" Foreground="#2563EB"
+                             Padding="15,0,100,0" VerticalContentAlignment="Center"
+                             Background="White" BorderBrush="#CBD5E1" BorderThickness="1.5"
+                             KeyDown="PaidAmountTextBox_KeyDown">
+                        <TextBox.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="12"/>
+                            </Style>
+                        </TextBox.Resources>
+                    </TextBox>
 
-                <StackPanel Margin="0,0,0,25">
-                    <TextBlock Text="Въведете сума за внасяне" FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,0,0,8" HorizontalAlignment="Center"/>
-                    <Grid HorizontalAlignment="Center">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="160"/>
-                            <ColumnDefinition Width="45"/>
-                        </Grid.ColumnDefinitions>
+                    <Button x:Name="PayAllButton" Click="PayAllButton_Click" 
+                            HorizontalAlignment="Right" Width="80" Height="40" 
+                            Margin="0,0,8,0" Cursor="Hand" Background="#2563EB" Foreground="White" BorderThickness="0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="MAX" FontWeight="Black" FontSize="11" VerticalAlignment="Center"/>
+                            <TextBlock Text=" ➜" FontSize="12" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="8"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </Grid>
+            </StackPanel>
 
-                        <TextBox x:Name="PaidAmountTextBox" 
-                                 KeyDown="PaidAmountTextBox_KeyDown"
-                                 Height="42" 
-                                 Style="{StaticResource RoundedTextBox}"
-                                 FontSize="18" 
-                                 FontWeight="Bold"
-                                 TextAlignment="Center"
-                                 VerticalContentAlignment="Center"
-                                 Background="#F1F5F9"/>
-
-                        <Button Grid.Column="1" 
-                                x:Name="LastTransactionsButton" 
-                                Click="LastTransactionsButton_Click"
-                                Content="📖" 
-                                ToolTip="История на плащанията" 
-                                Style="{StaticResource SmallButtonStyle}"
-                                Width="38" Height="42" 
-                                Margin="7,0,0,0" 
-                                FontSize="16"/>
-                    </Grid>
-                </StackPanel>
+            <Grid Grid.Row="2" Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="65"/>
+                </Grid.ColumnDefinitions>
 
                 <Button x:Name="SavePayment"
-                        Content="Потвърди плащането" 
+                        Grid.Column="0"
+                        Content="ПОТВЪРДИ ПЛАЩАНЕТО" 
                         Click="SavePayment_Click"
-                        Width="240" 
-                        Height="48"
-                        FontWeight="Bold"
-                        FontSize="16"
-                        Style="{StaticResource MainButtonStyle}"
-                        Cursor="Hand"/>
-            </StackPanel>
-        </Border>
-    </Grid>
+                        Height="56" Margin="0,0,12,0"
+                        Background="#0F172A" Foreground="White"
+                        FontWeight="Bold" FontSize="14" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="14"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+
+                <Button x:Name="LastTransactionsButton" 
+                        Grid.Column="1"
+                        Click="LastTransactionsButton_Click"
+                        Content="📖" 
+                        FontSize="20" Height="56"
+                        Background="#F1F5F9" BorderBrush="#E2E8F0" BorderThickness="1"
+                        Foreground="#64748B" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="14"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
 </Window>

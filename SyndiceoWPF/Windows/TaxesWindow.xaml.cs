@@ -1,29 +1,28 @@
 ﻿using Syndiceo.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using Syndiceo.Data.Models;
+using Syndiceo.Windows;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Syndiceo.Data.Models;
+using System.Windows.Media;
 
 namespace Syndiceo.Windows
 {
-    public partial class TaxesWindow : Window
+    public partial class TaxesWindow : Window //сърцето на проекта
     {
         private int? _apartmentId;
         private int? _entranceId;
-
-        private ObservableCollection<CategoryViewModel> _apartmentIncomeCategories = new();
-        private ObservableCollection<CategoryViewModel> _apartmentExpenseCategories = new();
-        private ObservableCollection<CategoryViewModel> _entranceIncomeCategories = new();
-        private ObservableCollection<CategoryViewModel> _entranceExpenseCategories = new();
-
-        private ObservableCollection<CategoryViewModel> _selectedIncomeCategories = new ObservableCollection<CategoryViewModel>();
-        private ObservableCollection<CategoryViewModel> _selectedExpenseCategories = new ObservableCollection<CategoryViewModel>();
-
+        private List<Apartment> _allApartmentsInEntrance = new();
+        private int _currentApartmentIndex = -1;
+        private readonly ObservableCollection<CategoryViewModel> _selectedIncomeCategories = new();
+        private readonly ObservableCollection<CategoryViewModel> _selectedExpenseCategories = new();
         private TaxesHelper _helper;
 
         public TaxesWindow(int? apartmentId = null, int? entranceId = null)
@@ -32,35 +31,79 @@ namespace Syndiceo.Windows
             _apartmentId = apartmentId;
             _entranceId = entranceId;
 
+            using var context = new SyndiceoDBContext();
+
             if (_apartmentId.HasValue)
             {
-                this.Title = "Управление на такси за апартамент";
-                _selectedIncomeCategories = _apartmentIncomeCategories;
-                _selectedExpenseCategories = _apartmentExpenseCategories;
+                var currentApt = context.Apartments.FirstOrDefault(a => a.ApartmentId == _apartmentId);
+                if (currentApt != null) _entranceId = currentApt.EntranceId;
 
-                cashboxLabel.Opacity = 0.375;
+                cashboxLabel.Opacity = Cashbox.Opacity = 0.4;
                 Cashbox.IsReadOnly = true;
-                Cashbox.Opacity = 0.375;
             }
-            else if (_entranceId.HasValue)
+
+            if (_entranceId.HasValue)
             {
-                this.Title = "Управление на такси за вход";
-                _selectedIncomeCategories = _entranceIncomeCategories;
-                _selectedExpenseCategories = _entranceExpenseCategories;
+                _allApartmentsInEntrance = context.Apartments
+                    .Where(a => a.EntranceId == _entranceId.Value)
+                    .OrderBy(a => a.ApartmentNumber).ToList();
+
+                _currentApartmentIndex = _allApartmentsInEntrance.FindIndex(a => a.ApartmentId == _apartmentId);
+
+                var cb = context.Cashboxes.FirstOrDefault(c => c.EntranceId == _entranceId.Value);
+                if (cb != null) Cashbox.Text = cb.CurrentBalance.ToString("N2");
             }
 
             IncomeCategoriesPanel.ItemsSource = _selectedIncomeCategories;
             ExpenseCategoriesPanel.ItemsSource = _selectedExpenseCategories;
 
-            LoadCategories();
             LoadExistingTransactions();
+            UpdateNavigationUI();
+        }
 
-            if (_entranceId.HasValue)
+
+        private void SaveDataToDatabase()
+        {
+            var currentCats = _selectedIncomeCategories.Concat(_selectedExpenseCategories).ToList();
+            using var context = new SyndiceoDBContext();
+
+            if (_apartmentId.HasValue)
             {
-                using var context = new SyndiceoDBContext();
-                var cashbox = context.Cashboxes.FirstOrDefault(c => c.EntranceId == _entranceId.Value);
-                if (cashbox != null)
-                    Cashbox.Text = cashbox.CurrentBalance.ToString("N2");
+                var dbTransactions = context.ApartmentTransactions
+                    .Where(t => t.ApartmentId == _apartmentId.Value).ToList();
+
+                foreach (var cat in currentCats)
+                {
+                    decimal amt = cat.GetDecimalAmount();
+                    var existing = dbTransactions.FirstOrDefault(t => t.CategoryId == cat.Id);
+
+                    if (existing != null) { existing.Amount = amt; context.ApartmentTransactions.Update(existing); }
+                    else if (amt != 0) context.ApartmentTransactions.Add(new ApartmentTransaction { ApartmentId = _apartmentId.Value, CategoryId = cat.Id, Amount = amt, TransDate = DateOnly.FromDateTime(DateTime.Now) });
+                }
+                context.SaveChanges();
+                UpdateCalculations(context, _apartmentId.Value);
+            }
+            else if (_entranceId.HasValue)
+            {
+                if (decimal.TryParse(Cashbox.Text.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal balance))
+                {
+                    var cb = context.Cashboxes.FirstOrDefault(c => c.EntranceId == _entranceId.Value);
+                    if (cb != null) { cb.CurrentBalance = balance; context.Cashboxes.Update(cb); }
+                    else context.Cashboxes.Add(new Cashbox { EntranceId = _entranceId.Value, CurrentBalance = balance });
+                }
+
+                var dbEntranceTrans = context.EntranceTransactions
+                    .Where(t => t.EntranceId == _entranceId.Value).ToList();
+
+                foreach (var cat in currentCats)
+                {
+                    decimal amt = cat.GetDecimalAmount();
+                    var existing = dbEntranceTrans.FirstOrDefault(t => t.CategoryId == cat.Id);
+
+                    if (existing != null) { existing.Amount = amt; context.EntranceTransactions.Update(existing); }
+                    else if (amt != 0) context.EntranceTransactions.Add(new EntranceTransaction { EntranceId = _entranceId.Value, CategoryId = cat.Id, Amount = amt, TransDate = DateOnly.FromDateTime(DateTime.Now) });
+                }
+                context.SaveChanges();
             }
         }
 
@@ -68,628 +111,275 @@ namespace Syndiceo.Windows
         {
             using var context = new SyndiceoDBContext();
 
+            _selectedIncomeCategories.Clear();
+            _selectedExpenseCategories.Clear();
+
             if (_apartmentId.HasValue)
             {
-                var transactions = context.ApartmentTransactions
+                var trans = context.ApartmentTransactions
                     .Where(t => t.ApartmentId == _apartmentId.Value)
-                    .Select(t => new { t.CategoryId, t.Amount, t.Category.Name, t.Category.Kind })
-                    .ToList();
+                    .Select(t => new { t.CategoryId, t.Amount, t.Category.Name, t.Category.Kind }).ToList();
 
-                foreach (var t in transactions)
+                foreach (var t in trans)
                 {
-                    var vm = new CategoryViewModel
-                    {
-                        Id = t.CategoryId,
-                        Name = t.Name,
-                        Amount = t.Amount.ToString("N2")
-                    };
-
-                    if (!Properties.Settings.Default.taxesWdHelpNeeded)
-                        SubscribeCategory(vm, _apartmentId.Value);
-
-                    if (t.Kind == "Приход") _selectedIncomeCategories.Add(vm);
-                    else _selectedExpenseCategories.Add(vm);
+                    var vm = new CategoryViewModel { Id = t.CategoryId, Name = t.Name, Amount = t.Amount.ToString("N2") };
+                    if (t.Kind == "Приход") _selectedIncomeCategories.Add(vm); else _selectedExpenseCategories.Add(vm);
                 }
             }
-
             else if (_entranceId.HasValue)
             {
-                var transactions = context.EntranceTransactions
+                var trans = context.EntranceTransactions
                     .Where(t => t.EntranceId == _entranceId.Value)
-                    .Select(t => new { t.CategoryId, t.Amount, t.Category.Name, t.Category.Kind })
-                    .ToList();
+                    .Select(t => new { t.CategoryId, t.Amount, t.Category.Name, t.Category.Kind }).ToList();
 
-                foreach (var t in transactions)
+                foreach (var t in trans)
                 {
-                    var vm = new CategoryViewModel
-                    {
-                        Id = t.CategoryId,
-                        Name = t.Name,
-                        Amount = t.Amount.ToString("N2")
-                    };
-
-                    if (t.Kind == "Приход") _selectedIncomeCategories.Add(vm);
-                    else _selectedExpenseCategories.Add(vm);
+                    var vm = new CategoryViewModel { Id = t.CategoryId, Name = t.Name, Amount = t.Amount.ToString("N2") };
+                    if (t.Kind == "Приход") _selectedIncomeCategories.Add(vm); else _selectedExpenseCategories.Add(vm);
                 }
             }
+        }
+        private void SaveOnlyButton_Click(object sender, RoutedEventArgs e)
+        {
+            SaveDataToDatabase();
 
-
-            RefreshCategoryList();
+            var originalContent = SaveOnlyButton.Content;
+            SaveOnlyButton.Content = "ЗАПАЗЕНО";
+            var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1.2) };
+            timer.Tick += (s, args) => { SaveOnlyButton.Content = originalContent; timer.Stop(); };
+            timer.Start();
         }
 
-        private void LoadCategories()
+        private void SaveAndCloseButton_Click(object sender, RoutedEventArgs e)
         {
+            SaveDataToDatabase();
+            this.Close();
+        }
+
+
+        private void SwitchToApartment(int index)
+        {
+            if (index < 0 || index >= _allApartmentsInEntrance.Count) return;
+
+            SaveDataToDatabase();
+
+            _currentApartmentIndex = index;
+            _apartmentId = _allApartmentsInEntrance[_currentApartmentIndex].ApartmentId;
+
+            foreach (var cat in _selectedIncomeCategories.Concat(_selectedExpenseCategories))
+                UnsubscribeCategory(cat);
+
+            _selectedIncomeCategories.Clear();
+            _selectedExpenseCategories.Clear();
+
+            LoadExistingTransactions();
+            UpdateNavigationUI();
+        }
+
+        private void UpdateNavigationUI()
+        {
+            if (_currentApartmentIndex >= 0)
+            {
+                var current = _allApartmentsInEntrance[_currentApartmentIndex];
+                CurrentApartmentTextBlock.Text = $"№ {current.ApartmentNumber}";
+                ApartmentSearchTextBox.Text = current.ApartmentNumber.ToString();
+            }
             RefreshCategoryList();
         }
 
         private void RefreshCategoryList()
         {
             using var context = new SyndiceoDBContext();
-            var allCategories = context.Categories.OrderBy(c => c.Name).ToList();
-
-            string categoryType = null;
-            if (_apartmentId.HasValue)
-                categoryType = "apartments";
-            else if (_entranceId.HasValue)
-                categoryType = "entrances";
-
-            var filtered = allCategories
-                .Where(c =>
-                    (categoryType == null || c.Appliance == categoryType) &&
-                    !_selectedIncomeCategories.Any(ic => ic.Id == c.Id) &&
-                    !_selectedExpenseCategories.Any(ec => ec.Id == c.Id))
-                .ToList();
-
-            CategoryListBox.ItemsSource = filtered;
+            string type = _apartmentId.HasValue ? "apartments" : "entrances";
+            var selectedIds = _selectedIncomeCategories.Select(x => x.Id).Concat(_selectedExpenseCategories.Select(x => x.Id)).ToHashSet();
+            CategoryListBox.ItemsSource = context.Categories
+                .Where(c => c.Appliance == type && !selectedIds.Contains(c.Id))
+                .OrderBy(c => c.Name).ToList();
         }
-
 
         private void AddCategoryButton_Click(object sender, RoutedEventArgs e)
         {
-            string name = CategoryTextBox.Text.Trim();
-            if (string.IsNullOrEmpty(name))
-                return;
-
-            string kind = (CategoryKindComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Разход";
-
+            if (string.IsNullOrWhiteSpace(CategoryTextBox.Text)) return;
             using var context = new SyndiceoDBContext();
-
-            // Определяме типа според наличието на ids, не по Title
-            string categoryType = null;
-            if (_apartmentId.HasValue)
-                categoryType = "apartments";
-            else if (_entranceId.HasValue)
-                categoryType = "entrances";
-
-            var newCategory = new Syndiceo.Data.Models.Category
+            var newCat = new Category
             {
-                Name = name,
-                Kind = kind,
-                Appliance = categoryType
+                Name = CategoryTextBox.Text.Trim(),
+                Kind = (CategoryKindComboBox.SelectedItem as ComboBoxItem).Content.ToString(),
+                Appliance = _apartmentId.HasValue ? "apartments" : "entrances"
             };
-
-            context.Categories.Add(newCategory);
+            context.Categories.Add(newCat);
             context.SaveChanges();
-
             CategoryTextBox.Clear();
-            CategoryKindComboBox.SelectedIndex = 0;
-
-            LoadCategories();
-        }
-
-        private void addCatButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (CategoryListBox.SelectedItem is Syndiceo.Data.Models.Category selectedCategory)
-                AddCategoryToPanel(selectedCategory);
-        }
-
-        private void CategoryListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (CategoryListBox.SelectedItem is Syndiceo.Data.Models.Category selectedCategory)
-                AddCategoryToPanel(selectedCategory);
-        }
-
-        private void AddCategoryToPanel(Syndiceo.Data.Models.Category selectedCategory)
-        {
-            var vm = new CategoryViewModel { Id = selectedCategory.Id, Name = selectedCategory.Name, Amount = "0" };
-
-            if (_apartmentId.HasValue && !Properties.Settings.Default.taxesWdHelpNeeded)
-                SubscribeCategory(vm, _apartmentId.Value);
-
-            if (selectedCategory.Kind == "Приход")
-                _selectedIncomeCategories.Add(vm);
-            else
-                _selectedExpenseCategories.Add(vm);
-
             RefreshCategoryList();
         }
 
-
-        private void RemoveIncomeCategory_Click(object sender, RoutedEventArgs e)
+        private void AddSelected()
         {
-            if (sender is Button btn && btn.DataContext is CategoryViewModel cat)
+            if (CategoryListBox.SelectedItem is Category cat)
             {
-                _selectedIncomeCategories.Remove(cat);
-                RemoveCategoryFromDatabase(cat);
+                var vm = new CategoryViewModel { Id = cat.Id, Name = cat.Name, Amount = "0" };
+                if (_apartmentId.HasValue && !Properties.Settings.Default.taxesWdHelpNeeded) SubscribeCategory(vm, _apartmentId.Value);
+                if (cat.Kind == "Приход") _selectedIncomeCategories.Add(vm); else _selectedExpenseCategories.Add(vm);
                 RefreshCategoryList();
             }
         }
 
-        private void RemoveExpenseCategory_Click(object sender, RoutedEventArgs e)
+        private void RemoveCategory(object sender)
         {
             if (sender is Button btn && btn.DataContext is CategoryViewModel cat)
             {
-                _selectedExpenseCategories.Remove(cat);
-                RemoveCategoryFromDatabase(cat);
-                RefreshCategoryList();
-            }
-        }
-
-        private void RemoveCategoryFromDatabase(CategoryViewModel cat)
-        {
-            using var context = new SyndiceoDBContext();
-
-            if (_apartmentId.HasValue)
-            {
-                var existing = context.ApartmentTransactions
-                    .FirstOrDefault(t => t.ApartmentId == _apartmentId.Value && t.CategoryId == cat.Id);
-                if (existing != null)
+                using var context = new SyndiceoDBContext();
+                if (_apartmentId.HasValue)
                 {
-                    context.ApartmentTransactions.Remove(existing);
-                    context.SaveChanges();
-                }
-            }
-            else if (_entranceId.HasValue)
-            {
-                var apartments = context.Apartments
-                    .Where(a => a.EntranceId == _entranceId.Value)
-                    .Select(a => a.ApartmentId)
-                    .ToList();
-
-                var transactionsToRemove = context.ApartmentTransactions
-                    .Where(t => apartments.Contains(t.ApartmentId) && t.CategoryId == cat.Id)
-                    .ToList();
-                context.ApartmentTransactions.RemoveRange(transactionsToRemove);
-
-                var entranceTransaction = context.EntranceTransactions
-                    .FirstOrDefault(t => t.EntranceId == _entranceId.Value && t.CategoryId == cat.Id);
-                if (entranceTransaction != null)
-                    context.EntranceTransactions.Remove(entranceTransaction);
-
-                context.SaveChanges();
-            }
-        }
-
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Проверка за избрани категории
-            if ((_selectedIncomeCategories.Count == 0 && _selectedExpenseCategories.Count == 0) &&
-                (_helper == null || (_helper.IncomeCategories.Count == 0 && _helper.ExpenseCategories.Count == 0)))
-            {
-                MessageBox.Show("Няма избрани категории!", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            using var context = new SyndiceoDBContext();
-
-            var categoriesToSave =
-                (_helper != null && !_helper.IsReadOnlyMode && (_helper.IncomeCategories.Any() || _helper.ExpenseCategories.Any()))
-                    ? _helper.IncomeCategories.Concat(_helper.ExpenseCategories)
-                    : _selectedIncomeCategories.Concat(_selectedExpenseCategories);
-
-            if (_apartmentId.HasValue)
-            {
-                foreach (var cat in categoriesToSave)
-                {
-                    var existing = context.ApartmentTransactions
+                    var dbTrans = context.ApartmentTransactions
                         .FirstOrDefault(t => t.ApartmentId == _apartmentId.Value && t.CategoryId == cat.Id);
 
-                    if (existing != null)
-                        existing.Amount = cat.GetDecimalAmount();
-                    else
-                        context.ApartmentTransactions.Add(new ApartmentTransaction
-                        {
-                            ApartmentId = _apartmentId.Value,
-                            CategoryId = cat.Id,
-                            Amount = cat.GetDecimalAmount(),
-                            TransDate = DateOnly.FromDateTime(DateTime.Now)
-                        });
+                    if (dbTrans != null)
+                    {
+                        context.ApartmentTransactions.Remove(dbTrans);
+                        context.SaveChanges();
+                        UpdateCalculations(context, _apartmentId.Value);
+                    }
+                }
+                else if (_entranceId.HasValue)
+                {
+                    var dbEntranceTrans = context.EntranceTransactions
+                        .FirstOrDefault(t => t.EntranceId == _entranceId.Value && t.CategoryId == cat.Id);
 
-                    // Обновяваме сумата за входа
-                    UpdateEntranceCategoryTotal(cat);
+                    if (dbEntranceTrans != null)
+                    {
+                        context.EntranceTransactions.Remove(dbEntranceTrans);
+                        context.SaveChanges();
+                    }
                 }
 
-                context.SaveChanges();
-                UpdateEntranceTotalSum(_apartmentId.Value);
-                UpdateDebtForApartment(_apartmentId.Value);
+                _selectedIncomeCategories.Remove(cat);
+                _selectedExpenseCategories.Remove(cat);
+
+                RefreshCategoryList();
+            }
+        }
+
+
+        private void UpdateCalculations(SyndiceoDBContext context, int apartmentId)
+        {
+            var apt = context.Apartments.Include(a => a.Entrance).FirstOrDefault(a => a.ApartmentId == apartmentId);
+            if (apt == null) return;
+            var aptIds = context.Apartments.Where(a => a.EntranceId == apt.EntranceId).Select(a => a.ApartmentId).ToList();
+            var allTrans = context.ApartmentTransactions.Where(t => aptIds.Contains(t.ApartmentId)).Include(t => t.Category).ToList();
+
+            decimal totalExp = allTrans.Where(t => t.Category.Kind != "Приход").Sum(t => t.Amount);
+            decimal totalInc = allTrans.Where(t => t.Category.Kind == "Приход").Sum(t => t.Amount);
+
+            var ts = context.TotalSums.FirstOrDefault(x => x.EntranceId == apt.EntranceId);
+            if (ts != null) ts.Summary = (int)(totalExp - totalInc);
+            else context.TotalSums.Add(new TotalSum { EntranceId = apt.EntranceId, Summary = (int)(totalExp - totalInc) });
+
+            var debt = context.Debts.FirstOrDefault(d => d.ApartmentId == apartmentId);
+            decimal aExp = allTrans.Where(t => t.ApartmentId == apartmentId && t.Category.Kind != "Приход").Sum(t => t.Amount);
+            decimal aInc = allTrans.Where(t => t.ApartmentId == apartmentId && t.Category.Kind == "Приход").Sum(t => t.Amount);
+
+            if (debt != null) { debt.TotalSum = aExp; debt.PaidSum = aInc; }
+            else context.Debts.Add(new Debt { ApartmentId = apartmentId, TotalSum = aExp, PaidSum = aInc });
+
+            context.SaveChanges();
+        }
+
+        private void PrevApartmentButton_Click(object sender, RoutedEventArgs e) => SwitchToApartment(_currentApartmentIndex - 1);
+        private void NextApartmentButton_Click(object sender, RoutedEventArgs e) => SwitchToApartment(_currentApartmentIndex + 1);
+        private void ApartmentSearchTextBox_KeyDown(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) { int idx = _allApartmentsInEntrance.FindIndex(a => a.ApartmentNumber.ToString() == ApartmentSearchTextBox.Text.Trim()); if (idx >= 0) SwitchToApartment(idx); else MessageBox.Show("Няма такъв апартамент!"); } }
+        private void addCatButton_Click(object sender, RoutedEventArgs e) => AddSelected();
+        private void CategoryListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e) => AddSelected();
+        private void RemoveIncomeCategory_Click(object sender, RoutedEventArgs e) => RemoveCategory(sender);
+        private void RemoveExpenseCategory_Click(object sender, RoutedEventArgs e) => RemoveCategory(sender);
+        private void CategoryTextBox_KeyDown(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) AddCategoryButton_Click(sender, e); }
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (_apartmentId.HasValue)
+            {
+                using var db = new SyndiceoDBContext();
+                var apt = db.Apartments.FirstOrDefault(a => a.ApartmentId == _apartmentId.Value);
+
+                this.Title = "Управление на такси за апартамент";
             }
             else if (_entranceId.HasValue)
             {
-                foreach (var cat in categoriesToSave)
-                {
-                    var existing = context.EntranceTransactions
-                        .FirstOrDefault(t => t.EntranceId == _entranceId.Value && t.CategoryId == cat.Id);
-
-                    if (existing != null)
-                        existing.Amount = cat.GetDecimalAmount();
-                    else
-                        context.EntranceTransactions.Add(new EntranceTransaction
-                        {
-                            EntranceId = _entranceId.Value,
-                            CategoryId = cat.Id,
-                            Amount = cat.GetDecimalAmount(),
-                            TransDate = DateOnly.FromDateTime(DateTime.Now)
-                        });
-                }
-
-                // Запазваме и касата
-                if (decimal.TryParse(Cashbox.Text.Replace('.', ','), out decimal balance))
-                {                                         
-                    var existingCashbox = context.Cashboxes.FirstOrDefault(c => c.EntranceId == _entranceId.Value);
-                    if (existingCashbox != null)
-                        existingCashbox.CurrentBalance = balance;
-                    else
-                        context.Cashboxes.Add(new Cashbox
-                        {
-                            EntranceId = _entranceId.Value,
-                            CurrentBalance = balance
-                        });
-                }
-                context.SaveChanges();
-            }
-
-            this.Close();
-        }
-        private void SubscribeCategory(CategoryViewModel cat, int apartmentId)
-        {
-            cat.AmountChanged += (s, e) =>
-            {
-                decimal delta = e.NewValue - e.OldValue;
-
-                // Без синхронизация към EntranceTransactions
-                _helper?.AdjustRemainingAmount(cat.Id, delta);
-            };
-        }
-
-        private void UnsubscribeCategory(CategoryViewModel cat)
-        {
-            cat.ClearAmountChangedSubscribers();
-        }
-
-        private void CategoryTextBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-                AddCategoryButton_Click(sender, e);
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void OpenTaxesHelperForEntrance(int entranceId)
-        {
-            using var context = new SyndiceoDBContext();
-
-            var apartmentsInEntrance = context.Apartments
-                .Where(a => a.EntranceId == entranceId)
-                .Select(a => a.ApartmentId)
-                .ToList();
-
-            var allCategories = context.Categories.ToList();
-
-            var incomeCats = new List<CategoryViewModel>();
-            var expenseCats = new List<CategoryViewModel>();
-
-            foreach (var cat in allCategories)
-            {
-                // Вземаме или създаваме EntranceTransaction
-                var entranceTransaction = context.EntranceTransactions
-                    .FirstOrDefault(t => t.EntranceId == entranceId && t.CategoryId == cat.Id);
-
-                if (entranceTransaction == null)
-                {
-                    // Ако няма запис, създаваме с общо от апартаментите
-                    decimal totalAssigned = context.ApartmentTransactions
-                        .Where(t => apartmentsInEntrance.Contains(t.ApartmentId) && t.CategoryId == cat.Id)
-                        .Sum(t => t.Amount);
-
-                    entranceTransaction = new EntranceTransaction
-                    {
-                        EntranceId = entranceId,
-                        CategoryId = cat.Id,
-                        Amount = totalAssigned,
-                        TransDate = DateOnly.FromDateTime(DateTime.Now)
-                    };
-                    context.EntranceTransactions.Add(entranceTransaction);
-                }
-            }
-
-            context.SaveChanges(); // Важно: записваме преди helper-а!
-
-            // Сега създаваме CategoryViewModel с остатъци
-            foreach (var cat in allCategories)
-            {
-                decimal totalAssigned = context.ApartmentTransactions
-                    .Where(t => apartmentsInEntrance.Contains(t.ApartmentId) && t.CategoryId == cat.Id)
-                    .Sum(t => t.Amount);
-
-                decimal totalAmount = context.EntranceTransactions
-                    .Where(t => t.EntranceId == entranceId && t.CategoryId == cat.Id)
-                    .Select(t => t.Amount)
-                    .FirstOrDefault();
-
-                decimal remaining = totalAmount - totalAssigned;
-
-                var vm = new CategoryViewModel
-                {
-                    Id = cat.Id,
-                    Name = cat.Name,
-                    Amount = remaining.ToString("N2")
-                };
-
-                if (cat.Kind == "Приход") incomeCats.Add(vm);
-                else expenseCats.Add(vm);
-            }
-
-            _helper = new TaxesHelper(
-                new ObservableCollection<CategoryViewModel>(incomeCats),
-                new ObservableCollection<CategoryViewModel>(expenseCats),
-                entranceId,
-                this
-            );
-            _helper.IsReadOnlyMode = !_entranceId.HasValue;
-
-            _helper.Owner = this;
-            _helper.WindowStartupLocation = WindowStartupLocation.Manual;
-            _helper.Left = this.Left + this.Width + 10;
-            _helper.Top = this.Top;
-            _helper.Show();
-        }
-
-        private void UpdateEntranceCategoryTotal(CategoryViewModel cat)
-        {
-            if (!_entranceId.HasValue)
-                return;
-
-            using var context = new SyndiceoDBContext();
-            var apartments = context.Apartments
-                .Where(a => a.EntranceId == _entranceId.Value)
-                .Select(a => a.ApartmentId)
-                .ToList();
-
-            decimal total = context.ApartmentTransactions
-                .Where(t => apartments.Contains(t.ApartmentId) && t.CategoryId == cat.Id)
-                .Sum(t => t.Amount);
-
-            var entranceTransaction = context.EntranceTransactions
-                .FirstOrDefault(t => t.EntranceId == _entranceId.Value && t.CategoryId == cat.Id);
-
-            if (entranceTransaction != null)
-                entranceTransaction.Amount = total;
-            else
-                context.EntranceTransactions.Add(new EntranceTransaction
-                {
-                    EntranceId = _entranceId.Value,
-                    CategoryId = cat.Id,
-                    Amount = total,
-                    TransDate = DateOnly.FromDateTime(DateTime.Now)
-                });
-
-            context.SaveChanges();
-        }
-
-        private void UpdateEntranceTotalSum(int apartmentId)
-        {
-            using var context = new SyndiceoDBContext();
-
-            // Намери входа на апартамента
-            var entranceId = context.Apartments
-                .Where(a => a.ApartmentId == apartmentId)
-                .Select(a => a.EntranceId)
-                .FirstOrDefault();
-
-            if (entranceId == 0)
-                return;
-
-            // Изчисли всички дължими суми по апартаменти във входа
-            var apartments = context.Apartments
-                .Where(a => a.EntranceId == entranceId)
-                .Select(a => a.ApartmentId)
-                .ToList();
-
-            // 🔹 Приходи и разходи за категории тип "apartments"
-            decimal totalExpenses = context.ApartmentTransactions
-                .Where(t => apartments.Contains(t.ApartmentId) &&
-                            t.Category.Kind != "Приход" &&
-                            t.Category.Appliance == "apartments")
-                .Sum(t => (decimal?)t.Amount) ?? 0;
-
-            decimal totalIncomes = context.ApartmentTransactions
-                .Where(t => apartments.Contains(t.ApartmentId) &&
-                            t.Category.Kind == "Приход" &&
-                            t.Category.Appliance == "apartments")
-                .Sum(t => (decimal?)t.Amount) ?? 0;
-
-            decimal remaining = totalExpenses - totalIncomes;
-
-            // 🔹 Запис в таблицата TotalSum
-            var totalSum = context.TotalSums.FirstOrDefault(ts => ts.EntranceId == entranceId);
-            if (totalSum != null)
-                totalSum.Summary = (int)remaining;
-            else
-                context.TotalSums.Add(new TotalSum
-                {
-                    EntranceId = entranceId,
-                    Summary = (int)remaining
-                });
-
-            context.SaveChanges();
-        }
- 
-        private void Window_Closing(object sender, CancelEventArgs e)
-        {
-            foreach (var cat in _selectedIncomeCategories.Concat(_selectedExpenseCategories))
-                UnsubscribeCategory(cat);
-        }
-
-        private void clearFieldsButton_Click(object sender, RoutedEventArgs e)
-        {
-            foreach (var cat in _selectedIncomeCategories)
-            {
-                cat.Amount = "0";
-            }
-
-            foreach (var cat in _selectedExpenseCategories)
-            {
-                cat.Amount = "0";
+                ApartmentNavigation.Visibility = Visibility.Collapsed;
+                this.Title = "Управление на такси за вход";
             }
         }
-        public void UpdateDebtForApartment(int apartmentId)
-        {
-            using var context = new SyndiceoDBContext();
+        private void Window_Closing(object sender, CancelEventArgs e) { foreach (var cat in _selectedIncomeCategories.Concat(_selectedExpenseCategories)) UnsubscribeCategory(cat); }
+        private void clearFieldsButton_Click(object sender, RoutedEventArgs e) { foreach (var cat in _selectedIncomeCategories.Concat(_selectedExpenseCategories)) cat.Amount = "0"; }
 
-            var debt = context.Debts.FirstOrDefault(d => d.ApartmentId == apartmentId);
-
-            decimal totalExpenses = context.ApartmentTransactions
-                .Where(t => t.ApartmentId == apartmentId && t.Category.Kind != "Приход")
-                .Sum(t => (decimal?)t.Amount) ?? 0;
-
-            decimal totalIncome = context.ApartmentTransactions
-                .Where(t => t.ApartmentId == apartmentId && t.Category.Kind == "Приход")
-                .Sum(t => (decimal?)t.Amount) ?? 0;
-
-            if (debt == null)
-            {
-                debt = new Debt
-                {
-                    ApartmentId = apartmentId,
-                    TotalSum = totalExpenses,
-                    PaidSum = totalIncome
-                };
-                context.Debts.Add(debt);
-            }
-            else
-            {
-                debt.TotalSum = totalExpenses;
-                debt.PaidSum = totalIncome;
-            }
-
-            context.SaveChanges();
-        }
+        private void SubscribeCategory(CategoryViewModel cat, int aptId) => cat.AmountChanged += (s, e) => _helper?.AdjustRemainingAmount(cat.Id, e.NewValue - e.OldValue);
+        private void UnsubscribeCategory(CategoryViewModel cat) => cat.ClearAmountChangedSubscribers();
 
         private void removeCatButton_Click(object sender, RoutedEventArgs e)
         {
-            // 1. Проверка дали изобщо е избрано нещо
-            var selectedCategory = CategoryListBox.SelectedItem as Syndiceo.Data.Models.Category;
-
-            if (selectedCategory == null)
+            if (CategoryListBox.SelectedItem is Category selected)
             {
-                MessageBox.Show("Моля, изберете категория от списъка.", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+                var result = MessageBox.Show(
+                    $"ВНИМАНИЕ: Изтриването на категория '{selected.Name}' ще премахне и всички финансови записи, свързани с нея в този вход/апартамент!\n\nСигурни ли сте?",
+                    "Потвърждение за изтриване",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
 
-            // 2. Потвърждение от потребителя (за сигурност)
-            var result = MessageBox.Show($"Сигурни ли сте, че искате да изтриете категория '{selectedCategory.Name}'? " +
-                                         "\nВсички свързани транзакции също ще бъдат изтрити!",
-                                         "Потвърждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                try
+                if (result == MessageBoxResult.Yes)
                 {
-                    using (var context = new SyndiceoDBContext())
+                    try
                     {
-                        // Намираме категорията в текущия контекст по ID
-                        var categoryInDb = context.Categories.FirstOrDefault(c => c.Id == selectedCategory.Id);
+                        using var context = new SyndiceoDBContext();
 
-                        if (categoryInDb != null)
+                        var dbCat = context.Categories.Find(selected.Id);
+                        if (dbCat != null)
                         {
-                            // Изтриваме свързаните транзакции в апартаментите
-                            var aptTransactions = context.ApartmentTransactions.Where(t => t.CategoryId == categoryInDb.Id);
-                            context.ApartmentTransactions.RemoveRange(aptTransactions);
+                            var aptTrans = context.ApartmentTransactions.Where(t => t.CategoryId == selected.Id);
+                            context.ApartmentTransactions.RemoveRange(aptTrans);
 
-                            // Изтриваме свързаните транзакции във входовете
-                            var entTransactions = context.EntranceTransactions.Where(t => t.CategoryId == categoryInDb.Id);
-                            context.EntranceTransactions.RemoveRange(entTransactions);
+                            var entranceTrans = context.EntranceTransactions.Where(t => t.CategoryId == selected.Id);
+                            context.EntranceTransactions.RemoveRange(entranceTrans);
 
-                            // Изтриваме самата категория
-                            context.Categories.Remove(categoryInDb);
+                            context.Categories.Remove(dbCat);
 
-                            // Запазваме промените
                             context.SaveChanges();
 
-                            // Обновяваме UI
-                            LoadCategories();
-                            LoadExistingTransactions();
+                            RefreshCategoryList();
 
-                            MessageBox.Show("Категорията беше премахната успешно.", "Готово", MessageBoxButton.OK, MessageBoxImage.Information);
+                            var inIncome = _selectedIncomeCategories.FirstOrDefault(x => x.Id == selected.Id);
+                            if (inIncome != null) _selectedIncomeCategories.Remove(inIncome);
+
+                            var inExpense = _selectedExpenseCategories.FirstOrDefault(x => x.Id == selected.Id);
+                            if (inExpense != null) _selectedExpenseCategories.Remove(inExpense);
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Грешка при изтриване: {ex.Message}", "Критична грешка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Грешка при изтриване: {ex.Message}", "Грешка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
             }
+            else
+            {
+                MessageBox.Show("Моля, избери категория от списъка!", "Информация");
+            }
         }
-        /*        public void ReapplyApartmentTransactions(int apartmentId)
-                {
-                    using var context = new SyndiceoDBContext();
-
-                    var apartment = context.Apartments
-                        .Include(a => a.ApartmentTransactions)
-                        .FirstOrDefault(a => a.ApartmentId == apartmentId);
-
-                    if (apartment == null)
-                        return;
-
-                    // ⚡ Взимаме копие на текущите транзакции,
-                    // за да не модифицираме колекцията, докато я обхождаме
-                    var oldTransactions = apartment.ApartmentTransactions.ToList();
-
-                    foreach (var oldTransaction in oldTransactions)
-                    {
-                        var newTransaction = new ApartmentTransaction
-                        {
-                            ApartmentId = apartment.ApartmentId,
-                            CategoryId = oldTransaction.CategoryId,
-                            Amount = oldTransaction.Amount,
-                            TransDate = DateOnly.FromDateTime(DateTime.Now)
-                        };
-
-                        context.ApartmentTransactions.Add(newTransaction);
-                    }
-
-                    context.SaveChanges();
-
-                    // След това обновяваме сбора и дълговете
-                    UpdateEntranceTotalSum(apartment.ApartmentId);
-                    UpdateDebtForApartment(apartment.ApartmentId);
-                }
-        */
-
     }
+
 
     public class AmountChangedEventArgs : EventArgs
     {
         public decimal OldValue { get; }
         public decimal NewValue { get; }
-
-        public AmountChangedEventArgs(decimal oldValue, decimal newValue)
-        {
-            OldValue = oldValue;
-            NewValue = newValue;
-        }
+        public AmountChangedEventArgs(decimal oldV, decimal newV) { OldValue = oldV; NewValue = newV; }
     }
 
     public class CategoryViewModel : INotifyPropertyChanged
     {
         public int Id { get; set; }
         public string Name { get; set; }
-
-
-        private string _amount = "0"; // Гарантира, че никога не е null
-        private decimal _previousAmount = 0m;
+        private string _amount = "0";
+        public event EventHandler<AmountChangedEventArgs> AmountChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public string Amount
         {
@@ -698,47 +388,15 @@ namespace Syndiceo.Windows
             {
                 if (_amount != value)
                 {
-                    decimal oldValue = GetDecimalAmount();
-
-                    _amount = string.IsNullOrWhiteSpace(value) ? "0" : value.Trim();
-
-                    // Парсинг с InvariantCulture
-                    if (!decimal.TryParse(_amount.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal newValue))
-                        newValue = 0m;
-
-                    _previousAmount = newValue;
-
+                    decimal oldV = GetDecimalAmount();
+                    _amount = value;
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Amount)));
-                    AmountChanged?.Invoke(this, new AmountChangedEventArgs(oldValue, newValue));
+                    AmountChanged?.Invoke(this, new AmountChangedEventArgs(oldV, GetDecimalAmount()));
                 }
             }
         }
 
-        public decimal GetDecimalAmount()
-        {
-            // Никога не връща null
-            if (string.IsNullOrWhiteSpace(_amount))
-                return 0m;
-
-            if (decimal.TryParse(_amount.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal result))
-                return result;
-
-            return 0m;
-        }
-
-        public event EventHandler<AmountChangedEventArgs> AmountChanged;
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void SetDecimalAmount(decimal value)
-        {
-            _amount = value.ToString("0.00");
-            _previousAmount = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Amount)));
-        }
-
-        public void ClearAmountChangedSubscribers()
-        {
-            AmountChanged = null;
-        }
+        public decimal GetDecimalAmount() => decimal.TryParse(_amount.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal res) ? res : 0m;
+        public void ClearAmountChangedSubscribers() => AmountChanged = null;
     }
 }

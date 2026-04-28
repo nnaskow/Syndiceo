@@ -34,16 +34,21 @@ namespace SyndiceoWeb.Controllers
                 {
                     ViewBag.NewDiscussionsCount = await _context.Discussions
                         .CountAsync(d => d.CreatedAt > user.LastDiscussionsView);
+
+                    var userApartment = await _context.Apartments
+                        .FirstOrDefaultAsync(a => a.UserId == user.Id && a.IsConfirmed);
+
+                    ViewBag.UserApartmentId = userApartment?.ApartmentId;
                 }
             }
             else
             {
                 ViewBag.NewDiscussionsCount = 0;
+                ViewBag.UserApartmentId = null;
             }
 
             return View();
         }
-
         public IActionResult Privacy()
         {
             return View();

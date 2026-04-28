@@ -126,14 +126,14 @@ td .text-dark.small {
                     @foreach (var item in Model)
                     {
                         <tr class="verify-card-row">
-                            <td class="ps-md-4 py-3">
+                            <td class="ps-md-4 py-4">
                                 <div class="d-flex align-items-center">
-                                    <div class="me-3 d-none d-md-flex" style="width:38px; height:38px; background:#2C5282; color:white; border-radius:10px; align-items:center; justify-content:center; font-weight:bold; font-size: 0.9rem;">
-                                        @item.User.Email.Substring(0, 1).ToUpper()
+                                    <div class="avatar-box me-3">
+                                        @item.User.FirstName.Substring(0, 1).ToUpper()@item.User.LastName.Substring(0, 1).ToUpper()
                                     </div>
                                     <div>
-                                        <div class="user-pill mb-1">@item.User.Email</div>
-                                        <div class="text-muted" style="font-size: 0.7rem;">Заявка от днес</div>
+                                        <div class="fw-800 text-dark mb-0">@item.User.FirstName @item.User.LastName</div>
+                                        <div class="text-muted small">@item.User.Email</div>
                                     </div>
                                 </div>
                             </td>
@@ -143,7 +143,6 @@ td .text-dark.small {
                                     <div>
                                         <div class="fw-bold text-dark small">
                                             @item.Entrance?.Block?.Address?.Street
-                                            @item.Entrance?.Block?.BlockName
                                             @if (!string.IsNullOrEmpty(item.Entrance?.Block?.BlockName))
                                             {
                                                 <span>, № @item.Entrance.Block.BlockName</span>

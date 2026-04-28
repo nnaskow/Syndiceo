@@ -5,10 +5,10 @@ using System.Linq;
 using System.Windows;
 using System.Collections.Generic;
 using Syndiceo.Utilities;
-using Syndiceo.ViewModels;
+
 namespace Syndiceo.Windows
 {
-    public partial class SaveAsTemplateWindow : Window
+    public partial class SaveAsTemplateWindow : Window // ИЗКЛЮЧЕН ОТ ПРОЕКТА - НЕ СЕ ИЗПОЛЗВА
     {
         public List<TransactionViewModel> Incomes { get; set; }
         public List<TransactionViewModel> Expenses { get; set; }
@@ -22,7 +22,6 @@ namespace Syndiceo.Windows
         {
             InitializeComponent();
 
-            // Задаваме стойностите на полетата
             Incomes = incomes;
             Expenses = expenses;
             Cashbox = cashbox;

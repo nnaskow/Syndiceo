@@ -1,5 +1,6 @@
 ﻿using Syndiceo.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using Syndiceo.Data.Models;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,8 +22,7 @@ namespace Syndiceo.Windows
         {
             string addressText = AddressComboBox.Text.Trim();
             string blockText = BlockComboBox.Text.Trim();
-            string entranceText = EntranceComboBox.Text.Trim();
-            string ownerName = ownerNameTxtBox.Text.Trim();
+            string entranceText = CleanEntranceText(EntranceComboBox.Text); string ownerName = ownerNameTxtBox.Text.Trim();
             string ownerPhone = ownerPhoneNumberTxtBox.Text.Trim();
             string noteText = NoteTextBox.Text.Trim();
 
@@ -163,6 +163,25 @@ namespace Syndiceo.Windows
                 EntranceComboBox.ItemsSource = null;
             }
         }
+        private string CleanEntranceText(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return input;
+
+            string[] patterns = { "вход", "вх.", "вх" };
+            string result = input;
+
+            foreach (var pattern in patterns)
+            {
+                result = System.Text.RegularExpressions.Regex.Replace(
+                    result,
+                    pattern,
+                    "",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase
+                );
+            }
+
+            return result.Trim();
+        }
 
         private void ownerPhoneNumberTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -177,8 +196,7 @@ namespace Syndiceo.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
         }
-      
+
     }
 }

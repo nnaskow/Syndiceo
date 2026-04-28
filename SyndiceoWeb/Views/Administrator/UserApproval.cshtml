@@ -128,14 +128,18 @@
                         @foreach (var user in Model)
                         {
                             <tr class="approval-card-row">
-                                <td class="py-3 py-md-4 ps-3">
+                                <td class="py-4 ps-4">
                                     <div class="d-flex align-items-center">
-                                        <div class="user-icon-circle me-3">
-                                            @user.Email.Substring(0, 1).ToUpper()
+                                        <div class="user-icon-circle me-3 shadow-sm">
+                                            @user.FirstName.Substring(0, 1).ToUpper()@user.LastName.Substring(0, 1).ToUpper()
                                         </div>
-                                        <div class="text-truncate" style="max-width: 200px;">
-                                            <div class="fw-bold text-dark fs-6">@user.Email</div>
-                                            <div class="text-muted" style="font-size: 0.75rem;">Регистриран днес</div>
+                                        <div>
+                                            <div class="fw-800 text-dark fs-5 mb-0">
+                                                @user.FirstName @user.LastName
+                                            </div>
+                                            <div class="text-muted small">
+                                                <i class="bi bi-envelope me-1"></i> @user.Email
+                                            </div>
                                         </div>
                                     </div>
                                 </td>

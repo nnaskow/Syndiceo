@@ -1,531 +1,532 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
+﻿using Syndiceo.Data.Models;
+using Syndiceo.Utilities;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.EntityFrameworkCore;
-using Syndiceo.Data.Models;
-using Syndiceo.Utilities;
-using Syndiceo.ViewModels;
+using Syndiceo.Windows;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace Syndiceo.Windows
 {
-    public partial class PrintWIndow : Window
+    public partial class PrintWIndow : Window //аортата на проекта
     {
         private List<TransactionViewModel> Incomes;
         private List<TransactionViewModel> Expenses;
         private decimal Cashbox;
-        private string FullAddress;
         private int EntranceId;
         private string reportsFolder;
+
+        private const string Primary = "1A365D";
+        private const string HeaderBlue = "1A365D"; 
+        private const string LightGray = "F9FAFB";
+        private const string TextDark = "111827";
+        private const string TextMuted = "6B7280";
 
         public PrintWIndow(List<TransactionViewModel> incomes, List<TransactionViewModel> expenses, decimal cashbox, int entranceId, string fullAddress)
         {
             InitializeComponent();
+
             Incomes = incomes;
             Expenses = expenses;
             Cashbox = cashbox;
             EntranceId = entranceId;
-            FullAddress = fullAddress;
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
 
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             reportsFolder = Path.Combine(appData, "Syndiceo", "Documents", "MonthlyReports");
 
-            if (!Directory.Exists(reportsFolder)) Directory.CreateDirectory(reportsFolder);
+            if (!Directory.Exists(reportsFolder))
+                Directory.CreateDirectory(reportsFolder);
+        }
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
             FilesListBox.Items.Clear();
-            FilesListBox.Items.Add(new ListBoxItem { Content = "Месечен отчет (€)", Tag = "standard" });
-            FilesListBox.Items.Add(new ListBoxItem { Content = "Подробен месечен отчет (€)", Tag = "podroben" });
-            FilesListBox.Items.Add(new ListBoxItem { Content = "Отчет ремонтни дейности (€)", Tag = "remontni" });
+            FilesListBox.Items.Add(new ListBoxItem { Content = "📊 Месечен отчет (Стандартен)", Tag = "standard" });
+            FilesListBox.Items.Add(new ListBoxItem { Content = "✍️ Подробен месечен отчет (Ведомост)", Tag = "podroben" });
+            FilesListBox.Items.Add(new ListBoxItem { Content = "🛠️ Годишен отчет ремонтни дейности", Tag = "remontni" });
         }
 
         private void OpenFolderBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (!Directory.Exists(reportsFolder)) Directory.CreateDirectory(reportsFolder);
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = reportsFolder,
-                UseShellExecute = true,
-                Verb = "open"
-            });
+            if (Directory.Exists(reportsFolder))
+                Process.Start(new ProcessStartInfo { FileName = reportsFolder, UseShellExecute = true });
         }
 
         private void PrintBtn_Click(object sender, RoutedEventArgs e)
         {
-            var db = new SyndiceoDBContext();
-
             var selectedTemplate = FilesListBox.SelectedItem as ListBoxItem;
             if (selectedTemplate == null)
             {
-                MessageBox.Show("Моля, изберете шаблон за печат.", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Моля, изберете тип отчет.", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            bool isMaintenanceReport = selectedTemplate.Tag?.ToString().Contains("remontni", StringComparison.OrdinalIgnoreCase) ?? false;
+            string tag = selectedTemplate.Tag.ToString();
+
             var chooseDateWindow = new ChooseDateWindow { Owner = this };
-            if (chooseDateWindow.ShowDialog() != true)
-            {
-                return;
-            }
+            if (chooseDateWindow.ShowDialog() != true) return;
 
-            string monthStr = Properties.Settings.Default.monthForPrinting;
-            string yearStr = Properties.Settings.Default.yearForPrinting;
-            string currentPeriod = $"{monthStr}-{yearStr}";
-
-            if (!int.TryParse(monthStr, out int month)) month = DateTime.Now.Month;
-            if (!int.TryParse(yearStr, out int year)) year = DateTime.Now.Year;
-
-            if (!isMaintenanceReport)
-            {
-                bool alreadyArchivedForThisEntrance = db.ApartmentTransactions.Any(at =>
-                    at.Apartment.EntranceId == EntranceId &&
-                    at.Category.Name == "Несъбрана такса" &&
-                    at.TransDate.Month == month &&
-                    at.TransDate.Year == year);
-
-                if (Properties.Settings.Default.LastReportDate == currentPeriod || alreadyArchivedForThisEntrance)
-                {
-                    var recomputeResult = MessageBox.Show(
-                        $"За периода {currentPeriod} данните вече са архивирани и таксите са нулирани.\n\n" +
-                        "Желаете ли само да генерирате документа (Word) БЕЗ ново преизчисляване?",
-                        "Повторен отчет", MessageBoxButton.YesNoCancel, MessageBoxImage.Information);
-
-                    if (recomputeResult == MessageBoxResult.Cancel) return;
-
-                    if (recomputeResult == MessageBoxResult.Yes)
-                    {
-                        GenerateReport(selectedTemplate);
-                        return;
-                    }
-                }
-
-                var msgbox = MessageBox.Show(
-                    $"Сигурни ли сте, че желаете да приключите месеца ({currentPeriod}) и да генерирате отчета?\n" +
-                    "(Това ще прехвърли неплатените суми като дълг и ще нулира текущите плащания.)",
-                    "Потвърждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (msgbox != MessageBoxResult.Yes) return;
-            }
-
-            GenerateReport(selectedTemplate);
-
-            if (!isMaintenanceReport)
-            {
-                ArchiveMonthData(currentPeriod);
-                MessageBox.Show($"Месецът ({currentPeriod}) беше приключен успешно!", "Готово", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-        }
-        private void ArchiveMonthData(string currentPeriod)
-        {
-            using var db = new SyndiceoDBContext();
-
-            var entrance = db.Entrances
-                .Include(e => e.Cashboxes)
-                .Include(e => e.Apartments)
-                    .ThenInclude(a => a.Debts)
-                .Include(e => e.Apartments)
-                    .ThenInclude(a => a.ApartmentTransactions)
-                        .ThenInclude(at => at.Category)
-                .Include(e => e.EntranceTransactions)
-                    .ThenInclude(et => et.Category)
-                .FirstOrDefault(e => e.EntranceId == EntranceId);
-
-            if (entrance == null) return;
-
-            var remainingCategory = db.Categories.FirstOrDefault(c => c.Name == "Несъбрана такса");
-            if (remainingCategory == null)
-            {
-                remainingCategory = new Syndiceo.Data.Models.Category
-                {
-                    Name = "Несъбрана такса",
-                    Kind = "Разход",
-                    Appliance = "apartments"
-                };
-                db.Categories.Add(remainingCategory);
-                db.SaveChanges();
-            }
-
-            foreach (var apartment in entrance.Apartments)
-            {
-                var debt = apartment.Debts.FirstOrDefault();
-                if (debt == null) continue;
-
-                decimal totalToCollect = debt.TotalSum;
-                decimal alreadyPaid = debt.PaidSum;
-                decimal actualMissing = totalToCollect - alreadyPaid;
-
-                if (actualMissing > 0)
-                {
-                    bool alreadyArchived = db.ApartmentTransactions.Any(at =>
-                        at.ApartmentId == apartment.ApartmentId &&
-                        at.CategoryId == remainingCategory.Id &&
-                        at.TransDate.Month == DateTime.Now.Month &&
-                        at.TransDate.Year == DateTime.Now.Year);
-
-                    if (!alreadyArchived)
-                    {
-                        var tr = new ApartmentTransaction
-                        {
-                            ApartmentId = apartment.ApartmentId,
-                            CategoryId = remainingCategory.Id,
-                            Amount = actualMissing,
-                            TransDate = DateOnly.FromDateTime(DateTime.Now),
-                            Description = $"Несъбрана такса за {DateTime.Now:MMMM yyyy}",
-                        };
-                        db.ApartmentTransactions.Add(tr);
-                    }
-                }
-
-                debt.PaidSum = 0;
-                debt.RemainingSum = debt.TotalSum;
-                apartment.IsMarked = false;
-            }
-
-            var cashbox = entrance.Cashboxes.FirstOrDefault() ?? new Cashbox { EntranceId = EntranceId, CurrentBalance = 0 };
-            if (cashbox.Id == 0) db.Cashboxes.Add(cashbox);
-
-            decimal totalIncomes = entrance.EntranceTransactions
-                .Where(et => et.Amount > 0 && et.Category?.Kind == "Приход" && et.Category?.Appliance == "entrances")
-                .Sum(et => et.Amount);
-
-            decimal totalExpenses = entrance.EntranceTransactions
-                .Where(et => et.Amount > 0 && et.Category?.Kind == "Разход" && et.Category?.Name != "Несъбрана такса" && et.Category?.Appliance == "entrances")
-                .Sum(et => Math.Abs(et.Amount));
-
-            decimal currentMonthUncollected = db.ApartmentTransactions.Local
-                .Where(at => at.CategoryId == remainingCategory.Id)
-                .Sum(at => at.Amount);
-
-            cashbox.CurrentBalance = (cashbox.CurrentBalance + totalIncomes) - totalExpenses - currentMonthUncollected;
-
-            var collectedCategory = db.Categories.FirstOrDefault(c => c.Name == "Събрани такси" && c.Kind == "Приход");
-            if (collectedCategory != null)
-            {
-                var entranceTransactions = db.EntranceTransactions
-                    .Where(et => et.EntranceId == EntranceId && et.CategoryId == collectedCategory.Id)
-                    .ToList();
-
-                foreach (var et in entranceTransactions) { et.Amount = 0; }
-            }
-
-            db.SaveChanges();
-
-            Properties.Settings.Default.LastReportDate = currentPeriod;
-            Properties.Settings.Default.Save();
-
-            SessionData.LastPayments.Clear();
-        }
-        private void GenerateReport(ListBoxItem selectedTemplate)
-        {
-            string optionTag = selectedTemplate.Tag?.ToString() ?? "standard";
-            bool isDetailed = optionTag.Contains("podroben", StringComparison.OrdinalIgnoreCase);
-            bool isMaintenanceReport = optionTag.Contains("remontni", StringComparison.OrdinalIgnoreCase);
-            string currency = "€";
             int month = int.TryParse(Properties.Settings.Default.monthForPrinting, out int m) ? m : DateTime.Now.Month;
             int year = int.TryParse(Properties.Settings.Default.yearForPrinting, out int y) ? y : DateTime.Now.Year;
 
-            DateTime reportDate = new DateTime(year, month, 1);
-            string monthYear = reportDate.ToString("MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("bg-BG"));
+            GenerateReport(tag, month, year);
+
+            if (tag == "standard" || tag == "podroben")
+            {
+                var result = MessageBox.Show($"Желаете ли да приключите официално месец {month}/{year}?\n\n" +
+                    "Това ще нулира 'Платена сума' за всички апартаменти и ще прехвърли неплатеното в историята.",
+                    "Приключване на месец", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    ArchiveMonthAndResetDebts(month, year);
+                    this.Close();
+                }
+            }
+        }
+
+        private void GenerateReport(string type, int month, int year)
+        {
+            string targetPath = Path.Combine(reportsFolder, year.ToString(), month.ToString("D2"));
+            if (!Directory.Exists(targetPath)) Directory.CreateDirectory(targetPath);
+
 
             using var db = new SyndiceoDBContext();
             var entrance = db.Entrances
-                .Include(e => e.Block)
-                .ThenInclude(b => b.Address)
+                .Include(e => e.Block).ThenInclude(b => b.Address)
                 .FirstOrDefault(e => e.EntranceId == EntranceId);
 
-            if (entrance == null)
-            {
-                MessageBox.Show("Не е намерен вход.", "Грешка", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
+            string cleanEntrance = Regex.Replace(entrance?.EntranceName ?? "", @"(?i)\b(вход|вх\.|вх)\b", "").Trim();
 
-            string entranceAddress = $"{entrance.Block?.Address?.Street ?? "Без адрес"}, {entrance.Block?.BlockName ?? "Без блок"}, Вход {entrance.EntranceName}";
-            decimal finalBalance = 0;
-            if (!isMaintenanceReport)
-            {
-                var currentCashbox = db.Cashboxes.FirstOrDefault(c => c.EntranceId == EntranceId);
-                decimal totalIncomes = db.EntranceTransactions.Where(et => et.EntranceId == EntranceId && et.Amount > 0 && et.Category.Kind == "Приход").Sum(et => et.Amount);
-                decimal totalExpenses = db.EntranceTransactions.Where(et => et.EntranceId == EntranceId && et.Amount > 0 && et.Category.Kind == "Разход" && et.Category.Name != "Несъбрана такса").Sum(et => Math.Abs(et.Amount));
-                decimal totalUncollected = db.ApartmentTransactions.Where(at => at.Apartment.EntranceId == EntranceId && at.Category.Name == "Несъбрана такса").Sum(at => Math.Abs(at.Amount));
-                finalBalance = (currentCashbox?.CurrentBalance ?? 0) + totalIncomes - totalExpenses - totalUncollected;
-            }
+            string addressInfo = $"ул. {entrance?.Block?.Address?.Street} №{entrance?.Block?.BlockName}, вх. {cleanEntrance}";
+            string fileName = $"МО_{addressInfo}_{DateTime.Now:yyyyMMdd_HHmm_ss}.docx";
+            string fullPath = Path.Combine(targetPath, fileName);
 
-            string yearFolder = Path.Combine(reportsFolder, year.ToString());
-            string monthFolder = Path.Combine(yearFolder, reportDate.ToString("MMMM", System.Globalization.CultureInfo.GetCultureInfo("bg-BG")));
-            if (!Directory.Exists(monthFolder)) Directory.CreateDirectory(monthFolder);
-
-            string reportTypeName = isDetailed ? "podroben" : (isMaintenanceReport ? "remontni" : "standart");
-            string newFileName = $"МО_{entranceAddress}_{monthYear}_{reportTypeName}_{Guid.NewGuid().ToString().Substring(0, 4)}.docx";
-            string newFilePath = Path.Combine(monthFolder, newFileName);
-
-            using (WordprocessingDocument wordDoc = WordprocessingDocument.Create(newFilePath, DocumentFormat.OpenXml.WordprocessingDocumentType.Document))
+            using (WordprocessingDocument wordDoc = WordprocessingDocument.Create(fullPath, WordprocessingDocumentType.Document))
             {
                 MainDocumentPart mainPart = wordDoc.AddMainDocumentPart();
                 mainPart.Document = new DocumentFormat.OpenXml.Wordprocessing.Document();
                 Body body = mainPart.Document.AppendChild(new Body());
 
-                AddHeader(mainPart, isMaintenanceReport ? "ОТЧЕТ НА ИЗВЪРШЕНИТЕ РЕМОНТНИ ДЕЙНОСТИ" : "МЕСЕЧЕН ОТЧЕТ", isMaintenanceReport);
+                string mainTitle = type == "remontni" ? "ОТЧЕТ ЗА РЕМОНТНИ ДЕЙНОСТИ" : (type == "podroben" ? "ПОДРОБЕН МЕСЕЧЕН ОТЧЕТ (ВЕДОМОСТ)" : "МЕСЕЧЕН ОТЧЕТ (СТАНДАРТЕН)");
+                AddHeader(mainPart, mainTitle);
 
-                body.Append(new Paragraph(
-                    new ParagraphProperties(new Justification { Val = JustificationValues.Center }),
-                    new Run(new RunProperties(new FontSize { Val = "28" }, new Bold()),
-                    new Text(isMaintenanceReport ? $"за {year} година" : monthYear))));
-
-                body.Append(new Paragraph(
-                    new ParagraphProperties(new Justification { Val = JustificationValues.Center }),
-                    new Run(new RunProperties(new FontSize { Val = "24" }, new Italic()),
-                    new Text(entranceAddress))));
-
+                string periodStr = type == "remontni" ? $"ЗА {year} ГОДИНА" : new DateTime(year, month, 1).ToString("MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("bg-BG")).ToUpper();
+                body.Append(CreateStyledParagraph(periodStr, "32", Primary, true));
+                body.Append(CreateStyledParagraph(addressInfo, "20", "555555", false));
                 body.Append(new Paragraph(new Run(new Break())));
 
-                if (isMaintenanceReport)
-                {
-                    var maintenanceRecords = db.Maintenances.Where(m => m.EntranceId == EntranceId && m.DateOfMaintenance.Year == year).OrderByDescending(m => m.DateOfMaintenance).ToList();
-                    if (maintenanceRecords.Count == 0)
-                    {
-                        body.Append(new Paragraph(new Run(new Text($"Няма въведени ремонтни дейности за {year} г."))));
-                    }
-                    else
-                    {
-                        Table table = CreateBaseTable();
-                        table.Append(new TableRow(CreateTableCell("Дата", true, "28"), CreateTableCell("Описание", true, "28"), CreateTableCell("Стойност", true, "28")));
-                        foreach (var r in maintenanceRecords)
-                        {
-                            table.Append(new TableRow(
-                                CreateTableCell(r.DateOfMaintenance.ToString("dd.MM.yyyy"), false, "26"),
-                                CreateTableCell(r.Description ?? "-", false, "26"),
-                                CreateTableCell(FormatAmount(r.Price ?? 0, currency), false, "26")
-                            ));
-                        }
-                        body.Append(table);
-                    }
-                }
-                else if (isDetailed)
-                {
-                    var apartments = db.Apartments.Where(a => a.EntranceId == EntranceId).OrderBy(a => a.ApartmentNumber).ToList();
-                    var categories = db.Categories
-                        .Where(c => c.Kind == "Разход" && c.Appliance == "apartments")
-                        .ToList()
-                        .Where(c => {
-                            if (c.Name != "Несъбрана такса") return true;
-                            return db.ApartmentTransactions.Any(t => t.CategoryId == c.Id && t.Amount != 0);
-                        })
-                        .OrderBy(c => c.Name)
-                        .ToList(); Table table = CreateBaseTable();
-                    var hr = new TableRow(CreateTableCell("Ап.", true, "18"), CreateTableCell("Живущи", true, "18"));
-                    foreach (var cat in categories) hr.Append(CreateTableCell(cat.Name, true, "18"));
-                    hr.Append(CreateTableCell("Общо", true, "18"), CreateTableCell("Подпис", true, "18"));
-                    table.Append(hr);
+                if (type == "remontni") BuildMaintenanceTable(body, db, year);
+                else if (type == "podroben") BuildDetailedTable(body, db);
+                else BuildStandardTable(body, db);
 
-                    foreach (var apt in apartments)
-                    {
-                        var tr = new TableRow(CreateTableCell(apt.ApartmentNumber.ToString(), false, "22"), CreateTableCell(apt.ResidentCount.ToString(), false, "22"));
-                        decimal rowSum = 0;
-                        foreach (var cat in categories)
-                        {
-                            decimal val = db.ApartmentTransactions.Where(t => t.ApartmentId == apt.ApartmentId && t.CategoryId == cat.Id).Sum(t => (decimal?)t.Amount) ?? 0;
-                            tr.Append(CreateTableCell(FormatAmount(val, currency), false, "22"));
-                            rowSum += val;
-                        }
-                        tr.Append(CreateTableCell(FormatAmount(rowSum, currency), false, "22"), CreateTableCell("", false, "22"));
-                        table.Append(tr);
-                    }
-                    body.Append(table);
-                }
-                else
-                {
-                    bool hasUncollectedIncomes = Incomes.Any(i => i.CategoryName == "Несъбрана такса" && i.Amount != 0);
-                    bool hasUncollectedExpenses = Expenses.Any(e => e.CategoryName == "Несъбрана такса" && e.Amount != 0);
-
-                    Table table = CreateBaseTable();
-
-                    table.Append(new TableRow(
-                        CreateTableCell("Приходи", true, "32"),
-                        CreateTableCell("Стойност", true, "32"),
-                        CreateTableCell("Разходи", true, "32"),
-                        CreateTableCell("Стойност", true, "32")
-                    ));
-
-                    var filteredIncomes = Incomes.Where(i => i.CategoryName != "Несъбрана такса" || i.Amount != 0).ToList();
-                    var filteredExpenses = Expenses.Where(e => e.CategoryName != "Несъбрана такса" || e.Amount != 0).ToList();
-
-                    int max = Math.Max(filteredIncomes.Count, filteredExpenses.Count);
-
-                    for (int i = 0; i < max; i++)
-                    {
-                        table.Append(new TableRow(
-                            CreateTableCell(i < filteredIncomes.Count ? filteredIncomes[i].CategoryName : "", false, "28"),
-                            CreateTableCell(i < filteredIncomes.Count ? FormatAmount(filteredIncomes[i].Amount, currency) : "", false, "28"),
-                            CreateTableCell(i < filteredExpenses.Count ? filteredExpenses[i].CategoryName : "", false, "28"),
-                            CreateTableCell(i < filteredExpenses.Count ? FormatAmount(Math.Abs(filteredExpenses[i].Amount), currency) : "", false, "28")
-                        ));
-                    }
-
-                    body.Append(table);
-
-                    body.Append(new Paragraph(new Run(new Text(""))));
-                    Table cashTable = CreateBaseTable();
-                    cashTable.Append(new TableRow(
-                        CreateTableCell("Наличност в касата:", true, "24"),
-                        CreateTableCell(FormatAmount(finalBalance, currency), true, "24"),
-                        CreateTableCell("", false, "24"),
-                        CreateTableCell("", false, "24")
-                    ));
-                    body.Append(cashTable);
-                }
                 AddFooter(mainPart);
                 AddPageBorder(mainPart);
                 mainPart.Document.Save();
             }
-            Process.Start(new ProcessStartInfo { FileName = newFilePath, UseShellExecute = true });
-        }
 
-        private void AddHeader(MainDocumentPart mainPart, string title, bool isMaintenance)
+            Process.Start(new ProcessStartInfo { FileName = fullPath, UseShellExecute = true });
+        }
+        private void BuildStandardTable(Body body, SyndiceoDBContext db)
         {
-            HeaderPart headerPart = mainPart.AddNewPart<HeaderPart>();
-            var header = new Header();
+            decimal totalInc = Incomes.Sum(i => i.Amount);
+            decimal totalExp = Expenses.Sum(e => Math.Abs(e.Amount));
+            decimal startCashbox = Cashbox;
+            decimal endCashbox = startCashbox + totalInc - totalExp;
 
-            var titleParagraph = new Paragraph(
-                new ParagraphProperties(new Justification { Val = JustificationValues.Center }),
-                new Run(
-                    new RunProperties(
-                        new Bold(),
-                        new FontSize { Val = "36" },
-                        new Color { Val = "000000" },
-                        new Underline()
-                    ),
-                    new Text(title)
-                )
+            AddModernSummary(body, "НАЧАЛНО САЛДО", $"€{startCashbox:F2}", "555555");
+
+            Table balanceTable = CreateBaseTable();
+            TableGrid grid = new TableGrid(
+                new GridColumn { Width = "3500" }, // Описание Приход
+                new GridColumn { Width = "1500" }, // Сума Приход
+                new GridColumn { Width = "3500" }, // Описание Разход
+                new GridColumn { Width = "1500" }  // Сума Разход
             );
+            balanceTable.AppendChild(grid);
 
-            header.Append(titleParagraph);
-            headerPart.Header = header;
+            balanceTable.Append(new TableRow(
+                CreateTableCell("ПРИХОДИ", true, "20", LightGray, true),
+                CreateTableCell("СУМА", true, "20", LightGray, true, true),
+                CreateTableCell("РАЗХОДИ", true, "20", LightGray, true),
+                CreateTableCell("СУМА", true, "20", LightGray, true, true)
+            ));
 
-            var sectionProps = mainPart.Document.Body.Elements<SectionProperties>().LastOrDefault()
-                               ?? mainPart.Document.Body.AppendChild(new SectionProperties());
+            int maxRows = Math.Max(Incomes.Count, Expenses.Count);
+            for (int i = 0; i < maxRows; i++)
+            {
+                var row = new TableRow();
 
-            sectionProps.RemoveAllChildren<HeaderReference>();
+                if (i < Incomes.Count)
+                {
+                    row.Append(CreateTableCell(Incomes[i].Description, false, "22", "FFFFFF"));
+                    row.Append(CreateTableCell($"{Incomes[i].Amount:F2}", true, "22", "FFFFFF", false, true));
+                }
+                else
+                {
+                    row.Append(CreateTableCell("", false, "22", "FFFFFF"));
+                    row.Append(CreateTableCell("", false, "22", "FFFFFF"));
+                }
 
-            sectionProps.PrependChild(new HeaderReference { Type = HeaderFooterValues.Default, Id = mainPart.GetIdOfPart(headerPart) });
+                if (i < Expenses.Count)
+                {
+                    row.Append(CreateTableCell(Expenses[i].CategoryName, false, "22", "FFFFFF"));
+                    row.Append(CreateTableCell($"{Math.Abs(Expenses[i].Amount):F2}", true, "22", "FFFFFF", false, true));
+                }
+                else
+                {
+                    row.Append(CreateTableCell("", false, "22", "FFFFFF"));
+                    row.Append(CreateTableCell("", false, "22", "FFFFFF"));
+                }
+                balanceTable.Append(row);
+            }
+
+            balanceTable.Append(new TableRow(
+                CreateTableCell("ОБЩО ПРИХОДИ:", true, "20", "F4FFF8"),
+                CreateTableCell($"{totalInc:F2}", true, "20", "F4FFF8", false, true),
+                CreateTableCell("ОБЩО РАЗХОДИ:", true, "20", "FFF4F4"),
+                CreateTableCell($"{totalExp:F2}", true, "20", "FFF4F4", false, true)
+            ));
+
+            body.Append(balanceTable);
+            body.Append(new Paragraph(new Run(new Break())));
+            AddModernSummary(body, "КРАЙНА НАЛИЧНОСТ", $"€{endCashbox:F2}", Primary);
         }
-        private void AddFooter(MainDocumentPart mainPart)
+        private void BuildDetailedTable(Body body, SyndiceoDBContext db)
         {
-            FooterPart footerPart = mainPart.AddNewPart<FooterPart>();
-            footerPart.Footer = new Footer(
-                new Paragraph(new ParagraphProperties(new Justification { Val = JustificationValues.Right }),
-                    new Run(new RunProperties(new FontSize { Val = "18" }, new Italic()), new Text($"Отчетът е изготвен с помощта на програмата Syndiceo.©{DateTime.Now.Year} Разработена от NYXON. Всички права запазени"))),
-                new Paragraph(new ParagraphProperties(new Justification { Val = JustificationValues.Center }),
-                    new Run(new RunProperties(new FontSize { Val = "20" }), new Text("Страница ")),
-                    new Run(new SimpleField() { Instruction = " PAGE " }),
-                    new Run(new RunProperties(new FontSize { Val = "20" }), new Text(" от ")),
-                    new Run(new SimpleField() { Instruction = " NUMPAGES " }))
-            );
-            var sectionProps = mainPart.Document.Body.Elements<SectionProperties>().LastOrDefault() ?? mainPart.Document.Body.AppendChild(new SectionProperties());
-            sectionProps.PrependChild(new FooterReference { Type = HeaderFooterValues.Default, Id = mainPart.GetIdOfPart(footerPart) });
+            Table table = CreateBaseTable();
+
+            var categories = db.ApartmentTransactions
+    .Where(at => at.Apartment.EntranceId == EntranceId && at.Category.Name != "Събрани такси")
+    .Select(at => at.Category.Name)
+    .Distinct()
+    .ToList();
+
+            TableRow headerRow = new TableRow();
+            headerRow.Append(CreateTableCell("Ап.", true, "20", LightGray, true)); 
+            headerRow.Append(CreateTableCell("Живущи", true, "20", LightGray, true));
+
+            foreach (var catName in categories)
+            {
+                headerRow.Append(CreateTableCell(catName, true, "18", LightGray, true));
+            }
+
+            headerRow.Append(CreateTableCell("Общо", true, "20", LightGray, true));
+            headerRow.Append(CreateTableCell("Подпис", true, "20", LightGray, true));
+            table.Append(headerRow);
+
+            var apps = db.Apartments
+                .Include(a => a.ApartmentTransactions).ThenInclude(at => at.Category)
+                .Where(a => a.EntranceId == EntranceId)
+                .OrderBy(a => a.ApartmentNumber).ToList();
+
+            for (int i = 0; i < apps.Count; i++)
+            {
+                var app = apps[i];
+                string bg = (i % 2 == 0) ? "FFFFFF" : LightGray;
+                decimal rowTotal = 0;
+
+                TableRow dataRow = new TableRow();
+                dataRow.Append(CreateTableCell(app.ApartmentNumber.ToString(), true, "22", bg));
+                dataRow.Append(CreateTableCell(app.ResidentCount.ToString(), true, "20", bg));
+
+                foreach (var catName in categories)
+                {
+                    var amount = app.ApartmentTransactions
+                        .Where(at => at.Category.Name == catName)
+                        .Sum(at => at.Amount);
+
+                    rowTotal += amount;
+
+                    string amountText = amount > 0 ? $"{amount:F2}" : "-";
+                    dataRow.Append(CreateTableCell(amountText, true, "20", bg));
+                }
+
+                dataRow.Append(CreateTableCell($"{rowTotal:F2}", true, "22", bg));
+                dataRow.Append(CreateTableCell("", false, "22", bg));
+
+                table.Append(dataRow);
+            }
+
+            body.Append(table);
+        }
+        private void BuildMaintenanceTable(Body body, SyndiceoDBContext db, int year)
+        {
+            Table table = CreateBaseTable();
+            table.Append(new TableRow(
+                CreateTableCell("ДАТА", true, "20", Primary, true),
+                CreateTableCell("ОПИСАНИЕ", true, "20", Primary, true),
+                CreateTableCell("СУМА", true, "20", Primary, true)));
+
+            var repairs = db.Maintenances
+                .Where(m => m.EntranceId == EntranceId && m.DateOfMaintenance.Year == year)
+                .OrderBy(m => m.DateOfMaintenance).ToList();
+
+            decimal sum = 0;
+            for (int i = 0; i < repairs.Count; i++)
+            {
+                string bg = (i % 2 == 0) ? "FFFFFF" : LightGray;
+                decimal price = (decimal)(repairs[i].Price ?? 0);
+                sum += price;
+
+                table.Append(new TableRow(
+                    CreateTableCell(repairs[i].DateOfMaintenance.ToString("dd.MM.yyyy"), false, "18", bg),
+                    CreateTableCell(repairs[i].Description, false, "18", bg),
+                    CreateTableCell($"{price:F2} €", true, "18", bg)
+                ));
+            }
+            body.Append(table);
+            body.Append(new Paragraph(new Run(new Break())));
+            body.Append(CreateStyledParagraph($"ОБЩО ЗА ГОДИНАТА: {sum:F2} €", "22", Primary, true));
         }
 
+        private void ArchiveMonthAndResetDebts(int month, int year)
+        {
+            try
+            {
+                using var db = new SyndiceoDBContext();
+
+                var collCat = db.Categories.FirstOrDefault(c => c.Name == "Събрани такси");
+                var uncollCat = db.Categories.FirstOrDefault(c => c.Name == "Несъбрана такса");
+
+                if (collCat == null || uncollCat == null)
+                {
+                    MessageBox.Show("Грешка: Липсват необходимите категории в базата данни.");
+                    return;
+                }
+
+                var cb = db.Cashboxes.FirstOrDefault(c => c.EntranceId == EntranceId);
+                if (cb == null) return;
+
+                var debts = db.Debts.Include(d => d.Apartment)
+                                    .Where(d => d.Apartment.EntranceId == EntranceId)
+                                    .ToList();
+
+                decimal totalIncomeFromApartments = debts.Sum(d => d.PaidSum);
+                decimal totalExp = Expenses.Sum(e => Math.Abs(e.Amount));
+
+                cb.CurrentBalance += (totalIncomeFromApartments - totalExp);
+
+                foreach (var debt in debts)
+                {
+                    decimal finalBalanceToCarryForward = debt.TotalSum - debt.PaidSum;
+
+                    var transactionsToClear = db.ApartmentTransactions
+                        .Where(at => at.ApartmentId == debt.ApartmentId &&
+                                    (at.CategoryId == uncollCat.Id || at.CategoryId == collCat.Id))
+                        .ToList();
+
+                    db.ApartmentTransactions.RemoveRange(transactionsToClear);
+
+                    if (finalBalanceToCarryForward > 0)
+                    {
+                        db.ApartmentTransactions.Add(new ApartmentTransaction
+                        {
+                            ApartmentId = debt.ApartmentId ?? 0,
+                            CategoryId = uncollCat.Id,
+                            Amount = finalBalanceToCarryForward,
+                            TransDate = DateOnly.FromDateTime(DateTime.Now),
+                            Description = $"Остатък към {month}/{year}"
+                        });
+                    }
+
+                    debt.PaidSum = 0;
+                }
+
+                var entranceIncomeToReset = db.EntranceTransactions
+                    .Where(et => et.EntranceId == EntranceId && et.CategoryId == collCat.Id)
+                    .ToList();
+                db.EntranceTransactions.RemoveRange(entranceIncomeToReset);
+
+                db.SaveChanges();
+
+                MessageBox.Show($"Месец {month}/{year} е приключен успешно!\n\n" +
+                                $"Касата е обновена.\n" +
+                                $"Неплатените суми са прехвърлени като нов дълг.",
+                                "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                string inner = ex.InnerException != null ? ex.InnerException.Message : "Няма";
+                MessageBox.Show($"Критична грешка при запис в базата:\n{ex.Message}\n\nДетайли: {inner}",
+                                "Грешка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private Paragraph CreateStyledParagraph(string text, string fontSize, string color, bool isBold)
+        {
+            var p = new Paragraph(new ParagraphProperties(new Justification { Val = JustificationValues.Center }));
+            var r = p.AppendChild(new Run(new RunProperties(
+                new FontSize { Val = fontSize },
+                new Color { Val = color },
+                new RunFonts { Ascii = "Segoe UI" }),
+                new Text(text)));
+            if (isBold) r.RunProperties.Append(new Bold());
+            return p;
+        }
         private Table CreateBaseTable()
         {
             Table table = new Table();
             table.AppendChild(new TableProperties(
-                new TableWidth { Type = TableWidthUnitValues.Dxa, Width = "9500" }, // Малко по-тясна
+                new TableWidth { Type = TableWidthUnitValues.Dxa, Width = "10000" },
                 new TableJustification { Val = TableRowAlignmentValues.Center },
                 new TableBorders(
-                    new TopBorder { Val = BorderValues.Single, Size = 4 },
-                    new BottomBorder { Val = BorderValues.Single, Size = 4 },
-                    new LeftBorder { Val = BorderValues.Single, Size = 4 },
-                    new RightBorder { Val = BorderValues.Single, Size = 4 },
-                    new InsideHorizontalBorder { Val = BorderValues.Single, Size = 4 },
-                    new InsideVerticalBorder { Val = BorderValues.Single, Size = 4 }
+                    new TopBorder { Val = BorderValues.None },
+                    new BottomBorder { Val = BorderValues.None },
+                    new LeftBorder { Val = BorderValues.None },
+                    new RightBorder { Val = BorderValues.None },
+                    new InsideHorizontalBorder { Val = BorderValues.Single, Size = 2, Color = "EEEEEE" },
+                    new InsideVerticalBorder { Val = BorderValues.None }
                 )
             ));
             return table;
         }
-        private TableCell CreateTableCell(string text, bool isHeader = false, string fontSize = "28")
+        private TableCell CreateTableCell(string text, bool isBold, string fontSize, string fill, bool isHeader = false, bool isAmount = false)
         {
-            var cell = new TableCell();
-            cell.Append(new TableCellProperties(new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center }));
-            cell.Append(new Paragraph(new ParagraphProperties(new Justification { Val = isHeader ? JustificationValues.Center : JustificationValues.Left }),
-                new Run(new RunProperties(new FontSize { Val = fontSize }, isHeader ? new Bold() : null), new Text(text ?? ""))));
+            text = text ?? "";
+
+            var cellProps = new TableCellProperties(
+                new Shading { Fill = fill ?? "FFFFFF" },
+                new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center },
+                new TableCellMargin(
+                    new LeftMargin { Width = "150", Type = TableWidthUnitValues.Dxa },
+                    new RightMargin { Width = "150", Type = TableWidthUnitValues.Dxa }
+                )
+            );
+
+            cellProps.Append(new TableCellBorders(
+                new BottomBorder { Val = BorderValues.Single, Size = 2, Color = "EEEEEE" }
+            ));
+
+            var cell = new TableCell(cellProps);
+
+            string finalFontSize = text.Length > 20 ? (int.Parse(fontSize) - 4).ToString() : fontSize;
+
+            var pProps = new ParagraphProperties(new Justification { Val = isAmount ? JustificationValues.Right : JustificationValues.Left });
+            pProps.Append(new SpacingBetweenLines { Before = "180", After = "180" });
+
+            var run = new Run(new RunProperties(
+                new RunFonts { Ascii = "Segoe UI" },
+                new FontSize { Val = finalFontSize },
+                new Color { Val = (isHeader ? "444444" : (TextDark ?? "000000")) },
+                new Bold { Val = isBold }
+            ), new Text(text));
+
+            cell.AppendChild(new Paragraph(pProps, run));
             return cell;
         }
 
-        private void RefreshDebtsFromTransactions()
+        private void AddModernSummary(Body body, string title, string amount, string color)
         {
-            using var db = new SyndiceoDBContext();
+            Table table = new Table();
+            table.AppendChild(new TableProperties(
+                new TableWidth { Type = TableWidthUnitValues.Dxa, Width = "5000" }, 
+                new TableJustification { Val = TableRowAlignmentValues.Left },
+                new TableBorders(
+                    new LeftBorder { Val = BorderValues.Single, Size = 24, Color = HeaderBlue }, 
+                    new BottomBorder { Val = BorderValues.None },
+                    new RightBorder { Val = BorderValues.None },
+                    new InsideHorizontalBorder { Val = BorderValues.None },
+                    new InsideVerticalBorder { Val = BorderValues.None }
+                )
+            ));
 
-            var debts = db.Debts
-                .Include(d => d.Apartment)
-                .ToList();
+            TableCell cell = new TableCell(new TableCellProperties(
+                new TableCellMargin(new LeftMargin { Width = "200" }) 
+            ));
 
-            foreach (var debt in debts)
-            {
+            Paragraph pTitle = new Paragraph(new ParagraphProperties(new Justification { Val = JustificationValues.Left }));
+            pTitle.AppendChild(new Run(new RunProperties(
+                new FontSize { Val = "16" },
+                new RunFonts { Ascii = "Segoe UI" },
+                new Color { Val = "888888" }),
+                new Text(title.ToUpper())));
+            cell.AppendChild(pTitle);
 
-                debt.PaidSum = 0;
-                debt.RemainingSum = debt.TotalSum;
-            }
+            Paragraph pAmount = new Paragraph(new ParagraphProperties(new Justification { Val = JustificationValues.Left }));
+            pAmount.AppendChild(new Run(new RunProperties(
+                new Bold(),
+                new FontSize { Val = "38" },
+                new RunFonts { Ascii = "Segoe UI" },
+                new Color { Val = color }),
+                new Text(amount)));
+            cell.AppendChild(pAmount);
 
-            db.SaveChanges();
+            table.Append(new TableRow(cell));
+            body.Append(table);
+            body.Append(new Paragraph(new Run(new Break()))); 
         }
+        private void AddHeader(MainDocumentPart mainPart, string title)
+        {
+            HeaderPart hp = mainPart.AddNewPart<HeaderPart>();
 
-        private string FormatAmount(decimal amount, string currency) => currency == "€" ? currency + amount.ToString("F2") : amount.ToString("F2") + " " + currency;
+            hp.Header = new Header(
+                new Paragraph(
+                    new ParagraphProperties(new Justification { Val = JustificationValues.Center }),
+                    new Run(
+                        new RunProperties(
+                            new Bold(),
+                            new FontSize { Val = "28" },
+                            new Color { Val = TextDark }
+                        ),
+                        new Text(title)
+                    )
+                )
+            );
+
+            var sectionProps = mainPart.Document.Body.Elements<SectionProperties>().LastOrDefault()
+                ?? mainPart.Document.Body.AppendChild(new SectionProperties());
+
+            sectionProps.PrependChild(new HeaderReference
+            {
+                Type = HeaderFooterValues.Default,
+                Id = mainPart.GetIdOfPart(hp)
+            });
+        }
+        private void AddFooter(MainDocumentPart mainPart)
+        {
+            FooterPart fp = mainPart.AddNewPart<FooterPart>();
+
+            fp.Footer = new Footer(
+                new Paragraph(
+                    new ParagraphProperties(new Justification { Val = JustificationValues.Center }),
+                    new Run(
+                        new RunProperties(
+                            new FontSize { Val = "12" },
+                            new Color { Val = TextMuted }
+                        ),
+                        new Text($"Създадено с Syndiceo • {DateTime.Now:dd.MM.yyyy HH:mm}")
+                    )
+                )
+            );
+
+            var sectionProps = mainPart.Document.Body.Elements<SectionProperties>().LastOrDefault()
+                ?? mainPart.Document.Body.AppendChild(new SectionProperties());
+
+            sectionProps.PrependChild(new FooterReference
+            {
+                Type = HeaderFooterValues.Default,
+                Id = mainPart.GetIdOfPart(fp)
+            });
+        }
         private void AddPageBorder(MainDocumentPart mainPart)
         {
-            var body = mainPart.Document.Body;
-            var sectionProps = body.Elements<SectionProperties>().LastOrDefault()
-                               ?? body.AppendChild(new SectionProperties());
-
-            var pageBorders = new PageBorders { OffsetFrom = PageBorderOffsetValues.Page };
-
-            uint borderSize = 6;
-            uint space = 24;
-
-            pageBorders.AppendChild(new TopBorder { Val = BorderValues.Single, Size = borderSize, Space = space, Color = "000000" });
-            pageBorders.AppendChild(new BottomBorder { Val = BorderValues.Single, Size = borderSize, Space = space, Color = "000000" });
-            pageBorders.AppendChild(new LeftBorder { Val = BorderValues.Single, Size = borderSize, Space = space, Color = "000000" });
-            pageBorders.AppendChild(new RightBorder { Val = BorderValues.Single, Size = borderSize, Space = space, Color = "000000" });
-
-            sectionProps.RemoveAllChildren<PageBorders>();
-            sectionProps.AppendChild(pageBorders);
-        }
-        private void UpdateCashboxBalance(SyndiceoDBContext db, int entranceId)
-        {
-            var entrance = db.Entrances
-                .Include(e => e.Cashboxes)
-                .Include(e => e.EntranceTransactions).ThenInclude(et => et.Category)
-                .Include(e => e.Apartments).ThenInclude(a => a.ApartmentTransactions).ThenInclude(at => at.Category)
-                .FirstOrDefault(e => e.EntranceId == entranceId);
-
-            if (entrance == null) return;
-
-            var cashbox = entrance.Cashboxes.FirstOrDefault();
-            if (cashbox == null) return;
-
-            decimal totalIncomes = entrance.EntranceTransactions
-                .Where(et => et.Amount > 0 && et.Category?.Kind == "Приход" && et.Category?.Appliance == "entrances")
-                .Sum(et => et.Amount);
-
-            decimal totalExpenses = entrance.EntranceTransactions
-                .Where(et => et.Amount > 0 && et.Category?.Kind == "Разход" && et.Category?.Name != "Несъбрана такса" && et.Category?.Appliance == "entrances")
-                .Sum(et => Math.Abs(et.Amount));
-
-            decimal totalUncollected = entrance.Apartments
-                .SelectMany(a => a.ApartmentTransactions)
-                .Where(at => at.Category?.Name == "Несъбрана такса")
-                .Sum(at => Math.Abs(at.Amount));
-
-            cashbox.CurrentBalance = (cashbox.CurrentBalance + totalIncomes) - totalExpenses - totalUncollected;
-
-            db.SaveChanges();
+            var sectionProps = mainPart.Document.Body.Elements<SectionProperties>().LastOrDefault() ?? mainPart.Document.Body.AppendChild(new SectionProperties());
+            var borders = new PageBorders(
+                new TopBorder { Val = BorderValues.Single, Size = 4, Color = Primary },
+                new BottomBorder { Val = BorderValues.Single, Size = 4, Color = Primary },
+                new LeftBorder { Val = BorderValues.Single, Size = 4, Color = Primary },
+                new RightBorder { Val = BorderValues.Single, Size = 4, Color = Primary }
+            )
+            { OffsetFrom = PageBorderOffsetValues.Page };
+            sectionProps.Append(borders);
         }
     }
 }

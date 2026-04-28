@@ -6,7 +6,7 @@ using System.Windows;
 
 namespace Syndiceo.Windows
 {
-    public partial class TaxesHelper : Window
+    public partial class TaxesHelper : Window // ИЗКЛЮЧЕН ОТ ПРОЕКТА - НЕ СЕ ИЗПОЛЗВА
     {
         public ObservableCollection<CategoryViewModel> IncomeCategories { get; }
         public ObservableCollection<CategoryViewModel> ExpenseCategories { get; }
@@ -45,7 +45,6 @@ namespace Syndiceo.Windows
 
             foreach (var cat in IncomeCategories.Concat(ExpenseCategories))
             {
-                // 1️⃣ Общо за входа
                 decimal total = context.EntranceTransactions
                     .Where(t => t.EntranceId == entranceId && t.CategoryId == cat.Id)
                     .Select(t => t.Amount)
@@ -53,18 +52,15 @@ namespace Syndiceo.Windows
 
                 OriginalAmounts[cat.Id] = total;
 
-                // 2️⃣ Разпределено досега
                 decimal assigned = context.ApartmentTransactions
                     .Where(t => apartments.Contains(t.ApartmentId) && t.CategoryId == cat.Id)
                     .Sum(t => t.Amount);
 
                 AssignedAmounts[cat.Id] = assigned;
 
-                // 3️⃣ Остатък = Общо - Разпределено
                 decimal remaining = total - assigned;
                 RemainingAmounts[cat.Id] = remaining;
 
-                // 4️⃣ Показваме в UI (например в Label или TextBlock)
                 cat.Amount = remaining.ToString("N2");
             }
         }
@@ -78,16 +74,11 @@ namespace Syndiceo.Windows
             if (!RemainingAmounts.ContainsKey(categoryId))
                 return;
 
-            // delta = нова - стара
-            // Ако delta е положително → апартаментът е увеличил → остатъкът намалява
-            // Ако delta е отрицателно → апартаментът е намалил → остатъкът се увеличава
             RemainingAmounts[categoryId] -= delta;
 
-            // Не допускаме отрицателни стойности
             if (RemainingAmounts[categoryId] < 0)
                 RemainingAmounts[categoryId] = 0;
 
-            // Визуално обновяване
             var cat = IncomeCategories.Concat(ExpenseCategories)
                 .FirstOrDefault(c => c.Id == categoryId);
 

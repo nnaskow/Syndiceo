@@ -89,7 +89,6 @@ namespace Syndiceo.Windows
             }
         }
 
-        // Смяна на потребителско име
         private void changeUsernameButton_Click(object sender, RoutedEventArgs e)
         {
             using (var context = new SyndiceoDBContext())
@@ -135,7 +134,6 @@ namespace Syndiceo.Windows
         }
 
 
-        // Смяна на имейл
         private void changeEmailButton_Click(object sender, RoutedEventArgs e)
         {
             using (var context = new SyndiceoDBContext())
@@ -166,8 +164,6 @@ namespace Syndiceo.Windows
                 this.Close();
             }
         }
-
-        // Смяна на парола
         private void changePasswordButton_Click(object sender, RoutedEventArgs e)
         {
             using (var context = new SyndiceoDBContext())

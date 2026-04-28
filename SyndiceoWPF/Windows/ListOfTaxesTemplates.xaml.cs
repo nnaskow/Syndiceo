@@ -9,7 +9,7 @@ using System.Windows;
 
 namespace Syndiceo.Windows
 {
-    public partial class ListOfTaxesTemplates : Window
+    public partial class ListOfTaxesTemplates : Window // НЕ СЕ ИЗПОЛЗВА
     {
         public TaxesTemplate SelectedTemplate { get; private set; }
 
@@ -74,7 +74,7 @@ namespace Syndiceo.Windows
                 }
 
                 SelectedTemplate = template;
-                DialogResult = true; // затваря прозореца и връща резултата
+                DialogResult = true; 
             }
             catch (Exception ex)
             {

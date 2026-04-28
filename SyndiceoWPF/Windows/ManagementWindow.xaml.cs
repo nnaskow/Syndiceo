@@ -1,8 +1,8 @@
 ﻿using DocumentFormat.OpenXml.InkML;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SqlServer.Dac;
 using Syndiceo.Data.Models;
 using Syndiceo.Utilities;
-using Syndiceo.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -29,7 +29,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Block = Syndiceo.Data.Models.Block;
-
+using TransactionViewModel = Syndiceo.Data.Models.TransactionViewModel;
 
 namespace Syndiceo.Windows
 {
@@ -41,7 +41,7 @@ namespace Syndiceo.Windows
         DispatcherTimer greetingTimer;
         private string notesFilePath;
 
-          public ManagementWindow()
+        public ManagementWindow()
         {
             InitializeComponent();
             UpdateGreeting();
@@ -73,7 +73,7 @@ namespace Syndiceo.Windows
             BlocksDataGrid.ItemsSource = Blocks;
             AddressesDataGrid.ItemsSource = Addresses;
             LoadNotes();
-          this.Loaded += Window_Loaded;
+            this.Loaded += Window_Loaded;
         }
         private void LoadNotes()
         {
@@ -223,7 +223,7 @@ namespace Syndiceo.Windows
     };
                 extraMessage = WrapText(nightMessages[rnd.Next(nightMessages.Length)]);
             }
-            if(user.Length >= 13)
+            if (user.Length >= 13)
                 user = WrapText(user, 13);
 
             welcomeLabel.Text = $"{greeting}, {user}!{Environment.NewLine}{extraMessage}";
@@ -622,7 +622,7 @@ namespace Syndiceo.Windows
 
                 using var context = new SyndiceoDBContext();
 
-                // 🏠 Адрес
+
                 if (itemType == "адрес" && selectedItem is AddressViewModel addressVm)
                 {
                     var entity = context.Addresses
@@ -650,7 +650,6 @@ namespace Syndiceo.Windows
                     }
                 }
 
-                // 🧱 Блок
                 else if (itemType == "блок" && selectedItem is BlockViewModel blockVm)
                 {
                     var entity = context.Blocks
@@ -678,7 +677,6 @@ namespace Syndiceo.Windows
                     }
                 }
 
-                // 🚪 Вход
                 else if (itemType == "вход" && selectedItem is EntranceViewModel entranceVm)
                 {
                     var entity = context.Entrances
@@ -703,7 +701,6 @@ namespace Syndiceo.Windows
                     }
                 }
 
-                // 🏢 Апартамент
                 else if (itemType == "апартамент" && selectedItem is ApartmentViewModel apartmentVm)
                 {
                     var entity = context.Apartments
@@ -892,7 +889,6 @@ namespace Syndiceo.Windows
             var selectedBlock = BlocksDataGrid.SelectedItem as BlockViewModel;
             var selectedEntrance = EntrancesDataGrid.SelectedItem as EntranceViewModel;
 
-            // ---------- Addresses ----------
             if (AddressesDataGrid.Visibility == Visibility.Visible)
             {
                 AddressesDataGrid.ItemsSource = db.Addresses
@@ -909,33 +905,32 @@ namespace Syndiceo.Windows
                         .FirstOrDefault(a => a.Id == selectedAddress.Id);
             }
 
-            // ---------- Blocks ----------
             else if (BlocksDataGrid.Visibility == Visibility.Visible)
             {
                 try
                 {
 
-                if (selectedAddress != null)
-                {
-                    BlocksDataGrid.ItemsSource = db.Blocks
-                        .Where(b => b.AddressId == selectedAddress.Id)
-                        .OrderBy(b => b.BlockName)
-                        .Select(b => new BlockViewModel
-                        {
-                            Id = b.BlockId,
-                            BlockName = b.BlockName,
-                            Address = selectedAddress
-                        })
-                        .ToList();
+                    if (selectedAddress != null)
+                    {
+                        BlocksDataGrid.ItemsSource = db.Blocks
+                            .Where(b => b.AddressId == selectedAddress.Id)
+                            .OrderBy(b => b.BlockName)
+                            .Select(b => new BlockViewModel
+                            {
+                                Id = b.BlockId,
+                                BlockName = b.BlockName,
+                                Address = selectedAddress
+                            })
+                            .ToList();
 
-                    if (selectedBlock != null)
-                        BlocksDataGrid.SelectedItem = ((List<BlockViewModel>)BlocksDataGrid.ItemsSource)
-                            .FirstOrDefault(b => b.Id == selectedBlock.Id);
-                }
-                else
-                {
-                    BlocksDataGrid.ItemsSource = new List<BlockViewModel>();
-                }
+                        if (selectedBlock != null)
+                            BlocksDataGrid.SelectedItem = ((List<BlockViewModel>)BlocksDataGrid.ItemsSource)
+                                .FirstOrDefault(b => b.Id == selectedBlock.Id);
+                    }
+                    else
+                    {
+                        BlocksDataGrid.ItemsSource = new List<BlockViewModel>();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -948,41 +943,54 @@ namespace Syndiceo.Windows
                 }
             }
 
-            // ---------- Entrances ----------
             else if (EntrancesDataGrid.Visibility == Visibility.Visible)
             {
                 try
                 {
 
-                var blockForEntrances = selectedBlock ?? ((List<BlockViewModel>)BlocksDataGrid.ItemsSource).FirstOrDefault();
+                    var blockForEntrances = selectedBlock ?? ((List<BlockViewModel>)BlocksDataGrid.ItemsSource).FirstOrDefault();
 
-                if (blockForEntrances != null)
-                {
-                    var entrances = db.Entrances
-                        .Where(e => e.BlockId == blockForEntrances.Id)
-                        .OrderBy(e => e.EntranceName)
-                        .Select(e => new EntranceViewModel
-                        {
-                            Id = e.EntranceId,
-                            Name = e.EntranceName,
-                            TotalAmount = db.TotalSums
-                                .Where(ts => ts.EntranceId == e.EntranceId)
-                                .Select(ts => (decimal?)ts.Summary)
-                                .FirstOrDefault() ?? 0
-                        })
-                        .ToList();
+                    if (blockForEntrances != null)
+                    {
+                        var entrances = db.Entrances
+         .Where(e => e.BlockId == blockForEntrances.Id)
+         .OrderBy(e => e.EntranceName)
+         .ToList() 
+         .Select(e =>
+         {
+             decimal totalFromTransactions = db.ApartmentTransactions
+                 .Where(at => at.Apartment.EntranceId == e.EntranceId &&
+                              at.Category.Kind != "Приход" &&
+                              at.Category.Appliance == "apartments")
+                 .Sum(at => (decimal?)at.Amount) ?? 0m;
 
-                    EntrancesDataGrid.ItemsSource = entrances;
+             if (totalFromTransactions == 0)
+             {
+                 totalFromTransactions = db.Debts
+                     .Where(d => d.Apartment.EntranceId == e.EntranceId)
+                     .Sum(d => (decimal?)d.TotalSum) ?? 0m;
+             }
 
-                    if (selectedEntrance != null && selectedEntrance.Id != 0)
-                        EntrancesDataGrid.SelectedItem = entrances.FirstOrDefault(ev => ev.Id == selectedEntrance.Id);
+             return new EntranceViewModel
+             {
+                 Id = e.EntranceId,
+                 Name = e.EntranceName,
+                 TotalAmount = totalFromTransactions 
+             };
+         })
+         .ToList();
+
+                        EntrancesDataGrid.ItemsSource = entrances;
+
+                        if (selectedEntrance != null && selectedEntrance.Id != 0)
+                            EntrancesDataGrid.SelectedItem = entrances.FirstOrDefault(ev => ev.Id == selectedEntrance.Id);
+                        else
+                            EntrancesDataGrid.SelectedItem = null;
+                    }
                     else
-                        EntrancesDataGrid.SelectedItem = null;
-                }
-                else
-                {
-                    EntrancesDataGrid.ItemsSource = new List<EntranceViewModel>();
-                }
+                    {
+                        EntrancesDataGrid.ItemsSource = new List<EntranceViewModel>();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -995,68 +1003,71 @@ namespace Syndiceo.Windows
                 }
             }
 
-            // ---------- Apartments ----------
             else if (ApartmentsDataGrid.Visibility == Visibility.Visible)
             {
                 try
                 {
 
-                var selectedEntranceVM = EntrancesDataGrid.SelectedItem as EntranceViewModel;
-                if (selectedEntranceVM != null)
-                {
-                    var apartmentsFromDb = db.Apartments
-                        .Where(a => a.EntranceId == selectedEntranceVM.Id)
-                        .Include(a => a.Owners)
-                        .Include(a => a.Entrance)
-                            .ThenInclude(e => e.Block)
-                                .ThenInclude(b => b.Address)
-                        .Include(a => a.ApartmentTransactions)
-                            .ThenInclude(t => t.Category)
-                        .ToList();
-
-                    var apartments = apartmentsFromDb.Select(a =>
+                    var selectedEntranceVM = EntrancesDataGrid.SelectedItem as EntranceViewModel;
+                    if (selectedEntranceVM != null)
                     {
-                        // 🔹 филтрираме транзакции само за категории от типа "apartments"
-                        var expenseAmounts = a.ApartmentTransactions
-                            .Where(t => t.Category.Kind != "Приход" && t.Category.Appliance == "apartments")
-                            .GroupBy(t => t.Category.Name)
-                            .ToDictionary(g => g.Key, g => g.Sum(t => t.Amount));
+                        var apartmentsFromDb = db.Apartments
+                            .Where(a => a.EntranceId == selectedEntranceVM.Id)
+                            .Include(a => a.Owners)
+                            .Include(a => a.Entrance)
+                                .ThenInclude(e => e.Block)
+                                    .ThenInclude(b => b.Address)
+                            .Include(a => a.ApartmentTransactions)
+                                .ThenInclude(t => t.Category)
+                            .ToList();
 
-                        var incomeAmounts = a.ApartmentTransactions
-                            .Where(t => t.Category.Kind == "Приход" && t.Category.Appliance == "apartments")
-                            .GroupBy(t => t.Category.Name)
-                            .ToDictionary(g => g.Key, g => g.Sum(t => t.Amount));
-
-                        var owner = a.Owners.FirstOrDefault();
-                        var debt = db.Debts.FirstOrDefault(d => d.ApartmentId == a.ApartmentId);
-
-
-                        return new ApartmentViewModel
+                        var apartments = apartmentsFromDb.Select(a =>
                         {
-                            ApartmentId = a.ApartmentId,
-                            ApartmentNumber = a.ApartmentNumber,
-                            OwnerName = owner?.OwnerName,
-                            OwnerPhone = owner?.PhoneNumber,
-                            Note = a.Note,
-                            ResidentCount = a.ResidentCount ?? 0,
-                            Street = a.Entrance?.Block?.Address?.Street,
-                            BlockNumber = a.Entrance?.Block?.BlockName,
-                            EntranceNumber = a.Entrance?.EntranceName,
-                            ExpenseAmounts = expenseAmounts,
-                            IncomeAmounts = incomeAmounts,
-                              TotalSum = debt?.TotalSum ?? 0,  
-                            PaidAmount = debt?.PaidSum ?? 0
-                        };
-                    })
-                        .OrderBy(a=>a.ApartmentNumber)
-                        .ToList();
+                            var expenseAmounts = a.ApartmentTransactions
+                                .Where(t => t.Category.Kind != "Приход" && t.Category.Appliance == "apartments")
+                                .GroupBy(t => t.Category.Name)
+                                .ToDictionary(g => g.Key, g => g.Sum(t => t.Amount));
 
-                    ApartmentsDataGrid.ItemsSource = apartments;
-                }
-                else
-                {
-                    ApartmentsDataGrid.ItemsSource = new List<ApartmentViewModel>();
-                }
+                            var incomeAmounts = a.ApartmentTransactions
+                                .Where(t => t.Category.Kind == "Приход" && t.Category.Appliance == "apartments")
+                                .GroupBy(t => t.Category.Name)
+                                .ToDictionary(g => g.Key, g => g.Sum(t => t.Amount));
+
+                            var owner = a.Owners.FirstOrDefault();
+                            var debt = db.Debts.FirstOrDefault(d => d.ApartmentId == a.ApartmentId);
+
+                            decimal finalTotal = expenseAmounts.Values.Sum();
+                            if (finalTotal == 0 && debt != null) finalTotal = debt.TotalSum;
+
+                            decimal finalPaid = incomeAmounts.Values.Sum() + (debt?.PaidSum ?? 0m);
+
+                            var vm = new ApartmentViewModel
+                            {
+                                ApartmentId = a.ApartmentId,
+                                ApartmentNumber = a.ApartmentNumber,
+                                OwnerName = owner?.OwnerName,
+                                OwnerPhone = owner?.PhoneNumber,
+                                Note = a.Note,
+                                ResidentCount = a.ResidentCount ?? 0,
+                                Street = a.Entrance?.Block?.Address?.Street,
+                                BlockNumber = a.Entrance?.Block?.BlockName,
+                                EntranceNumber = a.Entrance?.EntranceName,
+                                ExpenseAmounts = expenseAmounts,
+                                IncomeAmounts = incomeAmounts,
+                                TotalSum = finalTotal,
+                                PaidAmount = finalPaid
+                            };
+                            vm.TotalSum = finalTotal;
+                            vm.PaidAmount = finalPaid;
+                            return vm;
+                        }).OrderBy(a => a.ApartmentNumber).ToList();
+
+                        ApartmentsDataGrid.ItemsSource = apartments;
+                    }
+                    else
+                    {
+                        ApartmentsDataGrid.ItemsSource = new List<ApartmentViewModel>();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1073,61 +1084,55 @@ namespace Syndiceo.Windows
         {
             using var db = new SyndiceoDBContext();
 
-            // Филтрираме само апартаментите според избраното
             var query = db.Apartments
                 .Include(a => a.Entrance)
                     .ThenInclude(e => e.Block)
                         .ThenInclude(b => b.Address)
                 .AsQueryable();
 
-            if (addressId.HasValue)
-                query = query.Where(a => a.Entrance.Block.AddressId == addressId.Value);
-            if (blockId.HasValue)
-                query = query.Where(a => a.Entrance.BlockId == blockId.Value);
-            if (entranceId.HasValue)
-                query = query.Where(a => a.EntranceId == entranceId.Value);
+            if (addressId.HasValue) query = query.Where(a => a.Entrance.Block.AddressId == addressId.Value);
+            if (blockId.HasValue) query = query.Where(a => a.Entrance.BlockId == blockId.Value);
+            if (entranceId.HasValue) query = query.Where(a => a.EntranceId == entranceId.Value);
 
             var apartments = query.OrderBy(a => a.ApartmentNumber).ToList();
+            var aptIds = apartments.Select(a => a.ApartmentId).ToList();
 
-            // 🔹 Филтрираме категориите само за "apartments"
-            var expenseCategories = db.Categories
-                .Where(c => c.Kind != "Приход" && c.Appliance == "apartments")
-                .OrderBy(c => c.Name)
+            var activeCategoryIds = db.ApartmentTransactions
+                .Where(t => aptIds.Contains(t.ApartmentId))
+                .Select(t => t.CategoryId)
+                .Distinct()
                 .ToList();
 
-            var incomeCategories = db.Categories
-                .Where(c => c.Kind == "Приход" && c.Appliance == "apartments")
-                .OrderBy(c => c.Name)
+            var activeCategories = db.Categories
+                .Where(c => activeCategoryIds.Contains(c.Id))
+                .OrderBy(c => c.Kind) 
+                .ThenBy(c => c.Name)
                 .ToList();
-            // Създаваме view моделите
+
+            var expenseCategories = activeCategories.Where(c => c.Kind != "Приход").ToList();
+            var incomeCategories = activeCategories.Where(c => c.Kind == "Приход").ToList();
+
             var apartmentVMs = apartments.Select(a =>
             {
                 var expenseDict = new Dictionary<string, decimal>();
                 var incomeDict = new Dictionary<string, decimal>();
 
+                var aptTrans = db.ApartmentTransactions
+                    .Where(t => t.ApartmentId == a.ApartmentId)
+                    .ToList();
+
                 foreach (var cat in expenseCategories)
                 {
-                    var amount = db.ApartmentTransactions
-                        .Where(t => t.ApartmentId == a.ApartmentId && t.CategoryId == cat.Id)
-                        .Sum(t => (decimal?)t.Amount) ?? 0m;
-
-                    expenseDict[cat.Name] = amount;
+                    expenseDict[cat.Name] = aptTrans.Where(t => t.CategoryId == cat.Id).Sum(t => t.Amount);
                 }
-
                 foreach (var cat in incomeCategories)
                 {
-                    var amount = db.ApartmentTransactions
-                        .Where(t => t.ApartmentId == a.ApartmentId && t.CategoryId == cat.Id)
-                        .Sum(t => (decimal?)t.Amount) ?? 0m;
-
-                    incomeDict[cat.Name] = amount;
+                    incomeDict[cat.Name] = aptTrans.Where(t => t.CategoryId == cat.Id).Sum(t => t.Amount);
                 }
 
-                // Взимаме конкретния debt за този апартамент
                 var debt = db.Debts.FirstOrDefault(d => d.ApartmentId == a.ApartmentId);
-
-                var total = debt?.TotalSum ?? expenseDict.Values.Sum();
-                var paid = debt?.PaidSum ?? incomeDict.Values.Sum();
+                decimal total = expenseDict.Values.Sum();
+                decimal paid = incomeDict.Values.Sum();
 
                 return new ApartmentViewModel
                 {
@@ -1136,52 +1141,47 @@ namespace Syndiceo.Windows
                     ExpenseAmounts = expenseDict,
                     IncomeAmounts = incomeDict,
                     ResidentCount = a.ResidentCount ?? 0,
-                    TotalSum = total,
-                    PaidAmount = paid,
-                    IsMarked = paid >= total && total > 0
+                    TotalSum = total > 0 ? total : (debt?.TotalSum ?? 0),
+                    PaidAmount = paid > 0 ? paid : (debt?.PaidSum ?? 0)
                 };
             }).ToList();
 
-            // Генерираме колоните
             ApartmentsDataGrid.Columns.Clear();
 
             ApartmentsDataGrid.Columns.Add(new DataGridTextColumn
             {
-                Header = "Апартамент",
+                Header = "№",
                 Binding = new Binding("ApartmentNumber"),
-                Width = new DataGridLength(1, DataGridLengthUnitType.Auto)
+                FontWeight = FontWeights.Bold,
+                Width = 50
             });
 
-            foreach (var cat in expenseCategories)
+            foreach (var cat in activeCategories)
             {
-                ApartmentsDataGrid.Columns.Add(new DataGridTextColumn
+                string dictName = cat.Kind == "Приход" ? "IncomeAmounts" : "ExpenseAmounts";
+                var col = new DataGridTextColumn
                 {
                     Header = cat.Name,
-                    Binding = new Binding($"ExpenseAmounts[{cat.Name}]") { StringFormat = "N2" },
+                    Binding = new Binding($"{dictName}[{cat.Name}]") { StringFormat = "N2" },
                     ElementStyle = new Style(typeof(TextBlock))
                     {
-                        Setters = { new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right) }
+                        Setters = {
+                    new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right),
+                    new Setter(TextBlock.MarginProperty, new Thickness(5,0,5,0))
+                }
                     }
-                });
-            }
+                };
 
-            foreach (var cat in incomeCategories)
-            {
-                ApartmentsDataGrid.Columns.Add(new DataGridTextColumn
-                {
-                    Header = cat.Name,
-                    Binding = new Binding($"IncomeAmounts[{cat.Name}]") { StringFormat = "N2" },
-                    ElementStyle = new Style(typeof(TextBlock))
-                    {
-                        Setters = { new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right) }
-                    }
-                });
+                if (cat.Kind == "Приход") col.Header = "💰 " + cat.Name;
+
+                ApartmentsDataGrid.Columns.Add(col);
             }
 
             ApartmentsDataGrid.Columns.Add(new DataGridTextColumn
             {
-                Header = "Обща дължима сума",
+                Header = "ОБЩО ДЪЛЖИМО",
                 Binding = new Binding("TotalSum") { StringFormat = "N2" },
+                FontWeight = FontWeights.ExtraBold,
                 ElementStyle = new Style(typeof(TextBlock))
                 {
                     Setters = { new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right) }
@@ -1229,7 +1229,6 @@ namespace Syndiceo.Windows
 
             using var db = new SyndiceoDBContext();
 
-            // Ако няма запазен адрес, вземи първия от базата
             if (saveAddressId == 0)
             {
                 var firstAddress = db.Addresses
@@ -1245,7 +1244,6 @@ namespace Syndiceo.Windows
                     saveAddressId = firstAddress.Id;
             }
 
-            // Зареждане на блокове за избрания адрес
             var blocks = db.Blocks
                 .Where(b => b.AddressId == saveAddressId)
                 .OrderBy(b => b.BlockName)
@@ -1263,7 +1261,6 @@ namespace Syndiceo.Windows
 
             BlocksDataGrid.ItemsSource = blocks;
 
-            // Ако няма запазен блок, вземи първия
             if (blocks.Any())
             {
                 if (saveBlockId == 0)
@@ -1285,7 +1282,6 @@ namespace Syndiceo.Windows
 
             using var db = new SyndiceoDBContext();
 
-            // Ако няма блок, вземи първия за текущия адрес
             if (saveBlockId == 0)
             {
                 var firstBlock = db.Blocks
@@ -1302,7 +1298,6 @@ namespace Syndiceo.Windows
                     saveBlockId = firstBlock.Id;
             }
 
-            // Зареждане на входове за избрания блок
             var entrances = db.Entrances
                 .Where(en => en.BlockId == saveBlockId)
                 .OrderBy(en => en.EntranceName)
@@ -1322,7 +1317,6 @@ namespace Syndiceo.Windows
 
             EntrancesDataGrid.ItemsSource = entrances;
 
-            // Ако няма запазен вход, вземи първия
             if (entrances.Any())
             {
                 if (saveEntranceId == 0)
@@ -1340,7 +1334,7 @@ namespace Syndiceo.Windows
             ApartmentsDataGrid.Visibility = Visibility.Visible;
 
             UpdateBreadcrumbs();
-            LoadApartments(saveAddressId,saveBlockId,saveEntranceId);
+            LoadApartments(saveAddressId, saveBlockId, saveEntranceId);
         }
         private void ClearSelectionsBelow(DataGrid currentDataGrid)
         {
@@ -1544,7 +1538,7 @@ namespace Syndiceo.Windows
 
         private void UpdateEntranceMarking(EntranceViewModel entrance)
         {
-            if (entrance == null) return; // проверка за null
+            if (entrance == null) return;
 
             entrance.IsFullyMarked = Apartments
                 .Where(a => a.Entrance != null && a.Entrance.Id == entrance.Id)
@@ -1555,79 +1549,28 @@ namespace Syndiceo.Windows
         {
             if (apartment == null) return;
 
-            using var context = new SyndiceoDBContext();
-
-            var ap = context.Apartments
-                            .Include(a => a.Entrance)
-                            .FirstOrDefault(a => a.ApartmentId == apartment.ApartmentId);
-
-            if (ap == null) return;
-
-            // Маркираме апартамента
-            ap.IsMarked = true;
-            context.SaveChanges();
-
-            apartment.IsMarked = true;
-            UpdateEntranceMarking(apartment.Entrance);
-            ApplyPaymentMarkingToApartments();
-
-            // Отваряне на прозореца за суми
-            var summaryWindow = new SummaryPriceWindow(apartment.ApartmentId);
-            summaryWindow.Owner = this;
-            summaryWindow.ShowDialog();
-            LoadData();
-            ApplyPaymentMarkingToApartments();
-
-        /*    // Добавяне на платени такси към входа (една редица "Събрани такси")
-            var debt = context.Debts.FirstOrDefault(d => d.ApartmentId == apartment.ApartmentId);
-            if (debt != null && debt.PaidSum > 0)
+            try
             {
-                var entranceId = ap.EntranceId;
-                var amount = debt.PaidSum;
+                var summaryWindow = new SummaryPriceWindow(apartment.ApartmentId);
+                summaryWindow.Owner = this;
 
-                // Взимаме категорията "Събрани такси", ако няма – създаваме я
-                var category = context.Categories
-                                      .SingleOrDefault(c => c.Name == "Събрани такси" && c.Kind == "Приход");
+                summaryWindow.ShowDialog();
 
-                if (category == null)
+                LoadData();
+
+                ApartmentsDataGrid.UpdateLayout();
+                ApplyPaymentMarkingToApartments();
+
+                if (apartment.Entrance != null)
                 {
-                    category = new Category
-                    {
-                        Name = "Събрани такси",
-                        Kind = "Приход"
-                    };
-                    context.Categories.Add(category);
-                    context.SaveChanges();
+                    UpdateEntranceMarking(apartment.Entrance);
                 }
-
-                // Взимаме транзакцията за входа, ако има – добавяме, ако няма – създаваме
-                var entranceTransaction = context.EntranceTransactions
-                                                 .FirstOrDefault(t => t.EntranceId == entranceId &&
-                                                                      t.CategoryId == category.Id);
-
-                if (entranceTransaction != null)
-                {
-                    // Добавяме новата сума към съществуващата
-                    entranceTransaction.Amount += amount;
-                    entranceTransaction.TransDate = DateOnly.FromDateTime(DateTime.Now);
-                }
-                else
-                {
-                    // Създаваме нов запис за входа
-                    var transaction = new EntranceTransaction
-                    {
-                        EntranceId = entranceId,
-                        CategoryId = category.Id,
-                        Amount = amount,
-                        TransDate = DateOnly.FromDateTime(DateTime.Now)
-                    };
-                    context.EntranceTransactions.Add(transaction);
-                }*/
-/*
-                context.SaveChanges();
-            }*/
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Грешка при маркиране на апартамент: {ex.Message}", "Грешка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
-
         private void UnmarkApartment(ApartmentViewModel apartment)
         {
             if (apartment == null) return;
@@ -1640,18 +1583,15 @@ namespace Syndiceo.Windows
 
             if (ap == null) return;
 
-            // Взимаме дълга на апартамента
             var debt = context.Debts.FirstOrDefault(d => d.ApartmentId == apartment.ApartmentId);
             if (debt != null && debt.PaidSum > 0)
             {
                 var entranceId = ap.EntranceId;
                 var amountToRemove = debt.PaidSum;
 
-                // Намаляваме PaidSum
                 debt.PaidSum = 0;
                 context.SaveChanges();
 
-                // Взимаме категорията "Събрани такси"
                 var category = context.Categories
                                       .SingleOrDefault(c => c.Name == "Събрани такси" && c.Kind == "Приход");
 
@@ -1663,10 +1603,8 @@ namespace Syndiceo.Windows
 
                     if (entranceTransaction != null)
                     {
-                        // Намаляваме сумата
                         entranceTransaction.Amount -= amountToRemove;
 
-                        // Ако сумата стане 0 или по-малка, може да изтрием реда или да оставим 0
                         if (entranceTransaction.Amount <= 0)
                         {
                             entranceTransaction.Amount = 0;
@@ -1677,7 +1615,6 @@ namespace Syndiceo.Windows
                 }
             }
 
-            // Маркираме апартамента като немаркиран
             ap.IsMarked = false;
             apartment.PaidAmount = 0;
             apartment.IsMarked = false;
@@ -1736,13 +1673,12 @@ namespace Syndiceo.Windows
 
                     if (row != null)
                     {
-                        // Оцветяване според плащането
                         if (apartment.PaidAmount >= apartment.TotalSum && apartment.TotalSum > 0)
-                            row.Background = Brushes.LightGreen; // напълно платено
+                            row.Background = Brushes.LightGreen;
                         else if (apartment.IsPartiallyPaid)
-                            row.Background = Brushes.LightGoldenrodYellow; // частично платено
+                            row.Background = Brushes.LightGoldenrodYellow; 
                         else
-                            row.Background = Brushes.White; // не е платено
+                            row.Background = Brushes.White;
                     }
                 }
             }
@@ -1751,11 +1687,11 @@ namespace Syndiceo.Windows
         {
             if (ApartmentsDataGrid.SelectedItem is ApartmentViewModel selectedApartment)
             {
-                MarkApartment(selectedApartment); // маркиране и SummaryPriceWindow
+                MarkApartment(selectedApartment);
             }
             else if (EntrancesDataGrid.SelectedItem is EntranceViewModel selectedEntrance)
             {
-                MarkEntrance(selectedEntrance); // маркиране без SummaryPriceWindow
+                MarkEntrance(selectedEntrance);
             }
         }
 
@@ -1778,7 +1714,7 @@ namespace Syndiceo.Windows
             using var db = new SyndiceoDBContext();
             var apartment = db.Apartments.Find(selectedApartmentVM.ApartmentId);
 
-            if (noteWindow == null || !noteWindow.IsLoaded) 
+            if (noteWindow == null || !noteWindow.IsLoaded)
             {
                 noteWindow = new AddNoteWindow(apartment);
                 noteWindow.ShowDialog();
@@ -1841,77 +1777,38 @@ namespace Syndiceo.Windows
             if (printWd == null || !printWd.IsLoaded)
             {
                 using var db = new SyndiceoDBContext();
-
                 var selectedItem = EntrancesDataGrid.SelectedItem as EntranceViewModel;
-                if (selectedItem == null)
-                {
-                    MessageBox.Show("Моля, изберете вход.", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
+                if (selectedItem == null) return;
 
                 int entranceId = selectedItem.Id;
 
-                var incomes = db.EntranceTransactions
+                decimal collectedTaxes = db.Debts
+                    .Where(d => d.Apartment.EntranceId == entranceId)
+                    .Sum(d => (decimal?)d.PaidSum) ?? 0m;
+
+                decimal uncollectedTaxes = db.Debts
+                    .Where(d => d.Apartment.EntranceId == entranceId)
+                    .Sum(d => (decimal?)(d.TotalSum - d.PaidSum)) ?? 0m;
+
+                var otherIncomes = db.EntranceTransactions
                     .Include(t => t.Category)
                     .Where(t => t.EntranceId == entranceId && t.Category.Kind == "Приход")
-                    .Select(t => new TransactionViewModel
-                    {
-                        Amount = t.Amount,
-                        CategoryName = t.Category != null ? t.Category.Name : t.Description,
-                        Description = t.Description
-                    }).ToList();
+                    .Select(t => new TransactionViewModel { Amount = t.Amount, CategoryName = t.Category.Name }).ToList();
 
-                var expenses = db.EntranceTransactions
+
+                var entranceExpenses = db.EntranceTransactions
                     .Include(t => t.Category)
                     .Where(t => t.EntranceId == entranceId && t.Category.Kind == "Разход")
-                    .Select(t => new TransactionViewModel
-                    {
-                        Amount = t.Amount,
-                        CategoryName = t.Category != null ? t.Category.Name : t.Description,
-                        Description = t.Description
-                    }).ToList();
+                    .Select(t => new TransactionViewModel { Amount = t.Amount, CategoryName = t.Category.Name }).ToList();
 
                 var cashboxEntry = db.Cashboxes.FirstOrDefault(c => c.EntranceId == entranceId);
-                decimal cashbox = cashboxEntry?.CurrentBalance ?? 0m;
+                decimal currentCashbox = cashboxEntry?.CurrentBalance ?? 0m;
 
-                var apartments = db.Apartments
-                                   .Include(a => a.Entrance.Block.Address)
-                                   .Where(a => a.EntranceId == entranceId)
-                                   .ToList();
-
-                string fullAddress = string.Join("; ", apartments.Select(a =>
-                    $"{a.Entrance.Block.Address.Street}, Блок {a.Entrance.Block.BlockName}, Вход {a.Entrance.EntranceName}"
-                ));
-
-                printWd = new PrintWIndow(incomes, expenses, cashbox, entranceId, fullAddress);
-                printWd.Closed += (s, args) => {
-                    if (Properties.Settings.Default.isReportDone == true)
-                    {
-                        using var db2 = new SyndiceoDBContext();
-
-                        foreach (var apVm in Apartments)
-                        {
-                            apVm.IsMarked = false; 
-
-                            var apDb = db2.Apartments.Find(apVm.ApartmentId);
-                            if (apDb != null)
-                                apDb.IsMarked = false;
-                        }
-
-                        db2.SaveChanges(); 
-                    }
-
-                };
-                printWd.Closed += (s, args) => LoadData();
+                printWd = new PrintWIndow(otherIncomes, entranceExpenses, currentCashbox, entranceId, "");
                 printWd.Show();
-            }
-            else
-            {
-                MessageBox.Show("Прозорецът за отчети вече е отворен.", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
-                printWd.Activate();
+                printWd.Closed += (s, args) => LoadData();
             }
         }
-
         private void UpdateButton_Click(object sender, RoutedEventArgs e)
         {
             if (updateWd == null || !updateWd.IsLoaded)
@@ -2052,14 +1949,20 @@ namespace Syndiceo.Windows
                 return;
             }
 
+
             bool autoArchiveEnabled = Properties.Settings.Default.AutoArchive;
 
             if (!autoArchiveEnabled)
-                return;
+            {
+                Properties.Settings.Default.WindowState = this.WindowState.ToString();
+                Properties.Settings.Default.Save();
 
+                Application.Current.Shutdown();
+                return;
+            }
             try
             {
-                string connectionString = "Server=(LocalDB)\\MSSQLLocalDB;Database=SyndiceoDB;Trusted_Connection=True;";
+                string connectionString = "Server=db45189.public.databaseasp.net; Database=db45189; User Id=db45189; Password=qJ!5@f8Sd9H_; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;";
 
                 string roamingFolder = System.IO.Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -2097,30 +2000,21 @@ namespace Syndiceo.Windows
 
         private void BackupDatabase(string connectionString, string backupFolder)
         {
-            string dbName = "SyndiceoDB";
-            string backupFile = System.IO.Path.Combine(backupFolder, $"{dbName}_{DateTime.Now:yyyyMMdd_HHmmss}.bak");
+            string dbName = "db45189";
+            string backupFile = System.IO.Path.Combine(backupFolder, $"{dbName}_{DateTime.Now:yyyyMMdd_HHmmss}.bacpac");
 
-            using (var conn = new SqlConnection(connectionString))
-            {
-                conn.Open();
-                string sql = $@"BACKUP DATABASE [{dbName}] 
-                        TO DISK = N'{backupFile}' 
-                        WITH FORMAT, INIT, NAME = N'Backup на базата {dbName}'";
+            DacServices services = new DacServices(connectionString);
 
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
+            services.ExportBacpac(backupFile, dbName);
 
             File.AppendAllText(
                 System.IO.Path.Combine(backupFolder, "BackupLog.txt"),
-                DateTime.Now + " - Архивирано успешно: " + backupFile + Environment.NewLine
+                DateTime.Now + " - Архивирано успешно (Облачен архив): " + backupFile + Environment.NewLine
             );
+
             Properties.Settings.Default.LastBackupPath = backupFolder;
             Properties.Settings.Default.Save();
         }
-
         private void DocumentsButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedEntrance = EntrancesDataGrid.SelectedItem as EntranceViewModel;
@@ -2156,16 +2050,9 @@ namespace Syndiceo.Windows
 
             if (ApartmentsDataGrid.SelectedItem is ApartmentViewModel selectedApartmentVM)
             {
-                if (taxesWd == null || !taxesWd.IsLoaded)
-                {
-                    taxesWd = new TaxesWindow(apartmentId: selectedApartmentVM.ApartmentId);
-                    taxesWd.Closed += (s, args) => LoadData();
-                    taxesWd.Show();
-                }
-                else
-                {
-                    taxesWd.Activate();
-                }
+                var win = new TaxesWindow(apartmentId: selectedApartmentVM.ApartmentId);
+
+                win.ShowDialog();
 
                 var apartment = db.Apartments
                                   .Include(a => a.Entrance)
@@ -2178,6 +2065,7 @@ namespace Syndiceo.Windows
                     LoadApartments(addressId: apartment.Entrance.Block.AddressId,
                                    blockId: apartment.Entrance.BlockId,
                                    entranceId: apartment.EntranceId);
+
                     ApartmentsDataGrid.Visibility = Visibility.Visible;
                     EntrancesDataGrid.Visibility = Visibility.Hidden;
                 }
@@ -2195,24 +2083,14 @@ namespace Syndiceo.Windows
 
             if (selectedEntranceId.HasValue)
             {
-                if (taxesWd == null || !taxesWd.IsLoaded)
+                var win = new TaxesWindow(entranceId: selectedEntranceId.Value);
+
+                if (ApartmentsDataGrid.Visibility == Visibility.Visible)
                 {
-                    taxesWd = new TaxesWindow(entranceId: selectedEntranceId.Value);
-                    taxesWd.Closed += (s, args) => LoadData();
-                    taxesWd.Show();
-                    if(ApartmentsDataGrid.Visibility==Visibility.Visible)
-                    {
-                        MessageBox.Show("В момента редактирате таксите за вход!", "ИНФОРМАЦИЯ");
-                    }
-                }
-                else
-                {
-                    taxesWd.Close();
-                    taxesWd = new TaxesWindow(entranceId: selectedEntranceId.Value);
-                    taxesWd.Closed += (s, args) => LoadData();
-                    taxesWd.Show();
+                    MessageBox.Show("В момента редактирате таксите за вход!", "ИНФОРМАЦИЯ");
                 }
 
+                win.ShowDialog();
 
                 LoadData();
                 UpdateBreadcrumbText(selectedEntranceId);
@@ -2223,7 +2101,6 @@ namespace Syndiceo.Windows
             MessageBox.Show("Моля, изберете апартамент или вход.",
                             "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
         }
-
         private void LoadEntrances()
         {
             using var context = new SyndiceoDBContext();
@@ -2253,13 +2130,10 @@ namespace Syndiceo.Windows
 
         }
 
-        //Collections
         public ObservableCollection<AddressViewModel> Addresses { get; set; } = new ObservableCollection<AddressViewModel>();
         public ObservableCollection<BlockViewModel> Blocks { get; set; } = new ObservableCollection<BlockViewModel>();
         public ObservableCollection<EntranceViewModel> Entrances { get; set; } = new ObservableCollection<EntranceViewModel>();
         public ObservableCollection<ApartmentViewModel> Apartments { get; set; } = new ObservableCollection<ApartmentViewModel>();
-
-        //Viewmodels
 
         public class ApartmentViewModel : INotifyPropertyChanged
         {
@@ -2291,6 +2165,7 @@ namespace Syndiceo.Windows
                         OnPropertyChanged(nameof(TotalSum));
                         OnPropertyChanged(nameof(RemainingSum));
                         OnPropertyChanged(nameof(PaymentStatusColor));
+                        UpdateIsMarked(); 
                     }
                 }
             }
@@ -2307,11 +2182,14 @@ namespace Syndiceo.Windows
                         OnPropertyChanged(nameof(RemainingSum));
                         OnPropertyChanged(nameof(IsPartiallyPaid));
                         OnPropertyChanged(nameof(PaymentStatusColor));
-                        IsMarked = _paidAmount >= TotalSum && TotalSum > 0;
+                        UpdateIsMarked();
                     }
                 }
             }
-
+            private void UpdateIsMarked()
+            {
+                IsMarked = PaidAmount >= TotalSum && TotalSum > 0;
+            }
             public decimal RemainingSum => TotalSum - PaidAmount;
             public bool IsPartiallyPaid => PaidAmount > 0 && PaidAmount < TotalSum;
 
@@ -2327,29 +2205,24 @@ namespace Syndiceo.Windows
                     }
                 }
             }
-
             public System.Windows.Media.Brush PaymentStatusColor
             {
                 get
                 {
-                    if (PaidAmount >= TotalSum && TotalSum > 0)
-                        return Brushes.LightGreen;
-                    else if (IsPartiallyPaid)
-                        return Brushes.LightGoldenrodYellow;
-                    else
-                        return Brushes.White;
+                    if (TotalSum <= 0) return Brushes.Transparent;
+                    if (TotalSum - PaidAmount <= 0.01m) return Brushes.LightGreen;
+                    if (PaidAmount > 0) return Brushes.LightGoldenrodYellow;
+                    return Brushes.Transparent;
                 }
             }
-
             public void UpdatePayment(decimal newlyPaid)
             {
                 PaidAmount += newlyPaid; 
                 if (PaidAmount > TotalSum)
                     PaidAmount = TotalSum;
 
-                IsMarked = RemainingSum == 0;
+                IsMarked = RemainingSum == 0; 
             }
-
 
             public event PropertyChangedEventHandler PropertyChanged;
             protected void OnPropertyChanged(string propertyName) =>
@@ -2368,6 +2241,7 @@ namespace Syndiceo.Windows
 
             public string Street => Block?.Address?.Street ?? "";
             public string BlockNumber => Block?.BlockName ?? "";
+
             public string OwnerName { get; set; }
             public string OwnerPhone { get; set; }
             private bool _isFullyMarked;
@@ -2398,6 +2272,7 @@ namespace Syndiceo.Windows
             public int Id { get; set; }
             public string Street { get; set; }
         }
+
         private void AddressesDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (AddressesDataGrid.SelectedItem is AddressViewModel selectedAddress)
@@ -2420,22 +2295,43 @@ namespace Syndiceo.Windows
             }
         }
 
-        private void websiteButton_Click(object sender, RoutedEventArgs e)
+        private async void OpenWebsite_Click(object sender, RoutedEventArgs e)
         {
+            string url = "syndiceo.runasp.net";
+            string targetUrl = $"https://{url}";
+
             try
             {
-                string url = "https://syndiceo.runasp.net";
+                using (var client = new System.Net.Http.HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromSeconds(2);
 
+                    var response = await client.GetAsync(targetUrl, System.Net.Http.HttpCompletionOption.ResponseHeadersRead);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        targetUrl = $"http://{url}";
+                    }
+                }
+            }
+            catch
+            {
+                targetUrl = $"http://{url}";
+            }
+
+            try
+            {
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName = url,
+                    FileName = targetUrl,
                     UseShellExecute = true
                 });
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Грешка при отваряне на сайта: " + ex.Message);
+                MessageBox.Show("Неуспешно стартиране на браузъра: " + ex.Message);
             }
         }
+
     }
 }

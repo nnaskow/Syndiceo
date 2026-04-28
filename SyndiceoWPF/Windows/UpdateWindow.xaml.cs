@@ -13,7 +13,7 @@ namespace Syndiceo.Windows
 {
     public partial class UpdateWindow : Window
     {
-        private const string VersionJsonUrl = "https://github.com/nnaskow/Syndiceo-Releases/releases/download/releases/version.json";
+        private const string VersionJsonUrl = "https://github.com/nnaskow/Syndiceo-Releases/releases/download/releases/version.json"; //не е реализирано, файлът не съществува.
         private string latestSetupUrl = string.Empty;
 
         public UpdateWindow()
@@ -57,11 +57,11 @@ namespace Syndiceo.Windows
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.Add("User-Agent", "SyndiceoApp");
 
-                AnimateProgress(30); // зареждане JSON
+                AnimateProgress(30);
 
                 string json = await client.GetStringAsync(VersionJsonUrl);
 
-                AnimateProgress(60); // парсване
+                AnimateProgress(60);
 
                 var latest = JsonSerializer.Deserialize<VersionInfo>(json);
 
@@ -69,11 +69,11 @@ namespace Syndiceo.Windows
                 Version latestVersion = new Version(latest.latestVersion);
                 latestSetupUrl = latest.url;
 
-                AnimateProgress(90); // сравняване на версии
+                AnimateProgress(90);
 
                 if (latestVersion > new Version(currentVersion))
                 {
-                    AnimateProgress(100); // завършване
+                    AnimateProgress(100); 
                     MessageBox.Show($"Налична е нова версия {latestVersion}. Натиснете 'Актуализирай'.",
                                     "Актуализация", MessageBoxButton.OK, MessageBoxImage.Information);
                     UpdateButton.IsEnabled = true;

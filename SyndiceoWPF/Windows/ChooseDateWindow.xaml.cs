@@ -66,8 +66,8 @@ namespace Syndiceo.Windows
             }
 
             MonthComboBox.ItemsSource = filteredMonths;
-            MonthComboBox.DisplayMemberPath = "Value"; 
-            MonthComboBox.SelectedValuePath = "Key";  
+            MonthComboBox.DisplayMemberPath = "Value";
+            MonthComboBox.SelectedValuePath = "Key";
 
             MonthComboBox.SelectedValue = currentMonth;
 

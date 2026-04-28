@@ -1,11 +1,12 @@
 ﻿using Syndiceo.Data.Models;
 using Microsoft.IdentityModel.Tokens;
+using Syndiceo.Data.Models;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using static Syndiceo.Windows.ManagementWindow;
-using Syndiceo.Data.Models;
+using static Syndiceo.Windows.ManagementWindow;
 
 namespace Syndiceo.Windows
 {
@@ -46,7 +47,6 @@ namespace Syndiceo.Windows
 
         private void LoadAndSetEditable()
         {
-            // Зареждаме всички полета от ViewModel
             AdressTextBox.Text = _addressVM?.Street ?? "";
             BlockTextBox.Text = _blockVM?.BlockName ?? "";
             EntranceTextBox.Text = _entranceVM?.Name ?? "";
@@ -63,7 +63,6 @@ namespace Syndiceo.Windows
             SetReadOnly(ownerNameTxtBox);
             SetReadOnly(ownerPhoneNumberTxtBox);
 
-            // Определяме кой тип е editable
             if (_apartmentVM != null)
             {
                 SetEditable(ApartmentNumberTextBox);
@@ -88,33 +87,32 @@ namespace Syndiceo.Windows
 
         private void SavePropertyButton_Click(object sender, RoutedEventArgs e)
         {
+            string? nameText = string.IsNullOrWhiteSpace(ownerNameTxtBox.Text) || ownerNameTxtBox.Text == "Няма данни"
+                ? null
+                : ownerNameTxtBox.Text.Trim();
+
+            string? phoneText = string.IsNullOrWhiteSpace(ownerPhoneNumberTxtBox.Text) || ownerPhoneNumberTxtBox.Text == "Няма данни"
+                ? null
+                : ownerPhoneNumberTxtBox.Text.Trim();
+
+            int resCount = 0;
+            if (int.TryParse(ResidentsCountTextBox.Text.Trim(), out int count))
+                resCount = count;
+
+            int aptNumber = 0;
+            int.TryParse(ApartmentNumberTextBox.Text.Trim(), out aptNumber);
+
             using (var context = new SyndiceoDBContext())
             {
                 if (_apartmentVM != null)
                 {
-                    // Обновяване на ViewModel с полетата
-                    _apartmentVM.ApartmentNumber = int.Parse(ApartmentNumberTextBox.Text);
-                    _apartmentVM.OwnerName = ownerNameTxtBox.Text.Trim();
-                    _apartmentVM.OwnerPhone = ownerPhoneNumberTxtBox.Text.Trim();
-                    if (int.TryParse(ResidentsCountTextBox.Text.Trim(), out int count))
-                        _apartmentVM.ResidentCount = count;
-
                     var apartment = context.Apartments.FirstOrDefault(a => a.ApartmentId == _apartmentVM.ApartmentId);
                     if (apartment != null)
                     {
-                        apartment.ApartmentNumber = _apartmentVM.ApartmentNumber;
-                        apartment.ResidentCount = _apartmentVM.ResidentCount;
-
-                        string? nameText = string.IsNullOrWhiteSpace(ownerNameTxtBox.Text) || ownerNameTxtBox.Text == "Няма данни"
-      ? null
-      : ownerNameTxtBox.Text.Trim();
-
-                        string? phoneText = string.IsNullOrWhiteSpace(ownerPhoneNumberTxtBox.Text) || ownerPhoneNumberTxtBox.Text == "Няма данни"
-                            ? null
-                            : ownerPhoneNumberTxtBox.Text.Trim();
+                        apartment.ApartmentNumber = aptNumber;
+                        apartment.ResidentCount = resCount;
 
                         var owner = context.Owners.FirstOrDefault(o => o.ApartmentId == apartment.ApartmentId);
-
                         if (owner != null)
                         {
                             owner.OwnerName = nameText;
@@ -130,46 +128,48 @@ namespace Syndiceo.Windows
                             });
                         }
                         context.SaveChanges();
-
-                        context.SaveChanges();
                     }
                 }
                 else if (_entranceVM != null)
                 {
-                    _entranceVM.Name = EntranceTextBox.Text.Trim();
                     var entrance = context.Entrances.FirstOrDefault(e => e.EntranceId == _entranceVM.Id);
                     if (entrance != null)
                     {
-                        entrance.EntranceName = _entranceVM.Name;
+                        entrance.EntranceName = EntranceTextBox.Text.Trim();
                         context.SaveChanges();
                     }
                 }
                 else if (_blockVM != null)
                 {
-                    _blockVM.BlockName = BlockTextBox.Text.Trim();
                     var block = context.Blocks.FirstOrDefault(b => b.BlockId == _blockVM.Id);
                     if (block != null)
                     {
-                        block.BlockName = _blockVM.BlockName;
+                        block.BlockName = BlockTextBox.Text.Trim();
                         context.SaveChanges();
                     }
                 }
                 else if (_addressVM != null)
                 {
-                    _addressVM.Street = AdressTextBox.Text.Trim();
                     var address = context.Addresses.FirstOrDefault(a => a.AddressId == _addressVM.Id);
                     if (address != null)
                     {
-                        address.Street = _addressVM.Street;
+                        address.Street = AdressTextBox.Text.Trim();
                         context.SaveChanges();
                     }
                 }
             }
 
+            if (_apartmentVM != null)
+            {
+                _apartmentVM.ApartmentNumber = aptNumber;
+                _apartmentVM.ResidentCount = resCount;
+                _apartmentVM.OwnerName = nameText ?? "Няма данни";
+                _apartmentVM.OwnerPhone = phoneText ?? "Няма данни";
+            }
+
             this.DialogResult = true;
             this.Close();
         }
-
 
 
         private void AdressTextBox_KeyDown(object sender, KeyEventArgs e)
@@ -216,7 +216,6 @@ namespace Syndiceo.Windows
             if (apartment == null)
                 return;
 
-            // Взимаме стойностите от TextBox
             string nameText = string.IsNullOrWhiteSpace(ownerNameTxtBox.Text) || ownerNameTxtBox.Text == "Няма данни"
                 ? "Няма данни"
                 : ownerNameTxtBox.Text.Trim();
@@ -229,18 +228,15 @@ namespace Syndiceo.Windows
             {
                 using (var context = new SyndiceoDBContext())
                 {
-                    // Проверка за съществуващ Owner
                     var owner = context.Owners.FirstOrDefault(o => o.ApartmentId == apartment.ApartmentId);
 
                     if (owner != null)
                     {
-                        // Обновяване
                         owner.OwnerName = nameText;
                         owner.PhoneNumber = phoneText;
                     }
                     else
                     {
-                        // Създаване на нов собственик
                         owner = new Owner
                         {
                             ApartmentId = apartment.ApartmentId,
@@ -253,7 +249,6 @@ namespace Syndiceo.Windows
                     context.SaveChanges();
                 }
 
-                // Обновяване на ViewModel
                 apartment.OwnerName = nameText;
                 apartment.OwnerPhone = phoneText;
 
@@ -275,9 +270,6 @@ namespace Syndiceo.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
-
-            // Показваме "Няма данни" само за UI, без да записваме в базата
             ownerNameTxtBox.Text = string.IsNullOrWhiteSpace(_apartmentVM?.OwnerName)
                 ? "Няма данни"
                 : _apartmentVM.OwnerName;

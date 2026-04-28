@@ -4,7 +4,6 @@
 }
 
 <style>
-    /* Глобални подобрения */
     .report-card-row {
         transition: all 0.2s ease;
         border-bottom: 8px solid white;
@@ -140,10 +139,14 @@
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-light rounded-circle p-2 me-2 d-none d-md-block">🏢</div>
+                                    <div class="user-avatar-sm me-3">
+                                        @report.User?.FirstName?.Substring(0, 1).ToUpper()@report.User?.LastName?.Substring(0, 1).ToUpper()
+                                    </div>
                                     <div>
-                                        <div class="fw-bold small">Вход @report.Entrance?.EntranceName</div>
-                                        <div class="text-muted" style="font-size: 0.7rem;">@report.User?.Email</div>
+                                        <div class="fw-800 text-dark small">@report.User?.FirstName @report.User?.LastName</div>
+                                        <div class="text-indigo fw-bold extra-small" style="color: var(--dt-indigo);">
+                                            <i class="bi bi-building me-1"></i> Вход @report.Entrance?.EntranceName
+                                        </div>
                                     </div>
                                 </div>
                             </td>

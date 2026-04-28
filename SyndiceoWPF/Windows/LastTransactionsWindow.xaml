@@ -91,7 +91,7 @@
                             <TextBlock Text="💰" FontSize="14" VerticalAlignment="Center" Margin="5,0,10,0"/>
 
                             <TextBlock Grid.Column="1" 
-                                       Text="{Binding Amount, StringFormat='{}{0:N2} лв.'}"
+                                       Text="{Binding Amount, StringFormat='{}€{0:N2}'}"
                                        FontSize="15"
                                        FontWeight="SemiBold"
                                        FontFamily="Segoe UI"

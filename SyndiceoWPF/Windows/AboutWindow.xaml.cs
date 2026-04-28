@@ -31,21 +31,41 @@ namespace Syndiceo.Windows
             SyndiceoVersion.Text = "Syndiceo v" + Properties.Settings.Default.appVersion;
         }
 
-        private void OpenWebsite_Click(object sender, RoutedEventArgs e)
+        private async void OpenWebsite_Click(object sender, RoutedEventArgs e)
         {
+            string url = "nyxon.runasp.net";
+            string targetUrl = $"https://{url}";
+
             try
             {
-                string url = "https://nyxon.runasp.net";
+                using (var client = new System.Net.Http.HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromSeconds(2);
 
+                    var response = await client.GetAsync(targetUrl, System.Net.Http.HttpCompletionOption.ResponseHeadersRead);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        targetUrl = $"http://{url}";
+                    }
+                }
+            }
+            catch
+            {
+                targetUrl = $"http://{url}";
+            }
+
+            try
+            {
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName = url,
+                    FileName = targetUrl,
                     UseShellExecute = true
                 });
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Грешка при отваряне на сайта: " + ex.Message);
+                MessageBox.Show("Неуспешно стартиране на браузъра: " + ex.Message);
             }
         }
 

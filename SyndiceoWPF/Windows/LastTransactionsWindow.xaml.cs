@@ -24,7 +24,7 @@ namespace Syndiceo.Windows
             if (sender is FrameworkElement fe && fe.DataContext is PaymentRecord record)
             {
                 var confirm = MessageBox.Show(
-                    $"Сигурни ли сте, че искате да премахнете плащането ({record.Amount:F2} лв.)?",
+                    $"Сигурни ли сте, че искате да премахнете плащането (€{record.Amount:F2})?",
                     "Потвърждение",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Warning);
@@ -38,7 +38,6 @@ namespace Syndiceo.Windows
                     var debt = context.Debts.FirstOrDefault(d => d.Id == record.DebtId);
                     if (debt != null)
                     {
-                        // ⏪ Връщаме сумата
                         debt.PaidSum -= record.Amount;
                         if (debt.PaidSum < 0)
                             debt.PaidSum = 0;

@@ -113,14 +113,31 @@
         }
         else
         {
-            <div class="col-md-6 col-xl-3">
-                <div class="feature-card p-4 shadow-sm border-0">
-                    <div class="icon-circle">💰</div>
-                    <h5 class="fw-bold mb-2 text-center">Финанси</h5>
-                    <p class="text-muted small text-center flex-grow-1">Проверете задълженията и историята на плащанията си.</p>
-                    <a class="btn btn-outline-primary w-100 mt-3 rounded-pill fw-bold" asp-controller="User" asp-action="ApartmentTaxes" asp-route-apartmentId="1">Към таксите</a>
-                </div>
-            </div>
+<div class="col-md-6 col-xl-3">
+    <div class="feature-card p-4 shadow-sm border-0">
+        <div class="icon-circle">💰</div>
+        <h5 class="fw-bold mb-2 text-center">Финанси</h5>
+        <p class="text-muted small text-center flex-grow-1">Проверете задълженията и историята на плащанията си.</p>
+        
+        @if (ViewBag.UserApartmentId != null)
+        {
+            <a class="btn btn-outline-primary w-100 mt-3 rounded-pill fw-bold" 
+               asp-controller="User" 
+               asp-action="ApartmentTaxes" 
+               asp-route-apartmentId="@ViewBag.UserApartmentId">
+                Към таксите
+            </a>
+        }
+        else
+        {
+            <a class="btn btn-outline-secondary text-secondary w-100 mt-3 rounded-pill fw-bold" 
+               asp-controller="User" 
+               asp-action="Residences">
+                Провери статус
+            </a>
+        }
+    </div>
+</div>
 
             <div class="col-md-6 col-xl-3">
                 <div class="feature-card p-4 shadow-sm border-0">
