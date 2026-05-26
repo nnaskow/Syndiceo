@@ -24,7 +24,7 @@ namespace Syndiceo.Windows
             if (sender is FrameworkElement fe && fe.DataContext is PaymentRecord record)
             {
                 var confirm = MessageBox.Show(
-                    $"Сигурни ли сте, че искате да премахнете плащането (€{record.Amount:F2})?",
+                    $"Сигурни ли сте, че искате да премахнете плащането (€{record.Amount:F2}.)?",
                     "Потвърждение",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Warning);
@@ -39,11 +39,26 @@ namespace Syndiceo.Windows
                     if (debt != null)
                     {
                         debt.PaidSum -= record.Amount;
-                        if (debt.PaidSum < 0)
-                            debt.PaidSum = 0;
-
-                        context.SaveChanges();
+                        if (debt.PaidSum < 0) debt.PaidSum = 0;
                     }
+
+                    var apartment = context.Apartments.FirstOrDefault(a => a.ApartmentId == record.ApartmentId);
+                    if (apartment != null)
+                    {
+                        var collectedCat = context.Categories
+                            .FirstOrDefault(c => c.Name == "Събрани такси" && c.Kind == "Приход");
+
+                        var entranceTx = context.EntranceTransactions
+                            .FirstOrDefault(et => et.EntranceId == apartment.EntranceId
+                                                && et.CategoryId == collectedCat.Id);
+                        if (entranceTx != null)
+                        {
+                            entranceTx.Amount -= record.Amount;
+                            if (entranceTx.Amount < 0) entranceTx.Amount = 0;
+                        }
+                    }
+
+                    context.SaveChanges();
 
                     _payments.Remove(record);
                     SessionData.LastPayments.Remove(record);
@@ -63,7 +78,7 @@ namespace Syndiceo.Windows
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if(TransactionsList.Items.Count==0)
+            if (TransactionsList.Items.Count == 0)
             {
                 Properties.Settings.Default.areThereAnyLastPayments = false;
 

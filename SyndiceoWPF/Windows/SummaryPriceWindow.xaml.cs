@@ -64,32 +64,36 @@ namespace Syndiceo.Windows
             using var context = new SyndiceoDBContext();
             var debt = context.Debts.FirstOrDefault(d => d.ApartmentId == _apartmentVm.ApartmentId);
 
-            decimal leftToPay = amount;
-
             if (debt != null)
             {
                 decimal currentMonthOwed = debt.TotalSum - debt.PaidSum;
-                decimal coveringCurrent = Math.Min(leftToPay, currentMonthOwed);
-
+                decimal coveringCurrent = Math.Min(amount, currentMonthOwed);
                 debt.PaidSum += coveringCurrent;
-                leftToPay -= coveringCurrent;
             }
-
-            if (leftToPay > 0)
+            else
             {
-                var incomeCat = context.Categories.FirstOrDefault(c => c.Kind == "Приход");
-                context.ApartmentTransactions.Add(new ApartmentTransaction
+                debt = new Debt
                 {
                     ApartmentId = _apartmentVm.ApartmentId,
-                    Amount = leftToPay,
-                    CategoryId = incomeCat?.Id ?? 0,
-                    Description = "Покриване на несъбрани такси",
-                    TransDate = DateOnly.FromDateTime(DateTime.Now)
-                });
+                    TotalSum = amount,
+                    PaidSum = amount
+                };
+                context.Debts.Add(debt);
             }
 
             context.SaveChanges();
+
             AddToTotalCollected(amount);
+
+            SessionData.LastPayments.Add(new PaymentRecord
+            {
+                ApartmentId = _apartmentVm.ApartmentId,
+                Amount = amount,
+                DebtId = debt.Id
+            });
+
+            Properties.Settings.Default.areThereAnyLastPayments = true;
+            Properties.Settings.Default.Save();
 
             this.DialogResult = true;
             this.Close();
@@ -139,11 +143,17 @@ namespace Syndiceo.Windows
             }
         }
 
-        LastTransactionsWindow lst = new LastTransactionsWindow(SessionData.LastPayments);
         private void LastTransactionsButton_Click(object sender, RoutedEventArgs e)
         {
+            var lst = new LastTransactionsWindow(SessionData.LastPayments);
             lst.ShowDialog();
             LoadApartmentData(_apartmentVm.ApartmentId);
+
+            if (SessionData.LastPayments.Count == 0)
+            {
+                LastTransactionsButton.IsEnabled = false;
+                LastTransactionsButton.Opacity = 0.375;
+            }
         }
         private void Window_Closing(object sender, CancelEventArgs e)
         {

@@ -22,18 +22,21 @@ namespace Syndiceo.Windows
         {
             string addressText = AddressComboBox.Text.Trim();
             string blockText = BlockComboBox.Text.Trim();
-            string entranceText = CleanEntranceText(EntranceComboBox.Text); string ownerName = ownerNameTxtBox.Text.Trim();
+            string entranceText = CleanEntranceText(EntranceComboBox.Text);
+            string ownerName = ownerNameTxtBox.Text.Trim();
             string ownerPhone = ownerPhoneNumberTxtBox.Text.Trim();
             string noteText = NoteTextBox.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(addressText))
-            {
-                MessageBox.Show("Моля въведете поне адрес!", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            string aptInput = ApartmentNumberTextBox.Text.Trim();
+            string residentCountInput = ResidentsCountTextBox.Text.Trim();
 
             using (var context = new SyndiceoDBContext())
             {
+                if (string.IsNullOrWhiteSpace(addressText))
+                {
+                    MessageBox.Show("Моля въведете поне адрес!", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
                 var address = context.Addresses.FirstOrDefault(a => a.Street == addressText);
                 if (address == null)
                 {
@@ -67,9 +70,7 @@ namespace Syndiceo.Windows
                 }
 
                 Apartment apartment = null;
-                string aptInput = ApartmentNumberTextBox.Text.Trim();
-
-                if (!string.IsNullOrWhiteSpace(aptInput) && entrance != null)
+                if (!string.IsNullOrWhiteSpace(aptInput))
                 {
                     if (!int.TryParse(aptInput, out int apartmentNumber))
                     {
@@ -77,17 +78,36 @@ namespace Syndiceo.Windows
                         return;
                     }
 
-                    apartment = context.Apartments
-                        .FirstOrDefault(a => a.ApartmentNumber == apartmentNumber && a.EntranceId == entrance.EntranceId);
-
-                    if (apartment == null)
+                    if (apartmentNumber <= 0)
                     {
-                        int residentCount = 0;
-                        if (!string.IsNullOrWhiteSpace(ResidentsCountTextBox.Text))
+                        MessageBox.Show("Номерът на апартамента трябва да бъде положително число!", "Грешка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    if (entrance != null)
+                    {
+                        apartment = context.Apartments
+                            .FirstOrDefault(a => a.ApartmentNumber == apartmentNumber && a.EntranceId == entrance.EntranceId);
+
+                        if (apartment != null)
                         {
-                            if (!int.TryParse(ResidentsCountTextBox.Text, out residentCount))
+                            MessageBox.Show($"Апартамент {apartmentNumber} вече съществува в този вход!",
+                                "Дублиран запис", MessageBoxButton.OK, MessageBoxImage.Information);
+                            return;
+                        }
+
+                        int residentCount = 0;
+                        if (!string.IsNullOrWhiteSpace(residentCountInput))
+                        {
+                            if (!int.TryParse(residentCountInput, out residentCount))
                             {
-                                MessageBox.Show("Моля, въведете валиден брой живущи (число).", "Грешка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                MessageBox.Show("Броят на живущите трябва да бъде число.", "Грешка", MessageBoxButton.OK, MessageBoxImage.Error);
+                                return;
+                            }
+
+                            if (residentCount < 0)
+                            {
+                                MessageBox.Show("Броят на живущите не може да бъде отрицателен!", "Грешка", MessageBoxButton.OK, MessageBoxImage.Error);
                                 return;
                             }
                         }
@@ -104,28 +124,58 @@ namespace Syndiceo.Windows
                         context.Apartments.Add(apartment);
                         context.SaveChanges();
                     }
-                }
-
-                if (!string.IsNullOrWhiteSpace(ownerName) && apartment != null)
-                {
-                    var ownerExists = context.Owners.Any(o => o.ApartmentId == apartment.ApartmentId &&
-                                                               (o.OwnerName == ownerName || o.PhoneNumber == ownerPhone));
-                    if (!ownerExists)
+                    else
                     {
-                        var owner = new Owner
-                        {
-                            OwnerName = ownerName,
-                            PhoneNumber = ownerPhone,
-                            ApartmentId = apartment.ApartmentId
-                        };
-                        context.Owners.Add(owner);
-                        context.SaveChanges();
+                        MessageBox.Show("За добавяне на апартамент, трябва да е избран вход.",
+                            "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
                     }
                 }
+
+                if (!string.IsNullOrWhiteSpace(ownerName))
+                {
+                    if (apartment == null)
+                    {
+                        MessageBox.Show("За добавяне на собственик, трябва да е добавен апартамент.",
+                            "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(ownerPhone))
+                    {
+                        MessageBox.Show("Моля въведете телефонен номер на собственика!",
+                            "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    var ownerExists = context.Owners.FirstOrDefault(o =>
+                        o.ApartmentId == apartment.ApartmentId &&
+                        (o.OwnerName.ToLower() == ownerName.ToLower() ||
+                         o.PhoneNumber == ownerPhone));
+
+                    if (ownerExists != null)
+                    {
+                        MessageBox.Show($"Собственик с име или телефон вече съществува за апартамент {apartment.ApartmentNumber}!",
+                            "Дублиран запис", MessageBoxButton.OK, MessageBoxImage.Information);
+                        return;
+                    }
+
+                    var owner = new Owner
+                    {
+                        OwnerName = ownerName,
+                        PhoneNumber = ownerPhone,
+                        ApartmentId = apartment.ApartmentId
+                    };
+                    context.Owners.Add(owner);
+                    context.SaveChanges();
+                }
+
+                MessageBox.Show("Записът е успешно добавен!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
             this.Close();
         }
+
         private void AddressComboBox_DropDownOpened(object sender, EventArgs e)
         {
             using var context = new SyndiceoDBContext();
@@ -163,6 +213,7 @@ namespace Syndiceo.Windows
                 EntranceComboBox.ItemsSource = null;
             }
         }
+
         private string CleanEntranceText(string input)
         {
             if (string.IsNullOrWhiteSpace(input)) return input;
@@ -194,9 +245,162 @@ namespace Syndiceo.Windows
                 ownerPhoneNumberTxtBox.ClearValue(ToolTipProperty);
         }
 
+        private void AddressComboBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string addressText = AddressComboBox.Text.Trim();
+            if (!string.IsNullOrWhiteSpace(addressText))
+            {
+                using var context = new SyndiceoDBContext();
+                var existingAddress = context.Addresses.FirstOrDefault(a => a.Street == addressText);
+
+                if (existingAddress != null)
+                {
+                    AddressComboBox.ToolTip = "✓ Адресата вече съществува в системата";
+                    AddressComboBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGreen);
+                }
+                else
+                {
+                    AddressComboBox.ToolTip = "○ Ново място";
+                    AddressComboBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightYellow);
+                }
+            }
+            else
+            {
+                AddressComboBox.ClearValue(ToolTipProperty);
+                AddressComboBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
+            }
+        }
+
+        private void BlockComboBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string blockText = BlockComboBox.Text.Trim();
+            string addressText = AddressComboBox.Text.Trim();
+
+            if (!string.IsNullOrWhiteSpace(blockText) && !string.IsNullOrWhiteSpace(addressText))
+            {
+                using var context = new SyndiceoDBContext();
+                var address = context.Addresses.FirstOrDefault(a => a.Street == addressText);
+
+                if (address != null)
+                {
+                    var existingBlock = context.Blocks.FirstOrDefault(b =>
+                        b.BlockName == blockText && b.AddressId == address.AddressId);
+
+                    if (existingBlock != null)
+                    {
+                        BlockComboBox.ToolTip = "✓ Блока вече съществува";
+                        BlockComboBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGreen);
+                    }
+                    else
+                    {
+                        BlockComboBox.ToolTip = "○ Нов блок";
+                        BlockComboBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightYellow);
+                    }
+                }
+            }
+            else
+            {
+                BlockComboBox.ClearValue(ToolTipProperty);
+                BlockComboBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
+            }
+        }
+
+        private void EntranceComboBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string entranceText = CleanEntranceText(EntranceComboBox.Text);
+            string blockText = BlockComboBox.Text.Trim();
+            string addressText = AddressComboBox.Text.Trim();
+
+            if (!string.IsNullOrWhiteSpace(entranceText) && !string.IsNullOrWhiteSpace(blockText))
+            {
+                using var context = new SyndiceoDBContext();
+                var address = context.Addresses.FirstOrDefault(a => a.Street == addressText);
+
+                if (address != null)
+                {
+                    var block = context.Blocks.FirstOrDefault(b =>
+                        b.BlockName == blockText && b.AddressId == address.AddressId);
+
+                    if (block != null)
+                    {
+                        var existingEntrance = context.Entrances.FirstOrDefault(ent =>
+                            ent.EntranceName == entranceText && ent.BlockId == block.BlockId);
+
+                        if (existingEntrance != null)
+                        {
+                            EntranceComboBox.ToolTip = "✓ Входа вече съществува";
+                            EntranceComboBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGreen);
+                        }
+                        else
+                        {
+                            EntranceComboBox.ToolTip = "○ Нов вход";
+                            EntranceComboBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightYellow);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                EntranceComboBox.ClearValue(ToolTipProperty);
+                EntranceComboBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
+            }
+        }
+
+        private void ApartmentNumberTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string aptInput = ApartmentNumberTextBox.Text.Trim();
+            string entranceText = CleanEntranceText(EntranceComboBox.Text);
+            string blockText = BlockComboBox.Text.Trim();
+            string addressText = AddressComboBox.Text.Trim();
+
+            if (!string.IsNullOrWhiteSpace(aptInput) && int.TryParse(aptInput, out int apartmentNumber))
+            {
+                using var context = new SyndiceoDBContext();
+                var address = context.Addresses.FirstOrDefault(a => a.Street == addressText);
+
+                if (address != null)
+                {
+                    var block = context.Blocks.FirstOrDefault(b =>
+                        b.BlockName == blockText && b.AddressId == address.AddressId);
+
+                    if (block != null)
+                    {
+                        var entrance = context.Entrances.FirstOrDefault(ent =>
+                            ent.EntranceName == entranceText && ent.BlockId == block.BlockId);
+
+                        if (entrance != null)
+                        {
+                            var existingApartment = context.Apartments.FirstOrDefault(a =>
+                                a.ApartmentNumber == apartmentNumber && a.EntranceId == entrance.EntranceId);
+
+                            if (existingApartment != null)
+                            {
+                                ApartmentNumberTextBox.ToolTip = "✗ Апартамент вече съществува!";
+                                ApartmentNumberTextBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightCoral);
+                            }
+                            else
+                            {
+                                ApartmentNumberTextBox.ToolTip = "○ Нов апартамент";
+                                ApartmentNumberTextBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightYellow);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(aptInput))
+            {
+                ApartmentNumberTextBox.ToolTip = "⚠ Трябва да е число";
+                ApartmentNumberTextBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightCoral);
+            }
+            else
+            {
+                ApartmentNumberTextBox.ClearValue(ToolTipProperty);
+                ApartmentNumberTextBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
+            }
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
         }
-
     }
 }

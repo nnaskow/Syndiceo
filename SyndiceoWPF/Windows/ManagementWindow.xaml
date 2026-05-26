@@ -157,6 +157,7 @@
                          Style="{StaticResource RoundedTextBox}" 
                          Height="38" 
                          Padding="12,0,38,0" 
+                                         GotFocus="searchTxtBox_GotFocus" LostFocus="searchTxtBox_LostFocus"
                          VerticalContentAlignment="Center" 
                          FontSize="13"
                          BorderBrush="#CBD5E0"

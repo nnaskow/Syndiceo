@@ -1518,21 +1518,23 @@ namespace Syndiceo.Windows
 
         private void searchTxtBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (searchTxtBox.Text == "Име,Тел. номер")
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "Име,Тел. номер")
             {
-                searchTxtBox.Text = "";
-                searchTxtBox.Foreground = new SolidColorBrush(Colors.Black);
-                searchTxtBox.FontStyle = FontStyles.Normal;
+                tb.Text = "";
+                tb.Foreground = System.Windows.Media.Brushes.Black;
+                tb.FontStyle = FontStyles.Normal;
             }
         }
 
         private void searchTxtBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(searchTxtBox.Text))
+            TextBox tb = sender as TextBox;
+            if (string.IsNullOrWhiteSpace(tb.Text))
             {
-                searchTxtBox.Text = "Име,Тел. номер";
-                searchTxtBox.Foreground = new SolidColorBrush(Colors.Gray);
-                searchTxtBox.FontStyle = FontStyles.Italic;
+                tb.Text = "Име,Тел. номер";
+                tb.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#A0AEC0"));
+                tb.FontStyle = FontStyles.Italic;
             }
         }
 
